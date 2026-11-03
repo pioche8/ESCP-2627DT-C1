@@ -123,6 +123,12 @@ DESIGN.md vs §4–7 conflicts and how they were resolved:
 11. **WCAG AA wins over DESIGN.md colours:** light `--v-ink-3` #6A6D73, dark `--v-nogo` #CF3A2E, dark `--v-check` #6650EE, dark `--v-brand` #3F5DF2. Closed cards dim only the score tile and status line.
 12. **"Simulated AI" pill** also on the reading screen and the tender loading state.
 13. Closed rule wording in §4 now matches the code (days left ≤ 0).
-14. Open: whether to tag the as-received commit `v0-shell` (depends on whether interviews had started). Not tagged yet.
+14. `v0-shell` is **not tagged** (team decision, 3 Nov). `evidence.md` §0 carries the TODO instead: tag `v0-shell` only if no interview happened before that commit. The as-received state is the first commit of this repository.
 
 Smaller implementation choices: fonts are vendored (no CDN; preload links removed because Chrome blocks them on `file://`); the citation chip opens the requirement sheet (there are no PDFs); Restore moves a skipped tender to Deciding (DESIGN.md §5.08); vibration only works where `navigator.vibrate` exists (Android).
+
+## 12. Repository provenance (3 Nov 2026)
+The 2 Nov session built everything in its own cloud container and never pushed. That container is gone, so this repository was rebuilt on 3 Nov from that session's transcript: every file was re-created from the recorded tool calls and checked against the recorded before/after snapshots; fonts were re-downloaded with the same commands; the engine tests (24) and the smoke test (114 checks, light + dark, `file://` and HTTP) pass as before. Three things could not be recovered and must be restored by the team from their own copies:
+- `DESIGN.md`: the file in the repo is a marked placeholder, not the spec.
+- `evidence.md` and `docs/INTERVIEW_KIT.md`: only the first 30 and 15 lines are original; both files end with a marked note.
+- `docs/screens.png` (the old v0 screenshot; nothing links to it).

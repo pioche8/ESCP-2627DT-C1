@@ -6,6 +6,7 @@ Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 > **Integrity rules.** Every entry below comes from a real interview held by the named team member. No AI-generated or "illustrative" interviews. Names and companies are anonymised. Figures are only those the interviewee gave; anything else is marked ASSUMPTION. Demo data in the prototype is fictional and is **not** evidence.
 
 ## 0. Hypotheses and kill gate (written BEFORE interview #1, tagged `v0-shell`)
+TODO: Tag `v0-shell` only if no interview happened before this commit.
 | # | Hypothesis | Confirmed if |
 |---|---|---|
 | H1 Pain | Small firms lose meaningful time or money **deciding whether they can bid**, not only writing the bid | Interviewee reports ≥1 h screening per tender, OR a bid lost to a missed knock-out, OR skipping tenders unread because checking is too costly |

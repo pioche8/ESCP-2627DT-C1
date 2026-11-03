@@ -45,7 +45,7 @@ tests.html     same engine tests in the browser
 - [ ] Create repo `ESCP-2627DT-<team>` (public), push these files
 - [ ] Invite all members + `@drdml`
 - [ ] Enable GitHub Pages and paste the URL above
-- [ ] `git tag v0-shell` **before interview #1** (proves the hypotheses and gate in evidence.md came first)
+- [ ] `git tag v0-shell` on the first commit **only if no interview happened before it** (see the TODO in `evidence.md` §0; not tagged on 3 Nov)
 - [ ] Interviews → `evidence.md` → gate verdict Tue 18:00
 - [ ] Update `data.js` / copy with what the evidence changed → `git tag v1-workshop`
 - [ ] Rehearse the 75-second demo on a real phone (BRIEF.md) and keep a screen recording as backup
@@ -56,3 +56,4 @@ tests.html     same engine tests in the browser
 - **Figma:** [flows / screens, if used]
 - **The team:** all stakeholder interviews and notes, insights, gate decision, final product decisions.
 - **Claude Code (Anthropic), 2 Nov 2026:** restyled the prototype to `DESIGN.md` ("Bold" v2.0) from the team's handoff (`CLAUDE.md`). Changed: new `styles.css` (tokens, light + dark), vendored fonts in `fonts/`, all `app.js` render functions and the new states (reading, loading, closed, empty, offline, saved, skipped), progress callbacks in `ai.js`, optional `doc`/`highlight` display fields in `data.js`, and new engine functions for reason lines, the Company re-score card and unlock hints (`reasonLine`, `headline`, `verdicts`, `diff`, `whatIf`) with 10 new tests. Not changed: `evaluate()`, `rank()` and their results, the original 14 tests, and the demo data values. Four DESIGN.md colours were adjusted to pass WCAG AA (listed at the top of `styles.css`). Fixed the workshop date to Thu 5 Nov in the docs. Every decision where DESIGN.md and the handoff conflicted was made by the team (log in `CLAUDE.md` §11).
+- **Claude Code (Anthropic), 3 Nov 2026:** the 2 Nov session's container was lost before anything was pushed, so this repository was rebuilt from that session's transcript: every file re-created from the recorded edits and verified against the recorded snapshots, fonts re-downloaded with the same commands, then both test suites re-run (24 engine tests; 114 smoke checks in light and dark, from `file://` and over HTTP). No functional change to the prototype. Docs only: the `v0-shell` decision (TODO line in `evidence.md` §0 instead of a tag), this entry, and `CLAUDE.md` §12 on what still has to be restored from the team's copies (`DESIGN.md`, the rest of `evidence.md` and `docs/INTERVIEW_KIT.md`, `docs/screens.png`).
