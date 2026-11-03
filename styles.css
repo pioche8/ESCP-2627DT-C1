@@ -1,0 +1,32 @@
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --ink: #111827; --muted: #6b7280; --line: #e5e7eb;
+  --brand: #2546f0; --brand-ink: #ffffff;
+  --go: #0f8a4b; --go-bg: #e3f6ec; --maybe: #a15c00; --maybe-bg: #fff2d9;
+  --nogo: #b42318; --nogo-bg: #fde8e7; --review: #6d28d9; --review-bg: #efe7fe;
+  --radius: 14px; --tab-h: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #9aa4b2; --line: #2a313c;
+    --brand: #6f86ff; --go-bg: #0f2e1f; --maybe-bg: #33250a; --nogo-bg: #3a1513; --review-bg: #2a1a4a;
+    --go: #4ad491; --maybe: #f4b44a; --nogo: #ff7b72; --review: #b69cff; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom)); }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: var(--brand); }
+
+/* header */
+.top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 18px; margin: 0; flex: 1; }
+.top .back, .top .info { border: 0; background: transparent; min-width: 44px; min-height: 44px; font-size: 20px; }
+.badge-sim { font-size: 11px; font-weight: 600; letter-spacing: .02em; color: var(--review);
+  background: var(--review-bg); padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+
+main { padding: 12px 16px 24px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+/* RECONSTRUCTION NOTE: only the first 30 lines of the v0 stylesheet were recoverable; the file is fully replaced by the DESIGN.md restyle in a later commit. */
