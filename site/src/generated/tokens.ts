@@ -329,13 +329,13 @@ export const tokens = {
             "paper": "#FFFFFF",
             "ink": "#0E1B2B",
             "ink-2": "#4A5A6D",
-            "ink-3": "#637082",
+            "ink-3": "#5A6474",
             "line": "#DCE4ED",
             "track": "rgba(16,42,72,.07)",
             "brand": "#5DB8F5",
             "brand-on": "#0E1B2B",
             "brand-sub": "#1D3B5C",
-            "brand-text": "#0A6CBC",
+            "brand-text": "#0862AC",
             "brand-soft": "#DCEFFD",
             "brand-glass": "rgba(255,255,255,.4)",
             "brand-shadow": "rgba(46,140,220,.45)",
@@ -365,15 +365,27 @@ export const tokens = {
             "raised": "0 18px 36px -14px rgba(14,27,43,.35)",
             "glass-dark": "rgba(13,15,18,.32)",
             "glass-light": "rgba(255,255,255,.4)",
+            "glass": "rgba(255,255,255,.72)",
+            "glass-ring": "rgba(14,27,43,.08)",
+            "pill": "rgba(14,27,43,.05)",
+            "pill-strong": "rgba(14,27,43,.07)",
+            "line-strong": "rgba(14,27,43,.16)",
+            "primary": "#0E1B2B",
+            "primary-on": "#FFFFFF",
+            "switch-off": "rgba(14,27,43,.16)",
+            "unlit": "#7F8997",
+            "scrim": "rgba(14,27,43,.45)",
+            "grain": 0.1,
             "toast-dot": "#5ED69C",
             "toast-action": "#5DB8F5",
-            "seg-on": "#FFFFFF",
+            "input": "#FFFFFF",
+            "input-ink": "#0E1B2B",
             "go-glass": "dark"
           },
           "dark": {
-            "bg": "#0B111C",
-            "card": "#131B2A",
-            "card-2": "#1A2335",
+            "bg": "#02040A",
+            "card": "#0B111C",
+            "card-2": "#131B2A",
             "paper": "#F4F3EF",
             "ink": "#FFFFFF",
             "ink-2": "#A3ADBD",
@@ -387,7 +399,7 @@ export const tokens = {
             "brand-soft": "#132B40",
             "brand-glass": "rgba(255,255,255,.4)",
             "brand-shadow": "rgba(93,184,245,.35)",
-            "dock": "#1A2335",
+            "dock": "rgba(26,35,53,.92)",
             "dock-icon": "#8C9AAB",
             "dock-active": "#5DB8F5",
             "dock-active-on": "#0E1B2B",
@@ -413,9 +425,21 @@ export const tokens = {
             "raised": "inset 0 0 0 1px rgba(255,255,255,.08), 0 30px 60px -30px rgba(0,0,0,.8)",
             "glass-dark": "rgba(13,15,18,.32)",
             "glass-light": "rgba(255,255,255,.4)",
+            "glass": "rgba(14,20,32,.72)",
+            "glass-ring": "rgba(255,255,255,.1)",
+            "pill": "rgba(255,255,255,.06)",
+            "pill-strong": "rgba(255,255,255,.08)",
+            "line-strong": "rgba(255,255,255,.14)",
+            "primary": "#FFFFFF",
+            "primary-on": "#0E1B2B",
+            "switch-off": "rgba(255,255,255,.16)",
+            "unlit": "#5D636D",
+            "scrim": "rgba(2,4,10,.62)",
+            "grain": 0.18,
             "toast-dot": "#13724B",
             "toast-action": "#0A6CBC",
-            "seg-on": "#1A2335",
+            "input": "#FFFFFF",
+            "input-ink": "#0E1B2B",
             "go-glass": "dark"
           }
         },
@@ -427,13 +451,13 @@ export const tokens = {
             "paper": "#FFFFFF",
             "ink": "#0E1B2B",
             "ink-2": "#4A5A6D",
-            "ink-3": "#637082",
+            "ink-3": "#5A6474",
             "line": "#DCE4ED",
             "track": "rgba(16,42,72,.07)",
             "brand": "#5DB8F5",
             "brand-on": "#0E1B2B",
             "brand-sub": "#1D3B5C",
-            "brand-text": "#0A6CBC",
+            "brand-text": "#0862AC",
             "brand-soft": "#DCEFFD",
             "brand-glass": "rgba(255,255,255,.4)",
             "brand-shadow": "rgba(46,140,220,.45)",
@@ -463,9 +487,21 @@ export const tokens = {
             "raised": "0 18px 36px -14px rgba(14,27,43,.35)",
             "glass-dark": "rgba(13,15,18,.32)",
             "glass-light": "rgba(255,255,255,.4)",
+            "glass": "rgba(255,255,255,.72)",
+            "glass-ring": "rgba(14,27,43,.08)",
+            "pill": "rgba(14,27,43,.05)",
+            "pill-strong": "rgba(14,27,43,.07)",
+            "line-strong": "rgba(14,27,43,.16)",
+            "primary": "#0E1B2B",
+            "primary-on": "#FFFFFF",
+            "switch-off": "rgba(14,27,43,.16)",
+            "unlit": "#7F8997",
+            "scrim": "rgba(14,27,43,.45)",
+            "grain": 0.1,
             "toast-dot": "#5ED69C",
             "toast-action": "#5DB8F5",
-            "seg-on": "#FFFFFF",
+            "input": "#FFFFFF",
+            "input-ink": "#0E1B2B",
             "go-glass": "dark"
           },
           "dark": {
@@ -475,7 +511,7 @@ export const tokens = {
             "paper": "#F4F3EF",
             "ink": "#F2F1EE",
             "ink-2": "#A9ACB3",
-            "ink-3": "#878B92",
+            "ink-3": "#8A93A3",
             "line": "#22304A",
             "track": "rgba(255,255,255,.08)",
             "brand": "#5DB8F5",
@@ -511,9 +547,21 @@ export const tokens = {
             "raised": "inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 36px -14px rgba(0,0,0,.7)",
             "glass-dark": "rgba(13,15,18,.32)",
             "glass-light": "rgba(255,255,255,.4)",
+            "glass": "rgba(14,20,32,.72)",
+            "glass-ring": "rgba(255,255,255,.1)",
+            "pill": "rgba(255,255,255,.06)",
+            "pill-strong": "rgba(255,255,255,.08)",
+            "line-strong": "rgba(255,255,255,.14)",
+            "primary": "#FFFFFF",
+            "primary-on": "#0E1B2B",
+            "switch-off": "rgba(255,255,255,.16)",
+            "unlit": "#5D636D",
+            "scrim": "rgba(2,4,10,.62)",
+            "grain": 0.18,
             "toast-dot": "#13724B",
             "toast-action": "#0A6CBC",
-            "seg-on": "#1A2537",
+            "input": "#FFFFFF",
+            "input-ink": "#0E1B2B",
             "go-glass": "light"
           }
         },
@@ -525,7 +573,7 @@ export const tokens = {
             "paper": "#FFFFFF",
             "ink": "#0F1A36",
             "ink-2": "#48536B",
-            "ink-3": "#646D84",
+            "ink-3": "#5B6479",
             "line": "#DDE2EA",
             "track": "rgba(18,30,66,.07)",
             "brand": "#1A7AA3",
@@ -561,9 +609,21 @@ export const tokens = {
             "raised": "0 18px 36px -14px rgba(15,26,54,.35)",
             "glass-dark": "rgba(13,15,18,.32)",
             "glass-light": "rgba(255,255,255,.4)",
+            "glass": "rgba(255,255,255,.72)",
+            "glass-ring": "rgba(14,27,43,.08)",
+            "pill": "rgba(14,27,43,.05)",
+            "pill-strong": "rgba(14,27,43,.07)",
+            "line-strong": "rgba(14,27,43,.16)",
+            "primary": "#0F1A36",
+            "primary-on": "#FFFFFF",
+            "switch-off": "rgba(14,27,43,.16)",
+            "unlit": "#7F8997",
+            "scrim": "rgba(14,27,43,.45)",
+            "grain": 0.1,
             "toast-dot": "#5ED69C",
             "toast-action": "#7FC8E6",
-            "seg-on": "#FFFFFF",
+            "input": "#FFFFFF",
+            "input-ink": "#0F1A36",
             "go-glass": "dark"
           },
           "dark": {
@@ -573,7 +633,7 @@ export const tokens = {
             "paper": "#F4F3EF",
             "ink": "#F2F1EE",
             "ink-2": "#A9ACB3",
-            "ink-3": "#878B92",
+            "ink-3": "#8A93A3",
             "line": "#232D4A",
             "track": "rgba(255,255,255,.08)",
             "brand": "#1A7AA3",
@@ -609,9 +669,21 @@ export const tokens = {
             "raised": "inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 36px -14px rgba(0,0,0,.7)",
             "glass-dark": "rgba(13,15,18,.32)",
             "glass-light": "rgba(255,255,255,.4)",
+            "glass": "rgba(14,20,32,.72)",
+            "glass-ring": "rgba(255,255,255,.1)",
+            "pill": "rgba(255,255,255,.06)",
+            "pill-strong": "rgba(255,255,255,.08)",
+            "line-strong": "rgba(255,255,255,.14)",
+            "primary": "#FFFFFF",
+            "primary-on": "#0E1B2B",
+            "switch-off": "rgba(255,255,255,.16)",
+            "unlit": "#5D636D",
+            "scrim": "rgba(2,4,10,.62)",
+            "grain": 0.18,
             "toast-dot": "#13724B",
             "toast-action": "#13698C",
-            "seg-on": "#1A2340",
+            "input": "#FFFFFF",
+            "input-ink": "#0F1A36",
             "go-glass": "light"
           }
         }
@@ -669,7 +741,8 @@ export const tokens = {
       "onDark": "#5ED69C",
       "soft": "#DDF1E7",
       "ink": "#0E5C3C",
-      "ring": "rgba(31,157,99,.35)"
+      "ring": "rgba(31,157,99,.35)",
+      "hl": "rgba(31,157,99,.2)"
     },
     "maybe": {
       "label": "Maybe",
@@ -681,7 +754,8 @@ export const tokens = {
       "onDark": "#F7C25E",
       "soft": "#FDEFD3",
       "ink": "#8A5300",
-      "ring": "rgba(245,165,36,.3)"
+      "ring": "rgba(245,165,36,.3)",
+      "hl": "rgba(245,165,36,.26)"
     },
     "nogo": {
       "label": "No-go",
@@ -693,7 +767,8 @@ export const tokens = {
       "onDark": "#FF8B80",
       "soft": "#FCE4DE",
       "ink": "#B23720",
-      "ring": "rgba(208,69,44,.4)"
+      "ring": "rgba(208,69,44,.4)",
+      "hl": "rgba(208,69,44,.17)"
     },
     "check": {
       "label": "Needs your check",
@@ -704,7 +779,9 @@ export const tokens = {
       "on": "#FFFFFF",
       "onDark": "#B3A5FF",
       "soft": "#EEEAFD",
-      "ink": "#4B31C2"
+      "ink": "#4B31C2",
+      "ring": "rgba(97,69,224,.35)",
+      "hl": "rgba(97,69,224,.17)"
     },
     "closed": {
       "label": "Closed",
@@ -802,6 +879,92 @@ export const tokens = {
       "secondaryMax": 0.6
     },
     "heroWordmark": "radial-gradient(34cqw 22cqw at var(--gx, 50%) 45%, #FFFFFF 0%, #9AD3FA 24%, #1A7AA3 50%, #0E1218 80%)",
+    "app": {
+      "dark": {
+        "welcome": {
+          "color": "#1A7AA3",
+          "opacity": 0.25
+        },
+        "feed": {
+          "color": "#0F3FA8",
+          "opacity": 0.42
+        },
+        "bids": {
+          "color": "#1A7AA3",
+          "opacity": 0.25
+        },
+        "company": {
+          "color": "#5DB8F5",
+          "opacity": 0.15
+        },
+        "about": {
+          "color": "#0F3FA8",
+          "opacity": 0.42
+        },
+        "go": {
+          "color": "#13724B",
+          "opacity": 0.28
+        },
+        "maybe": {
+          "color": "#F5A524",
+          "opacity": 0.15
+        },
+        "nogo": {
+          "color": "#D0452C",
+          "opacity": 0.3
+        },
+        "check": {
+          "color": "#6650EE",
+          "opacity": 0.3
+        },
+        "closed": {
+          "color": "#0F3FA8",
+          "opacity": 0.3
+        }
+      },
+      "light": {
+        "welcome": {
+          "color": "#5DB8F5",
+          "opacity": 0.18
+        },
+        "feed": {
+          "color": "#5DB8F5",
+          "opacity": 0.18
+        },
+        "bids": {
+          "color": "#5DB8F5",
+          "opacity": 0.18
+        },
+        "company": {
+          "color": "#5DB8F5",
+          "opacity": 0.18
+        },
+        "about": {
+          "color": "#5DB8F5",
+          "opacity": 0.18
+        },
+        "go": {
+          "color": "#13724B",
+          "opacity": 0.1
+        },
+        "maybe": {
+          "color": "#F5A524",
+          "opacity": 0.12
+        },
+        "nogo": {
+          "color": "#D0452C",
+          "opacity": 0.1
+        },
+        "check": {
+          "color": "#6145E0",
+          "opacity": 0.08
+        },
+        "closed": {
+          "color": "#5DB8F5",
+          "opacity": 0.12
+        }
+      }
+    },
     "orbs": [
       "radial-gradient(closest-side, #1A7AA3, #13224F)",
       "radial-gradient(closest-side, #13724B, #1A7AA3 60%, #0F3FA8)",
@@ -939,6 +1102,36 @@ export const tokens = {
     }
   },
   "adjusted": [
+    {
+      "token": "color.app.brand.dark.bg/card/card-2/dock",
+      "handoff": "#0B111C / #131B2A / #1A2335 / #1A2335",
+      "value": "#02040A / #0B111C / #131B2A / rgba(26,35,53,.92)",
+      "why": "3 Nov (vibe): the app sits on the website's ground (bg) with its surface and surface-2 as cards and the PhoneDemo's glass dock, so the phone and the site read as one product."
+    },
+    {
+      "token": "color.app.*.light.ink-3",
+      "handoff": "#637082 / #646D84",
+      "value": "#5A6474 / #5B6479",
+      "why": "3 Nov (vibe): ink-3 on the light ground was exactly 4.5:1; the sky glow blob (opacity .18) under screen headers needed headroom. 5.4:1 on the plain ground now, ≥ 4.6:1 on the glow peak."
+    },
+    {
+      "token": "color.app.sky/harbor.dark.ink-3",
+      "handoff": "#878B92",
+      "value": "#8A93A3",
+      "why": "3 Nov (vibe): same headroom for the sapphire glow on the Sky and Harbor dark grounds; one ink-3 for every dark theme."
+    },
+    {
+      "token": "color.app.brand/sky.light.brand-text",
+      "handoff": "#0A6CBC",
+      "value": "#0862AC",
+      "why": "3 Nov (vibe): links and hints on the light ground were 4.2–4.5:1 on the sky glow peak; 4.9:1 now (6.3:1 on white)."
+    },
+    {
+      "token": "glow.app.*",
+      "handoff": "core glow (#E6F4FF centre) at .35–.55",
+      "value": "single-colour blobs (sea, sapphire, sky, the verdict colours) at .15–.42 dark, .08–.18 light",
+      "why": "3 Nov (vibe): the core glow's white centre drops ink-3 under 3:1 at any useful opacity; the site's secondary blobs keep every ink at AA (audited per theme and mood)."
+    },
     {
       "token": "verdict.nogo.solid",
       "handoff": "#E04A2F",

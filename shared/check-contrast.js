@@ -82,7 +82,7 @@ Object.keys(T.color.app.themes).forEach((p) => ['light', 'dark'].forEach((s) => 
   check(g, 'brand-text on brand-soft (tonal)', t['brand-text'], t['brand-soft'], 'normal', card);
   check(g, 'brand-on on brand (primary button)', t['brand-on'], t.brand); check(g, 'brand-sub on brand', t['brand-sub'], t.brand);
   check(g, 'brand-on on brand glass', t['brand-on'], t['brand-glass'], 'normal', t.brand);
-  check(g, 'dock icon', t['dock-icon'], t.dock); check(g, 'dock active text', t['dock-active-on'], t['dock-active']);
+  check(g, 'dock icon', t['dock-icon'], t.dock, 'normal', bg); check(g, 'dock active text', t['dock-active-on'], t['dock-active']);
   check(g, 'dock badge', t['dock-badge-on'], t['dock-badge']);
   check(g, 'toast text (bg on ink)', bg, t.ink); check(g, 'toast action', t['toast-action'], t.ink);
   ['go', 'maybe', 'nogo', 'check'].forEach((v) => {
@@ -97,6 +97,28 @@ Object.keys(T.color.app.themes).forEach((p) => ['light', 'dark'].forEach((s) => 
   check(g, 'ink on check-soft (unresolved card)', t.ink, t['check-soft'], 'normal', card);
   check(g, 'bg (button-dark text) on ink', bg, t.ink);
   check(g, 'maybe-ink as "soon" on card', t['maybe-ink'], card);
+  /* the website's chrome on the phone (3 Nov, vibe): primary pill, glass, pills, switch track */
+  check(g, 'primary-on on primary (white / ink pill)', t['primary-on'], t.primary);
+  check(g, 'input ink on the website input pill', t['input-ink'], t.input); check(g, 'placeholder (site ink-3) on the input pill', T.color.site.ink3, t.input);
+  check(g, 'ink on glass (count row, headers)', t.ink, t.glass, 'normal', bg); check(g, 'ink-2 on glass', t['ink-2'], t.glass, 'normal', bg); check(g, 'ink-3 on glass', t['ink-3'], t.glass, 'normal', bg);
+  check(g, 'brand-text on glass (tonal button, hints)', t['brand-text'], t.glass, 'normal', bg);
+  check(g, 'ink on pill-strong (outline button, chips)', t.ink, t['pill-strong'], 'normal', bg); check(g, 'ink-2 on pill-strong (AI pill)', t['ink-2'], t['pill-strong'], 'normal', bg);
+  check(g, 'ink on pill-strong over card (segments)', t.ink, t['pill-strong'], 'normal', card); check(g, 'ink-2 on pill over card', t['ink-2'], t.pill, 'normal', card);
+  check(g, 'unlit word (reveal start, large-text rule)', t.unlit, bg, 'large');
+  /* one glow blob per screen: every ink on the peak of every mood, and on the glass header that sits on it (tender detail) */
+  const G = T.glow.app[s];
+  const rgb = (c) => 'rgb(' + c.slice(0, 3).map((x) => x.toFixed(2)).join(',') + ')';
+  Object.keys(G).filter((k) => !k.startsWith('$')).forEach((mood) => {
+    const peak = rgb(over(parse(G[mood].color).slice(0, 3).concat([G[mood].opacity]), parse(bg)));
+    check(g, 'ink on ' + mood + ' glow peak', t.ink, peak); check(g, 'ink-2 on ' + mood + ' glow peak', t['ink-2'], peak); check(g, 'ink-3 on ' + mood + ' glow peak', t['ink-3'], peak);
+    check(g, 'brand-text on ' + mood + ' glow peak', t['brand-text'], peak);
+    if (t[mood + '-ink']) { // verdict moods: the detail header is glass over the glow; the score and status line are in the verdict's text colour
+      const glass = rgb(over(parse(t.glass), parse(peak)));
+      check(g, mood + '-ink on glass over ' + mood + ' glow (score, status)', t[mood + '-ink'], glass);
+      check(g, 'ink on glass over ' + mood + ' glow (reason)', t.ink, glass); check(g, 'ink-2 on glass over ' + mood + ' glow', t['ink-2'], glass); check(g, 'ink-3 on glass over ' + mood + ' glow', t['ink-3'], glass);
+      check(g, mood + '-ink on ' + mood + ' glow peak (cards, lines)', t[mood + '-ink'], peak);
+    }
+  });
 }));
 
 const w = rows.reduce((a, r) => r.map((c, i) => Math.max(a[i] || 0, String(c).length)), []);

@@ -1,5 +1,5 @@
 /*
- * Playwright smoke test at 390×844 in six themes: Brand, Sky and Harbor, each light and dark (Brand = the website's palette, default).
+ * Playwright smoke test at 390×844 in six themes: Brand, Sky and Harbor, each light and dark (Brand = the website's palette, default, dark first).
  * Dev-only: the app itself has no dependencies.
  *
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
@@ -13,7 +13,8 @@
  * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → About.
  * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link,
  * Welcome v2 (photo header, moving sector band, preview card), photo bands and thumbnails, the palette switch
- * on About (persisted), and the sector band frozen under prefers-reduced-motion.
+ * on About (persisted), the website's chrome (ground glow + grain, mood per screen, glass count row, sliding dock pill, white
+ * pill primary, word reveal, 777 count-up) and, under prefers-reduced-motion, the frozen band, the instant reveal and count-up.
  * Fails on any console error, page error or failed request.
  */
 const path = require('path');
@@ -49,10 +50,15 @@ async function run(scheme, palette) {
   const waitSheet = async (open) => { await page.waitForFunction((o) => !!document.querySelector('#sheet-root.open') === o, open); await page.waitForTimeout(360); };
 
   // 01–03 Onboarding (Welcome v2: HANDOFF_V2 §4–5)
-  await page.goto(url('demo=reset&palette=' + palette));
+  await page.goto(url('demo=reset&palette=' + palette + '&theme=' + scheme));
   await page.waitForSelector('.welcome-hero');
   const attrs = await page.evaluate(() => [document.documentElement.getAttribute('data-v3'), document.documentElement.getAttribute('data-palette')]);
-  check(attrs[0] === scheme && attrs[1] === palette, 'html carries data-v3="' + scheme + '" data-palette="' + palette + '"');
+  check(attrs[0] === scheme && attrs[1] === palette, 'html carries data-v3="' + scheme + '" data-palette="' + palette + '" (?theme= deep link)');
+  check(await page.locator('#app > .ground .glow').count() === 1 && await page.locator('#app > .ground .grain').count() === 1, 'the ground: one glow blob and the grain overlay behind every screen');
+  check(await page.evaluate(() => document.getElementById('app').getAttribute('data-mood')) === 'welcome', 'Welcome sets the ground mood');
+  check(await page.evaluate(() => getComputedStyle(document.querySelector('.ground')).pointerEvents) === 'none', 'the ground takes no pointer events');
+  check(await page.locator('.welcome-hero .mq-item').first().evaluate((el) => getComputedStyle(el).backgroundColor).then((c) => /rgba?\(/.test(c)), 'sector chips sit on glass');
+  check(await page.locator('.input-pill .btn-metal').count() === 1 && await page.locator('.input-pill input#web').count() === 1, 'the site’s Start input: one pill holding the field and the liquid-metal button');
   check(!(await page.locator('.dock').count()), 'no dock during onboarding');
   check(await page.locator('.welcome-hero img.hero-photo').count() === 1, 'welcome photo header');
   check(await page.locator('.mq-row').count() === 2 && await page.locator('.mq-item').count() === 90, 'sector band: 2 chip rows (the site’s marquee), 45 EU divisions × 2 groups');
@@ -76,16 +82,25 @@ async function run(scheme, palette) {
   // 04 Feed
   await page.click('button[data-act="finish"]');
   await page.waitForSelector('.vtiles');
-  check((await text('.feed-head')).includes('Thu 5 Nov · read overnight'), 'feed date line "Thu 5 Nov · read overnight"');
+  check((await text('.feed-head .eyebrow')).toUpperCase() === 'TONIGHT’S READ · THU 5 NOV', 'mono eyebrow "TONIGHT’S READ · THU 5 NOV"');
   check((await text('.feed-head h1')) === '6 new tenders', 'feed title "6 new tenders"');
+  check(await page.locator('.feed-head h1 .w').count() === 3 && await page.locator('.feed-head h1 .w.accent').first().innerText() === '6', 'two-tone headline: three revealed words, the count in the accent');
+  check(await page.evaluate(() => document.getElementById('app').getAttribute('data-mood')) === 'feed', 'Feed mood on the ground');
   const tiles = await page.locator('.vtile .count').allInnerTexts();
   check(tiles.join(',') === '1,2,3', 'summary tiles 1 Go · 2 Maybe · 3 No-go');
-  check((await text('.pages-line')).includes('Read 777 pages in 4 languages'), 'pages line');
+  const vtH = await page.locator('.vtile').first().evaluate((el) => el.offsetHeight); // offsetHeight: the entrance pop scales the row while it lands
+  check(vtH === 46 && await page.locator('.vtiles').evaluate((el) => getComputedStyle(el).backdropFilter !== 'none'), 'count row: 46 px tiles on dark glass (the site’s "Where you bid" panel), got ' + vtH);
+  await page.waitForFunction(() => document.querySelector('.pages-line').innerText.includes('Read 777 pages'), null, { timeout: 5000 });
+  check((await text('.pages-line')).includes('Read 777 pages in 4 languages'), 'pages line counts up to 777');
   check(await page.evaluate(() => getComputedStyle(document.querySelector('.pages-line span')).animationName) === 'ts-shimmer', 'pages line carries the one-shot shimmer');
   check((await text('.seg.filter')).replace(/\s+/g, ' ').includes('All 6 Go 1 Maybe 2 No-go 3'), 'filter labels with counts');
   check(!(await text('.feed-list')).includes('(fictional)'), 'bare buyer names on cards');
   check((await text('.screen')).includes('All buyers and tenders are fictional'), 'fictional line on Feed');
-  check(await page.locator('.dock a[aria-current="page"] span:not(.ms)').innerText() === 'Feed', 'dock shows Feed active');
+  check(await page.locator('.dock a[aria-current="page"] .dock-label').innerText() === 'Feed', 'dock shows Feed active');
+  const dockBox = await page.locator('.dock').boundingBox(), pillBox = await page.locator('.dock-pill').boundingBox();
+  check(dockBox && Math.round(dockBox.width) === 276 && Math.round(dockBox.height) === 62 && pillBox && Math.round(pillBox.width) === 132, 'the dock is the site’s PhoneDemo dock: 276 × 62 with the 132 px active pill');
+  const primaryBg = await page.locator('.seg.filter [aria-checked="true"]').evaluate((el) => getComputedStyle(el).backgroundColor);
+  check(scheme === 'dark' ? primaryBg === 'rgb(255, 255, 255)' : primaryBg !== 'rgb(255, 255, 255)', 'the primary pill is white on dark (ink on light): ' + primaryBg);
   check(await page.locator('img.tcard-photo').count() === 4 && await page.locator('.tcard-photo.photo-ph').count() === 2, 'feed cards: 4 photo bands + 2 document placeholders');
   const tileBox = await page.locator('.tcard .score-tile').first().boundingBox();
   check(tileBox && Math.round(tileBox.width) === 56 && Math.round(tileBox.height) === 56, 'score tile is 56 × 56 over the photo band');
@@ -122,8 +137,14 @@ async function run(scheme, palette) {
   await page.click('a.tcard[href="#/t/hoh-security"]');
   await page.waitForSelector('.vblock.v-nogo', { timeout: 8000 });
   check((await text('.vblock')).includes('1 knock-out requirement: you don’t hold ISO 27001. One more needs your answer.'), 'No-go header reason');
-  check(await page.locator('.vblock.has-photo img.vphoto').count() === 1, 'detail header has the multiplied photo');
-  check((await text('.sec-h .aside')) === '1 of 3 met', '"1 of 3 met"');
+  check(await page.locator('.vblock.has-photo img.vphoto').count() === 1, 'detail header has the faded photo behind the nav');
+  check(await page.evaluate(() => document.getElementById('app').getAttribute('data-mood')) === 'nogo', 'the ground glow takes the verdict colour');
+  const numColor = await page.locator('.vblock-score .num').evaluate((el) => getComputedStyle(el).color);
+  const headBg = await page.locator('.vblock').evaluate((el) => getComputedStyle(el).backgroundColor);
+  check(/rgba\(/.test(headBg) && numColor !== 'rgb(255, 255, 255)', 'glass header (translucent) with the score in the verdict colour: ' + numColor);
+  check(await page.locator('.in-short.reveal .w').count() > 10, 'In short is a word-by-word reveal');
+  check((await text('.sec-h h2:has(.accent)')).replace(/\s+/g, ' ') === 'Can you qualify?', 'two-tone "Can you qualify?"');
+  check((await text('.sec-h .aside')).toLowerCase() === '1 of 3 met', '"1 of 3 met"');
   const order = await page.locator('a.req .status-line b').allInnerTexts();
   check(order.join(' > ') === 'Fails > Needs your check > Meets', 'requirement order fail → check → met');
   await shot('detail-nogo');
@@ -171,6 +192,7 @@ async function run(scheme, palette) {
   check(await page.locator('button[data-cert="ISO 27001"][aria-checked="true"]').count() === 1, 'switch is on (role=switch, aria-checked)');
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company tiles re-flex to 2 : 2 : 2');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
+  check(await page.locator('.co-head .co-photo-tint').count() === 1 && await page.locator('.co-head').evaluate((el) => getComputedStyle(el).backgroundColor) === 'rgba(0, 0, 0, 0)', 'Company header: the photo with the soft-light tint, no solid block');
   await page.evaluate(() => window.scrollTo(0, 0)); // show the re-score card
   await shot('company-rescore');
 
@@ -185,7 +207,7 @@ async function run(scheme, palette) {
 
   // 07 Skip the Dutch libraries tender with a reason (BRIEF step 7)
   await page.click('a.tcard[href="#/t/vli-libraries"]');
-  await page.waitForSelector('.vblock.on-solid', { timeout: 8000 });
+  await page.waitForSelector('.vblock.v-nogo', { timeout: 8000 });
   await page.click('button[data-go="#/t/vli-libraries/skip"]');
   await waitSheet(true);
   await page.click('.chip[data-skip="Missing a certificate"]');
@@ -210,8 +232,12 @@ async function run(scheme, palette) {
   await page.click('button[data-act="back"]');
   await page.waitForSelector('.dock');
   check((await page.locator('.dock a[href="#/bids"] .dock-badge').innerText()) === '1', 'dock shows the amber-red count badge on Bids (the site’s dock)');
+  const pillBefore = await page.locator('.dock-pill').boundingBox();
   await page.click('.dock a[href="#/bids"]');
   await page.waitForSelector('.bids-head');
+  await page.waitForTimeout(600);
+  const pillAfter = await page.locator('.dock-pill').boundingBox();
+  check(pillBefore && pillAfter && pillAfter.x > pillBefore.x + 40 && await page.locator('.dock a[aria-current="page"] .dock-label').innerText() === 'Bids', 'the dock pill slid to Bids (one dock, moved in place)');
   check((await text('.bids-head .sub')).includes('1 saved · next deadline in 29 days'), 'Bids sub line');
   check(await page.locator('.bid-card img.bid-thumb').count() === 1, 'bid card has a 48 px thumbnail');
   check((await text('.skipped')).includes('Missing a certificate'), 'skipped row shows the reason');
@@ -296,8 +322,9 @@ async function reducedMotion() {
   const browser = await playwright.chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light', reducedMotion: 'reduce' });
   const page = await ctx.newPage();
-  await page.goto(BASE + '?demo=reset');
+  await page.goto(BASE + '?demo=reset&theme=light');
   await page.waitForSelector('.mq-track');
+  check(await page.evaluate(() => getComputedStyle(document.querySelector('.ground .glow')).animationName) === 'none', 'the ground glow does not drift under reduced motion');
   const r = await page.evaluate(() => new Promise((resolve) => {
     const el = document.querySelector('.mq-track'), cs = getComputedStyle(el), a = el.getBoundingClientRect().left;
     setTimeout(() => resolve({ name: cs.animationName, moved: Math.abs(el.getBoundingClientRect().left - a) }), 600);
@@ -314,6 +341,11 @@ async function reducedMotion() {
   await page.goto('about:blank'); await page.goto(BASE + '#/feed');
   await page.waitForSelector('.pages-line span');
   check(await page.evaluate(() => getComputedStyle(document.querySelector('.pages-line span')).animationDuration) === '0s', 'shimmer has zero duration under reduced motion');
+  check(await page.locator('.pages-line b').innerText() === '777', 'the 777 count-up is instant under reduced motion');
+  check(await page.evaluate(() => Array.from(document.querySelectorAll('.feed-head h1 .w')).every((w) => getComputedStyle(w).animationDuration === '0s')), 'the word reveal is instant under reduced motion');
+  await page.mouse.move(195, 700); await page.mouse.down(); await page.waitForTimeout(80);
+  check(await page.locator('.glowable.touched').count() === 0, 'no touch glow under reduced motion');
+  await page.mouse.up();
   await browser.close();
 }
 

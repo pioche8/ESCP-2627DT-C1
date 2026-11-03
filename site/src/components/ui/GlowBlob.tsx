@@ -1,6 +1,6 @@
 import tokens from '@/generated/tokens';
 
-type Gradient = keyof Omit<typeof tokens.glow, 'blur' | 'opacity' | 'orbs' | 'heroWordmark'>;
+type Gradient = keyof Omit<typeof tokens.glow, 'blur' | 'opacity' | 'orbs' | 'heroWordmark' | 'app'>; // glow.app = the app's per-screen blobs
 /** The signature glow: a blurred radial blob over the dark ground. Positioned by the caller through `className`/`style`. */
 export function GlowBlob({ gradient = 'core', blur = 80, opacity = 0.45, drift, className = '', style }: {
   gradient?: Gradient; blur?: number; opacity?: number; drift?: 'd1' | 'd2' | 'd3'; className?: string; style?: React.CSSProperties;

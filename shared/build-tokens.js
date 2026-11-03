@@ -49,7 +49,7 @@ function sharedVars() {
   lines.push('  /* verdicts: shape + label + colour, never colour alone */');
   ['go', 'maybe', 'nogo', 'check'].forEach((v) => {
     const d = T.verdict[v];
-    lines.push('  --ts-' + v + ': ' + d.solid + '; --ts-' + v + '-on: ' + d.on + '; --ts-' + v + '-text: ' + d.onDark + '; --ts-' + v + '-soft: ' + d.soft + '; --ts-' + v + '-ink: ' + d.ink + ';' + (d.solidSmall ? ' --ts-' + v + '-small: ' + d.solidSmall + ';' : '') + (d.ring ? ' --ts-' + v + '-ring: ' + d.ring + ';' : ''));
+    lines.push('  --ts-' + v + ': ' + d.solid + '; --ts-' + v + '-on: ' + d.on + '; --ts-' + v + '-text: ' + d.onDark + '; --ts-' + v + '-soft: ' + d.soft + '; --ts-' + v + '-ink: ' + d.ink + ';' + (d.solidSmall ? ' --ts-' + v + '-small: ' + d.solidSmall + ';' : '') + (d.ring ? ' --ts-' + v + '-ring: ' + d.ring + ';' : '') + (d.hl ? ' --ts-' + v + '-hl: ' + d.hl + ';' : ''));
   });
   lines.push('  --ts-maybe-clip: ' + T.verdict.maybe.clip + ';');
   lines.push('  /* flags (CSS stripe chips) and the paper quote card */');
@@ -59,7 +59,7 @@ function sharedVars() {
   flat(T.radius.site).forEach(([k, v]) => lines.push('  --r-' + k + ': ' + v + ';'));
   flat(T.radius.app).forEach(([k, v]) => lines.push('  --r-app-' + k + ': ' + v + ';'));
   flat(T.shadow).forEach(([k, v]) => lines.push('  --shadow-' + k + ': ' + v + ';'));
-  Object.keys(T.glow).forEach((k) => { if (!k.startsWith('$') && typeof T.glow[k] === 'string') lines.push('  --glow-' + kebab(k) + ': ' + T.glow[k] + ';'); });
+  Object.keys(T.glow).forEach((k) => { if (!k.startsWith('$') && typeof T.glow[k] === 'string') lines.push('  --glow-' + kebab(k) + ': ' + T.glow[k] + ';'); }); // glow.app is emitted per app theme
   T.glow.orbs.forEach((g, i) => lines.push('  --glow-orb-' + (i + 1) + ': ' + g + ';'));
   lines.push('  --grain: url("' + T.grain.svg + '"); --grain-opacity: ' + T.grain.opacity + '; --grain-opacity-hero: ' + T.grain.opacityHero + ';');
   lines.push('  --img-filter: ' + T.image.filter + '; --img-tint: ' + T.image.tint + '; --img-fallback: ' + T.image.fallbackBg + ';');
@@ -75,6 +75,9 @@ function themeBlock(theme, scheme) {
   const t = T.color.app.themes[theme][scheme];
   const lines = Object.keys(t).filter((k) => k !== 'go-glass').map((k) => '  --v-' + k + ': ' + t[k] + ';');
   lines.push(t['go-glass'] === 'light' ? '  --v-go-glass: var(--v-glass-light); --v-go-glass-ink: var(--v-go-on);' : '  --v-go-glass: var(--v-glass-dark); --v-go-glass-ink: #FFFFFF;');
+  // one glow blob per screen (colour + peak opacity for this scheme): --glow-feed / --glow-feed-o, --glow-go / --glow-go-o …
+  const g = T.glow.app[scheme];
+  Object.keys(g).filter((k) => !k.startsWith('$')).forEach((k) => lines.push('  --glow-' + k + ': ' + g[k].color + '; --glow-' + k + '-o: ' + g[k].opacity + ';'));
   lines.push('  color-scheme: ' + scheme + ';');
   return lines.join('\n');
 }

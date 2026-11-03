@@ -1,5 +1,6 @@
 /* TenderScout prototype — UI + hash router. Depends on engine.js, data.js, ai.js.
- * Visual design: DESIGN.md ("Bold", v2.0), restyled 2 Nov 2026.
+ * Visual design: DESIGN.md ("Bold", v2.0) restyled 2 Nov 2026; the marketing website's language (shared/tokens.json,
+ * the PhoneDemo dock, glow + grain ground, mono eyebrows, two-tone headlines) applied 3 Nov 2026.
  * engine.js decides every verdict; this file only renders and stores state. */
 (function () {
   'use strict';
@@ -27,13 +28,15 @@
   var TODAY = /^\d{4}-\d{2}-\d{2}$/.test(params.get('today') || '') ? params.get('today') : D.DEMO_TODAY; // ?today= test-only
   var forceOffline = params.get('offline') === '1';
   var paletteParam = params.get('palette');   // ?palette=brand|sky|harbor: demo and test deep link, persisted like the About switch
+  var THEMES = ['system', 'light', 'dark'];
+  var themeParam = params.get('theme');       // ?theme=system|light|dark: the same for Appearance (the app is dark first, like the website)
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---------- state ----------
   var mem = null; // in-memory fallback when storage is blocked
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'system', palette: 'brand' };
+    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand' }; // dark first: the website is dark-only
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -45,8 +48,9 @@
   var S = load();
   if (PALETTES.indexOf(S.palette) === -1) S.palette = 'brand';   // default (and anything unknown, including the old 'sky' default) is Brand
   if (PALETTES.indexOf(paletteParam) !== -1) { S.palette = paletteParam; save(); }
+  if (THEMES.indexOf(themeParam) !== -1) { S.theme = themeParam; save(); }
   if (params.get('demo') === 'reset') {
-    S = fresh(); if (PALETTES.indexOf(paletteParam) !== -1) S.palette = paletteParam; save();
+    S = fresh(); if (PALETTES.indexOf(paletteParam) !== -1) S.palette = paletteParam; if (THEMES.indexOf(themeParam) !== -1) S.theme = themeParam; save();
     params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
@@ -65,7 +69,8 @@
 
   // ---------- DOM ----------
   var $app = document.getElementById('app');
-  $app.innerHTML = '<div id="screen"></div><div id="dock-root"></div><div id="sheet-root" class="sheet-root" hidden></div>' +
+  $app.innerHTML = '<div class="ground" aria-hidden="true"><span class="glow"></span><span class="grain"></span></div>' +
+    '<div id="screen"></div><div id="dock-root"></div><div id="sheet-root" class="sheet-root" hidden></div>' +
     '<div id="toast-root" class="toast-root" role="status" aria-live="polite"></div>';
   var $screen = document.getElementById('screen'), $dock = document.getElementById('dock-root'),
       $sheet = document.getElementById('sheet-root'), $toast = document.getElementById('toast-root');
@@ -83,6 +88,15 @@
   function vShape(v, cls) { return v === 'closed' ? icon('event_busy', 's14') : shape(SHAPE[v], cls); }
   function flag(c) { return '<span class="flag flag-' + esc(c) + '" aria-hidden="true"></span>'; }
   function aiPill(cls) { return '<span class="ai-pill' + (cls ? ' ' + cls : '') + '" title="AI output is simulated in this prototype">Simulated AI</span>'; }
+  function btnIc(name) { return icon(name, 'btn-ic'); } // the site's pill buttons carry a trailing icon (arrow by default)
+  // Word-by-word reveal (the site's statement): each word is a span with its index; styles.css lights them up once per screen load.
+  function words(text, firstCls) {
+    return String(text).split(' ').map(function (w, i) { return '<span class="w' + (i === 0 && firstCls ? ' ' + firstCls : '') + '" style="--k:' + i + '">' + esc(w) + '</span>'; }).join(' ');
+  }
+  // The count row: the site's "Where you bid" tiles (1 : 2 : 3 by count). `tag` is button (Feed: tap = filter) or div (Company).
+  function countTile(v, n, tag, attrs) {
+    return '<' + tag + ' class="vtile v-' + v + ' on-solid" style="--n:' + n + '"' + (attrs || '') + '><b class="count">' + n + '</b><span class="lbl">' + shape(SHAPE[v]) + V[v] + '</span></' + tag + '>';
+  }
   function fiction() { return '<p class="caption fiction">All buyers and tenders are fictional</p>'; }
   // Photos (HANDOFF_V2 §2): four tenders have a 200 px Canva preview in assets/img/; the others show a document placeholder.
   function photoSrc(t) { return t.photo ? 'assets/img/' + t.photo + '.png' : null; }
@@ -143,14 +157,28 @@
   }
   function infoBtn(cls) { return '<button class="icon-btn' + (cls ? ' ' + cls : '') + '" data-go="#/about" aria-label="About this prototype">' + icon('info', 's22') + '</button>'; }
   function backBtn(cls) { return '<button class="' + (cls || 'icon-btn') + '" data-act="back" aria-label="Back">' + icon('chevron_left', 's22') + '</button>'; }
-  function dock(active) {
-    var tabs = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company']];
-    var nSaved = Object.keys(S.saved).length;
-    return '<div class="dock-wrap"><nav class="dock" aria-label="Main">' + tabs.map(function (x) {
-      var on = x[0] === active, badge = x[0] === 'bids' && !on && nSaved; // the site's amber-red count badge on Bids
-      var ic = badge ? '<span class="dock-ic">' + icon(x[2], 's24') + '<span class="dock-badge" aria-hidden="true">' + nSaved + '</span></span>' : icon(x[2], 's24');
-      return '<a href="' + x[1] + '"' + (on ? ' aria-current="page"' : ' aria-label="' + x[3] + (badge ? ', ' + plural(nSaved, 'saved bid') : '') + '"') + '>' + ic + (on ? '<span>' + x[3] + '</span>' : '') + '</a>';
-    }).join('') + '</nav></div>';
+  // The floating dock = the website's PhoneDemo dock: 276 × 62 glass, the active tab 132 px wide with its label, the others
+  // 65 px, a 7 px inset, and the brand pill sliding between them (450 ms spring). Mounted once; route changes only move it.
+  var DOCK_TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company']];
+  function setDock(active) {
+    if (!active) { $dock.innerHTML = ''; return; }
+    var nSaved = Object.keys(S.saved).length, x = 7;
+    if (!$dock.querySelector('.dock')) {
+      $dock.innerHTML = '<div class="dock-wrap"><nav class="dock" aria-label="Main"><span class="dock-pill" aria-hidden="true"></span>' + DOCK_TABS.map(function (t) {
+        return '<a href="' + t[1] + '" data-tab="' + t[0] + '"><span class="dock-ic">' + icon(t[2], 's23') + '<span class="dock-badge" aria-hidden="true" hidden></span></span><span class="dock-label">' + t[3] + '</span></a>';
+      }).join('') + '</nav></div>';
+    }
+    DOCK_TABS.forEach(function (t) {
+      var a = $dock.querySelector('a[data-tab="' + t[0] + '"]'), on = t[0] === active, w = on ? 132 : 65;
+      var badge = t[0] === 'bids' && !on && nSaved; // the site's amber-red count badge on Bids
+      a.style.left = x + 'px'; a.style.width = w + 'px';
+      if (on) { $dock.querySelector('.dock-pill').style.cssText = 'left:' + x + 'px;width:' + w + 'px'; }
+      x += w;
+      a.classList.toggle('on', on);
+      if (on) { a.setAttribute('aria-current', 'page'); a.removeAttribute('aria-label'); }
+      else { a.removeAttribute('aria-current'); a.setAttribute('aria-label', t[3] + (badge ? ', ' + plural(nSaved, 'saved bid') : '')); }
+      var b = a.querySelector('.dock-badge'); b.hidden = !badge; b.textContent = badge ? nSaved : '';
+    });
   }
   function emptyState(ic, title, text, extra) {
     return '<div class="empty"><div class="disc">' + icon(ic, 's32') + '</div><h2>' + esc(title) + '</h2><p>' + esc(text) + '</p>' + (extra || '') + '</div>';
@@ -165,7 +193,7 @@
     return '<div class="screen no-top welcome-v2">' +
       '<header class="welcome-hero v2">' +
         '<img class="hero-photo" src="assets/img/app-welcome.png" alt="">' +
-        '<span class="hero-fade" aria-hidden="true"></span><span class="hero-grain" aria-hidden="true"></span>' +
+        '<span class="hero-tint" aria-hidden="true"></span><span class="hero-fade" aria-hidden="true"></span><span class="hero-grain" aria-hidden="true"></span>' +
         '<span class="mq-scrim" aria-hidden="true"></span>' +
         '<div class="mq" aria-hidden="true">' + marquee() + '</div>' +
         '<div class="hero-top"><span class="wordmark">TenderScout</span>' + infoBtn('on-brand glass') + '</div>' +
@@ -179,12 +207,12 @@
         '<div class="preview-foot"><span class="cite-chip">' + icon('description', 's14') + '<span>p. ' + esc(cp0.page) + (cp0.section ? ' · ' + esc(cp0.section) : '') + '</span></span>' +
           '<span class="meta-text">' + esc(bare(t0.buyer)) + ' · ' + r0.daysLeft + ' d</span></div>' +
       '</section>' +
-      '<div class="welcome-copy"><h1 class="welcome-title" tabindex="-1">Find public tenders you can actually win</h1>' +
+      '<div class="welcome-copy"><h1 class="welcome-title" tabindex="-1">Find public tenders you can actually <span class="accent">win</span></h1>' +
         '<p class="welcome-sub">Every new EU tender, read overnight in any language, with the page that proves each answer.</p></div>' +
       '<form class="welcome-form" id="welcome-form" novalidate>' +
-        '<label class="label-text" for="web">Company website</label>' +
-        '<div class="input">' + icon('language') + '<input id="web" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" value="' + esc(S.website || 'nordlicht-netzwerk.example') + '"></div>' +
-        '<button type="button" class="btn btn-metal btn-block" data-act="draft"><span class="metal-ring" aria-hidden="true"><span class="metal-spin"></span><span class="metal-core"></span>' + icon('arrow_forward') + '</span>Draft my profile</button>' +
+        '<label class="eyebrow" for="web">Company website</label>' +
+        '<div class="input-pill"><div class="input">' + icon('language') + '<input id="web" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" value="' + esc(S.website || 'nordlicht-netzwerk.example') + '"></div>' +
+        '<button type="button" class="btn btn-metal btn-block" data-act="draft"><span class="metal-ring" aria-hidden="true"><span class="metal-spin"></span><span class="metal-core"></span>' + icon('arrow_forward') + '</span>Draft my profile</button></div>' +
         '<p class="caption">Prototype · all companies and tenders are fictional</p>' +
       '</form></div>';
   }
@@ -230,8 +258,9 @@
     var chips = function (list) { return '<div class="chips-row">' + list.map(function (x) { return '<span class="tchip">' + esc(x) + '</span>'; }).join('') + '</div>'; };
     return '<div class="screen has-bar">' +
       '<div class="nav back-nav">' + backBtn() + '<span class="spacer"></span>' + aiPill() + '<span style="width:12px"></span></div>' +
-      '<div class="gutter"><h1 class="screen-title" tabindex="-1">Check your profile</h1>' +
-      '<p class="sub">Drafted from ' + esc(S.website || p.website || 'your website') + '. Fix anything that’s off.</p></div>' +
+      '<div class="gutter"><p class="eyebrow">Drafted from ' + esc(S.website || p.website || 'your website') + '</p>' +
+      '<h1 class="screen-title" tabindex="-1" style="margin-top:8px">Check your <span class="accent">profile</span></h1>' +
+      '<p class="sub">Fix anything that’s off.</p></div>' +
       '<section class="profile-card" aria-label="Drafted company profile">' +
         '<div><p class="co-name">' + esc(p.name) + '</p><p class="co-place meta-text">' + flag('DE') + esc(p.city.replace(/,.*$/, '')) + '</p></div>' +
         '<div class="stat-row"><div><b>' + p.staff + '</b><span>Staff</span></div><div><b>' + money(p.turnover) + '</b><span>Turnover</span></div><div><b>' + p.references + '</b><span>References</span></div></div>' +
@@ -242,7 +271,7 @@
           (p.crossBorder ? '<span class="tchip">+ cross-border</span>' : '') + '</div></div>' +
         '<p class="mono-meta sources">SOURCES · ' + esc(S.website || 'nordlicht-netzwerk.example') + ' · 18 pages · ' + p.references + ' award notices (fictional)</p>' +
       '</section></div>' +
-      '<div class="action-bar"><button class="btn btn-outline" data-go="#/company">Edit</button><button class="btn btn-primary" data-act="finish">Looks right</button></div>';
+      '<div class="action-bar"><button class="btn btn-outline" data-go="#/company">Edit</button><button class="btn btn-primary" data-act="finish">Looks right' + btnIc('arrow_forward') + '</button></div>';
   }
 
   // ---------- 04 Feed ----------
@@ -258,15 +287,12 @@
     var list = all.filter(function (r) { return f === 'all' || r.verdict === f || (f === 'nogo' && r.verdict === 'closed'); });
     var filterN = { all: visible.length, go: counts.go, maybe: counts.maybe, nogo: counts.nogo + counts.closed };
     var seg = function (k, label) { return '<button role="radio" aria-checked="' + (f === k) + '" data-filter="' + k + '">' + label + ' ' + filterN[k] + '</button>'; };
-    var tile = function (v) {
-      return '<button class="vtile v-' + v + ' on-solid" style="--n:' + counts[v] + '" data-filter="' + v + '" aria-label="' + counts[v] + ' ' + V[v] + '. Show only ' + V[v] + '">' +
-        shape(SHAPE[v], 'md') + '<span class="count">' + counts[v] + '</span><span class="lbl">' + V[v] + '</span></button>';
-    };
+    var tile = function (v) { return countTile(v, counts[v], 'button', ' data-filter="' + v + '" aria-label="' + counts[v] + ' ' + V[v] + '. Show only ' + V[v] + '"'); };
     var skippedN = Object.keys(S.skipped).length;
     var body;
     if (!visible.length) {
       body = emptyState('radar', 'Nothing new tonight', 'You’ve skipped every tender from last night. You can restore any of them from Bids.',
-        '<p class="mono-meta">NEXT READ · TONIGHT 02:00</p><button class="btn btn-outline btn-md" data-go="#/company">Widen your profile</button>');
+        '<p class="eyebrow">Next read · tonight 02:00</p><button class="btn btn-outline btn-md" data-go="#/company">Widen your profile</button>');
     } else if (!list.length) {
       body = '<div class="empty compact"><p>No ' + V[f] + ' tenders tonight.</p><button class="text-btn" data-filter="all">Show all</button></div>';
     } else {
@@ -275,10 +301,10 @@
     pulse = {};
     return '<div class="screen has-dock">' +
       navRow(aiPill() + '<span class="spacer"></span>' + infoBtn()) +
-      '<div class="feed-head"><p class="date">' + dayLabel(TODAY) + ' · read overnight</p>' +
-      '<h1 class="screen-title" tabindex="-1">' + (open ? plural(open, 'new tender') : 'No open tenders') + '</h1></div>' +
+      '<div class="feed-head"><p class="eyebrow">Tonight’s read · ' + dayLabel(TODAY) + '</p>' +
+      '<h1 class="screen-title reveal" tabindex="-1">' + (open ? words(plural(open, 'new tender'), 'accent') : words('No open tenders')) + '</h1></div>' +
       '<div class="vtiles" role="group" aria-label="Summary">' + tile('go') + tile('maybe') + tile('nogo') + '</div>' +
-      '<p class="pages-line">' + icon('menu_book', 's18') + '<span>Read ' + pages + ' pages in ' + langs + ' languages so you don’t have to</span></p>' +
+      '<p class="pages-line">' + icon('menu_book', 's18') + '<span>Read <b class="count-up" data-n="' + pages + '">' + pages + '</b> pages in ' + langs + ' languages so you don’t have to</span></p>' +
       offlineBanner() +
       '<div class="seg filter" role="radiogroup" aria-label="Filter tenders">' + seg('all', 'All') + seg('go', 'Go') + seg('maybe', 'Maybe') + seg('nogo', 'No-go') + '</div>' +
       body +
@@ -293,8 +319,8 @@
     var label = (closed ? 'Closed' : V[v] + ', score ' + r.score + ' of 100') + '. ' + t.title + ', ' + bare(t.buyer) + '. ' + reason + '.' + (saved ? ' Saved.' : '');
     var wasPulse = pulse[t.id];
     return '<div class="tcard-wrap" data-id="' + t.id + '" style="--i:' + ((i || 0) + 1) + '"><div>' +
-      '<a class="tcard v-' + v + (closed ? ' is-closed' : '') + '" href="#/t/' + t.id + '" aria-label="' + esc(label) + '">' +
-        photo(t, 'tcard-photo') +
+      '<a class="tcard glowable v-' + v + (closed ? ' is-closed' : '') + '" href="#/t/' + t.id + '" aria-label="' + esc(label) + '">' +
+        photo(t, 'tcard-photo') + '<span class="photo-tint" aria-hidden="true"></span><span class="tcard-fade" aria-hidden="true"></span>' +
         '<span class="score-tile' + (wasPulse ? ' pulse' : '') + '" aria-hidden="true">' + (closed ? icon('event_busy', 's21') : r.score) + '</span>' +
         '<span class="tcard-body">' +
           '<span class="status-line">' + vShape(v) + '<b>' + V[v] + '</b><span class="reason">· ' + esc(reason) + '</span></span>' +
@@ -322,10 +348,10 @@
     else actions = '<button class="btn btn-outline" data-go="#/t/' + id + '/skip">Skip</button>';
     if (closed) actions += '<button class="btn grow-2" disabled>' + icon('lock') + 'Save to Bids</button>';
     else if (saved) actions += '<button class="btn btn-tonal grow-2" data-go="#/bids">' + icon('bookmark', 'fill') + 'In Bids · ' + esc(saved) + '</button>';
-    else actions += '<button class="btn btn-primary" data-act="save" data-id="' + id + '">' + icon('bookmark_add') + 'Save to Bids</button>';
+    else actions += '<button class="btn btn-primary" data-act="save" data-id="' + id + '">Save to Bids' + btnIc('bookmark_add') + '</button>';
     var withPhoto = !!t.photo && !closed;
     return '<div class="screen has-bar no-top">' +
-      '<header class="vblock v-' + v + (closed ? '' : ' on-solid') + (withPhoto ? ' has-photo' : '') + '">' +
+      '<header class="vblock v-' + v + (withPhoto ? ' has-photo' : '') + '">' +
         (withPhoto ? '<img class="vphoto" src="' + photoSrc(t) + '" alt=""><span class="vphoto-fade" aria-hidden="true"></span>' : '') +
         '<div class="vblock-nav">' + backBtn('circle-btn') + aiPill('on') + '</div>' + head +
         '<p class="vblock-reason">' + esc(E.headline(t, S.profile, r)) + '</p>' +
@@ -338,8 +364,8 @@
         fact('Effort*', effort(r.effortHours)) + fact('Pages', String(t.pages)) +
       '</div><p class="facts-note">* Effort is a rough heuristic, not validated.</p>' +
       (offline() ? '<div style="margin-top:12px">' + offlineBanner() + '</div>' : '') +
-      '<div class="sec-h"><h2>In short</h2></div><p class="in-short">' + esc(t.ai.summary) + '</p>' +
-      '<div class="sec-h"><h2>Can you qualify?</h2><span class="aside">' + r.count.pass + ' of ' + r.checks.length + ' met</span></div>' +
+      '<div class="sec-h"><h2>In short</h2>' + aiPill() + '</div><p class="in-short reveal">' + words(t.ai.summary) + '</p>' +
+      '<div class="sec-h"><h2>Can you <span class="accent">qualify?</span></h2><span class="aside">' + r.count.pass + ' of ' + r.checks.length + ' met</span></div>' +
       '<div class="cards">' + checks.map(function (c, i) { return reqCard(t, c, i); }).join('') + '</div>' +
       (qa.length ? '<div class="sec-h"><h2>Ask this tender</h2></div><div class="asks" id="asks">' + asksHTML(t) + '</div>' : '') +
       fiction() + '</div>' +
@@ -354,7 +380,7 @@
       : unresolved ? Math.round(q.confidence * 100) + '% sure. Only you can answer this.' : c.note;
     var label = st.label + ', ' + kind.toLowerCase() + '. ' + q.label + '. ' + line + '. Source: ' + cp.doc + ' page ' + cp.page + '.';
     var y = 8 + (+cp.page % 5) * 6;
-    return '<a class="req v-' + st.v + (unresolved ? ' unresolved' : '') + '" href="#/t/' + t.id + '/req/' + c.id + '" aria-label="' + esc(label) + '">' +
+    return '<a class="req glowable v-' + st.v + (unresolved ? ' unresolved' : '') + '" href="#/t/' + t.id + '/req/' + c.id + '" aria-label="' + esc(label) + '">' +
       '<span class="req-body">' +
         '<span class="status-line">' + shape(st.shape) + '<b>' + st.label + '</b><span class="reason">· ' + esc(kind) + '</span></span>' +
         '<span class="req-title">' + esc(q.label) + '</span>' +
@@ -419,7 +445,7 @@
       fiction() + '</div>' +
       '<div class="action-bar"><button class="btn btn-outline" data-go="#/t/' + t.id + '/skip">Skip</button>' +
       (S.saved[t.id] ? '<button class="btn btn-tonal grow-2" data-go="#/bids">' + icon('bookmark', 'fill') + 'In Bids · ' + esc(S.saved[t.id]) + '</button>'
-        : '<button class="btn btn-primary" data-act="save" data-id="' + t.id + '">' + icon('bookmark_add') + 'Save to Bids</button>') + '</div>';
+        : '<button class="btn btn-primary" data-act="save" data-id="' + t.id + '">Save to Bids' + btnIc('bookmark_add') + '</button>') + '</div>';
   }
   function loadSteps(n, step) {
     var labels = [step > 0 ? 'Found ' + plural(n, 'requirement') : 'Finding requirements', 'Translating the key clauses', 'Checking them against your profile'];
@@ -460,7 +486,7 @@
           ' · <button class="text-btn" data-confirm="clear" data-t="' + t.id + '" data-r="' + rid + '">' + icon('undo', 's18') + 'Undo</button></p>' : '') +
         '<div class="row-btns pair">' +
           '<button class="btn ' + (unresolved ? 'btn-check' : 'btn-outline') + '" data-confirm="fail" data-t="' + t.id + '" data-r="' + rid + '">We don’t meet it</button>' +
-          '<button class="btn ' + (unresolved ? 'btn-check' : 'btn-primary') + ' grow-2" data-confirm="pass" data-t="' + t.id + '" data-r="' + rid + '">We meet it</button>' +
+          '<button class="btn ' + (unresolved ? 'btn-check' : 'btn-primary') + ' grow-2" data-confirm="pass" data-t="' + t.id + '" data-r="' + rid + '">We meet it' + btnIc('check') + '</button>' +
         '</div></div></div>';
   }
 
@@ -481,7 +507,7 @@
       '</div>' +
       '<div class="sheet-foot"><div class="row-btns">' +
         '<button class="btn btn-outline" data-act="close-sheet">Cancel</button>' +
-        '<button class="btn btn-primary grow-2" data-act="skip-confirm" data-id="' + t.id + '">Skip tender</button>' +
+        '<button class="btn btn-primary grow-2" data-act="skip-confirm" data-id="' + t.id + '">Skip tender' + btnIc('arrow_forward') + '</button>' +
       '</div></div></div>';
   }
 
@@ -494,7 +520,7 @@
     var body;
     if (!ids.length && !sk.length) {
       body = emptyState('bookmarks', 'No bids yet', 'Save a tender from your feed and it lands here, ready to move from Deciding to Submitted.',
-        '<button class="btn btn-primary btn-md" data-go="#/feed">Open Feed</button>');
+        '<button class="btn btn-primary btn-md" data-go="#/feed">Open Feed' + btnIc('arrow_forward') + '</button>');
     } else {
       body = STAGES.map(function (stage) {
         var inSt = ids.filter(function (id) { return S.saved[id] === stage; });
@@ -509,17 +535,18 @@
       }).join('') + '</div>' : '');
     }
     return '<div class="screen has-dock">' + navRow('<span class="spacer"></span>' + infoBtn()) +
-      '<div class="bids-head"><h1 class="screen-title" tabindex="-1">Bids</h1><p class="sub">' + esc(sub) + '</p></div>' +
+      '<div class="bids-head"><p class="eyebrow">Your pipeline · ' + dayLabel(TODAY) + '</p><h1 class="screen-title" tabindex="-1">Bids</h1><p class="sub">' + esc(sub) + '</p></div>' +
       body + fiction() + '</div>';
   }
   var enteringId = null;
   function bidCard(t, r, stage, i) {
-    var v = r.verdict, closed = v === 'closed';
-    return '<article class="bid-card v-' + v + (enteringId === t.id ? ' entering' : '') + '" style="--i:' + ((i || 0) + 1) + '" aria-label="' + esc(t.title) + '">' +
+    var v = r.verdict, closed = v === 'closed', reason = E.reasonLine(t, S.profile, r);
+    return '<article class="bid-card glowable v-' + v + (enteringId === t.id ? ' entering' : '') + '" style="--i:' + ((i || 0) + 1) + '" aria-label="' + esc(t.title) + '">' +
       '<a class="top" href="#/t/' + t.id + '"><span class="score-tile sm" aria-hidden="true">' + (closed ? icon('event_busy', 's18') : r.score) + '</span>' +
-      '<span class="min0"><span class="tcard-title">' + esc(t.title) + '</span><span class="meta-row">' + flag(t.country) + '<span class="buyer">' + esc(bare(t.buyer)) + '</span>' +
+      '<span class="min0"><span class="status-line">' + vShape(v) + '<b>' + V[v] + '</b><span class="reason">· ' + esc(reason) + '</span></span>' + // the site's bid card: shape + label + reason over the title
+      '<span class="tcard-title">' + esc(t.title) + '</span><span class="meta-row">' + flag(t.country) + '<span class="buyer">' + esc(bare(t.buyer)) + '</span>' +
       '<span class="nowrap">· ' + (closed ? 'closed' : '<span class="' + (r.daysLeft <= 10 ? 'soon' : '') + '">' + r.daysLeft + ' d</span>') + '</span></span>' +
-      '<span class="sr-only">' + (closed ? 'Closed' : V[v] + ', score ' + r.score + ' of 100') + '</span></span>' + photo(t, 'bid-thumb') + '</a>' +
+      '<span class="sr-only">' + (closed ? 'Closed' : 'score ' + r.score + ' of 100') + '</span></span>' + photo(t, 'bid-thumb') + '</a>' +
       '<div class="seg stage" role="radiogroup" aria-label="Stage">' + STAGES.map(function (s) {
         return '<button role="radio" aria-checked="' + (s === stage) + '" data-stage="' + s + '" data-id="' + t.id + '">' + s + '</button>';
       }).join('') + '</div></article>';
@@ -539,13 +566,13 @@
     }).join('');
     var html = '<div class="screen no-top ' + (S.onboarded ? 'has-dock' : 'has-bar') + '">' +
       '<header class="co-head">' +
-        '<img class="co-photo" src="assets/img/app-company.png" alt=""><span class="co-photo-fade" aria-hidden="true"></span>' +
-        '<div class="co-top"><h1 class="screen-title" tabindex="-1">Company</h1>' + infoBtn('on-brand glass') + '</div>' +
-        '<p class="sub">' + esc(p.name) + ' · ' + esc(p.city.replace(/,.*$/, '')) + '</p>' +
-        '<p class="feed-now">Your feed right now</p>' +
-        '<div class="co-tiles" id="co-tiles">' + ['go', 'maybe', 'nogo'].map(function (v) {
-          return '<div class="co-tile v-' + v + ' on-solid" style="--n:' + c[v] + '" data-tile="' + v + '">' + shape(SHAPE[v], 'md') + '<b>' + c[v] + '</b><span>' + V[v] + '</span></div>';
-        }).join('') + '</div>' +
+        '<img class="co-photo" src="assets/img/app-company.png" alt=""><span class="co-photo-tint" aria-hidden="true"></span><span class="co-photo-fade" aria-hidden="true"></span>' +
+        '<div class="co-top"><span class="wordmark">TenderScout</span>' + infoBtn('glass') + '</div>' +
+        '<p class="eyebrow">Your profile · ' + esc(p.city) + '</p>' +
+        '<h1 class="screen-title" tabindex="-1">Company</h1>' +
+        '<p class="sub">' + esc(p.name) + '</p>' +
+        '<p class="eyebrow feed-now">Your feed right now</p>' +
+        '<div class="vtiles co-tiles" id="co-tiles" role="group" aria-label="Your feed right now">' + ['go', 'maybe', 'nogo'].map(function (v) { return countTile(v, c[v], 'div', ' data-tile="' + v + '"'); }).join('') + '</div>' +
       '</header>' +
       '<div id="rescore">' + rescoreCard(false) + '</div>' +
       '<div class="sec-h"><h2>Size</h2></div><div class="group">' +
@@ -563,7 +590,7 @@
       '</div>' +
       '<p class="caption fiction">Plain code, not AI: engine.js re-scores every tender the moment you change something.</p>' +
       '</div>' +
-      (S.onboarded ? '' : '<div class="action-bar"><button class="btn btn-primary" data-act="finish">Save and see my feed</button></div>');
+      (S.onboarded ? '' : '<div class="action-bar"><button class="btn btn-primary" data-act="finish">Save and see my feed' + btnIc('arrow_forward') + '</button></div>');
     return html;
   }
   function rescoreCard(enter) {
@@ -698,11 +725,12 @@
   }
   // Count-up timing is shared with the website's PhoneDemo: --dur-rescore-count-up (650 ms) with easeOutCubic.
   var COUNT_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-rescore-count-up'), 10) || 650;
-  function countUp(el, from, to) {
+  var PAGES_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-pages-count-up'), 10) || 2800; // the site's 777 counter
+  function countUp(el, from, to, ms) {
     if (reduceMotion || from === to) { el.textContent = to; return; }
     var t0 = performance.now();
     (function step(now) {
-      var k = Math.min(1, (now - t0) / COUNT_MS);
+      var k = Math.min(1, (now - t0) / (ms || COUNT_MS));
       el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
       if (k < 1) requestAnimationFrame(step);
     })(t0);
@@ -717,7 +745,7 @@
     };
     return '<div class="screen">' +
       '<div class="nav back-nav">' + backBtn() + '</div>' +
-      '<div class="about-intro"><h1 class="screen-title" tabindex="-1">About TenderScout</h1>' +
+      '<div class="about-intro"><p class="eyebrow">Prototype · ESCP · fictional data</p><h1 class="screen-title" tabindex="-1">About <span class="accent">TenderScout</span></h1>' +
       '<p>A university prototype for ESCP Digital Transformation (MG34), Digital Product Design, 2026. TenderScout is a working name.</p></div>' +
       '<div class="group" style="margin-top:20px">' +
         row('science', 'AI output is simulated', 'Reading tenders, translating, answering questions and drafting your profile are played back from pre-written output (ai.js). No model is called, there are no API keys, and no data leaves your phone. This pill marks every screen that shows it.', aiPill()) +
@@ -728,7 +756,7 @@
       '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
         '<p class="label-text" id="lbl-theme">Light or dark</p><div class="seg" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div>' +
         '<p class="label-text" id="lbl-pal" style="margin-top:14px">Palette</p><div class="seg" role="radiogroup" aria-labelledby="lbl-pal">' + pal('brand', 'Brand') + pal('sky', 'Sky') + pal('harbor', 'Harbor') + '</div>' +
-        '<p class="row-sub" style="margin-top:8px">Brand is the website’s night blue and sky, Sky is cloud white and sky blue, Harbor is navy and sea blue. All follow your light or dark setting.</p></div>' +
+        '<p class="row-sub" style="margin-top:8px">Brand is the website’s night and sky, Sky is cloud white and sky blue, Harbor is navy and sea blue. The app is dark first, like the website; Light and System are yours to pick.</p></div>' +
       '<div class="about-actions"><button class="btn btn-danger btn-block" data-act="reset">' + icon('restart_alt') + 'Reset demo</button>' +
       '<p class="caption">Clears your profile, answers, saved and skipped tenders. Same as adding ?demo=reset to the address.</p></div>' +
       '</div>';
@@ -736,7 +764,7 @@
   function notFound() {
     return '<div class="screen"><div class="nav back-nav">' + backBtn() + '</div>' +
       '<h1 class="sr-only" tabindex="-1">Not found</h1>' +
-      emptyState('radar', 'Page not found', 'That link doesn’t match any screen in TenderScout.', '<button class="btn btn-primary btn-md" data-go="#/feed">Open Feed</button>') + '</div>';
+      emptyState('radar', 'Page not found', 'That link doesn’t match any screen in TenderScout.', '<button class="btn btn-primary btn-md" data-go="#/feed">Open Feed' + btnIc('arrow_forward') + '</button>') + '</div>';
   }
 
   // ---------- router ----------
@@ -805,8 +833,9 @@
       $screen.classList.toggle('entering', isNew && top === 0);
       $screen.innerHTML = html;
       dirty = false; curKey = key;
+      $app.setAttribute('data-mood', mood(r)); // tints the ground's glow blob: the screen's mood, the verdict on a tender detail
       var docked = S.onboarded && ['feed', 'bids', 'company'].indexOf(r.name) !== -1;
-      $dock.innerHTML = docked ? dock(r.name) : '';
+      setDock(docked ? r.name : null);
       $toast.style.setProperty('--toast-offset', (docked ? 104 : $screen.querySelector('.action-bar') ? 102 : 24) + 'px');
       if (isNew) {
         window.scrollTo(0, top);
@@ -820,8 +849,15 @@
     document.title = (h1t ? h1t.textContent + ' · ' : '') + 'TenderScout';
     firstRender = false;
   }
+  function mood(r) {
+    if (r.name === 'detail') { var t = tender(r.id); return t && readCache[r.id] ? evalT(t).verdict : 'about'; }
+    return r.name === 'onb' ? 'welcome' : ['feed', 'bids', 'company'].indexOf(r.name) !== -1 ? r.name : 'about';
+  }
   function afterRender(r) {
     if (r.name === 'onb' && r.step === 2) startDraft();
+    if ($screen.classList.contains('entering')) { // the site's 777 counter: the pages line counts up once per Feed load
+      Array.prototype.forEach.call($screen.querySelectorAll('.count-up'), function (el) { countUp(el, 0, +el.getAttribute('data-n'), PAGES_MS); });
+    }
     if (r.name === 'company') paintHints();
     if (r.name === 'feed' && collapseId) {
       var w = $screen.querySelector('.tcard-wrap[data-id="' + collapseId + '"]'); collapseId = null;
@@ -1000,6 +1036,18 @@
       var again = document.querySelector(sel); if (again) again.focus(); // the group re-renders; keep focus on the new choice
     }
   });
+  // Touch glow (the phone's version of the site's cursor glow): a soft brand radial where the finger lands on a card, fading out on release.
+  if (!reduceMotion && window.PointerEvent) {
+    document.addEventListener('pointerdown', function (e) {
+      var el = e.target.closest && e.target.closest('.glowable'); if (!el) return;
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', (e.clientX - r.left) + 'px'); el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      el.classList.add('touched');
+    }, { passive: true });
+    var untouch = function () { Array.prototype.forEach.call(document.querySelectorAll('.glowable.touched'), function (el) { el.classList.remove('touched'); }); };
+    document.addEventListener('pointerup', untouch, { passive: true });
+    document.addEventListener('pointercancel', untouch, { passive: true });
+  }
   window.addEventListener('online', function () { render(true); });
   window.addEventListener('offline', function () { render(true); });
 
@@ -1013,8 +1061,7 @@
   }
   function paintThemeColor() {
     var meta = document.querySelector('meta[name="theme-color"]');
-    var top = $screen.querySelector('.welcome-hero, .vblock, .co-head');
-    if (meta) meta.setAttribute('content', getComputedStyle(top || document.body).backgroundColor);
+    if (meta) meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--v-bg').trim() || getComputedStyle(document.body).backgroundColor);
   }
   if (darkMQ) { var onMQ = function () { if (S.theme !== 'light' && S.theme !== 'dark') applyTheme(); }; if (darkMQ.addEventListener) darkMQ.addEventListener('change', onMQ); else if (darkMQ.addListener) darkMQ.addListener(onMQ); }
   applyTheme();

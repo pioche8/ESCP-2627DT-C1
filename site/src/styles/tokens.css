@@ -276,10 +276,10 @@
   --ts-map-arc-go: rgba(93,184,245,.7);
   --ts-map-arc-nogo: rgba(208,69,44,.5);
   /* verdicts: shape + label + colour, never colour alone */
-  --ts-go: #13724B; --ts-go-on: #FFFFFF; --ts-go-text: #5ED69C; --ts-go-soft: #DDF1E7; --ts-go-ink: #0E5C3C; --ts-go-small: #1F9D63; --ts-go-ring: rgba(31,157,99,.35);
-  --ts-maybe: #F5A524; --ts-maybe-on: #1A1200; --ts-maybe-text: #F7C25E; --ts-maybe-soft: #FDEFD3; --ts-maybe-ink: #8A5300; --ts-maybe-ring: rgba(245,165,36,.3);
-  --ts-nogo: #D0452C; --ts-nogo-on: #FFFFFF; --ts-nogo-text: #FF8B80; --ts-nogo-soft: #FCE4DE; --ts-nogo-ink: #B23720; --ts-nogo-small: #D0452C; --ts-nogo-ring: rgba(208,69,44,.4);
-  --ts-check: #6145E0; --ts-check-on: #FFFFFF; --ts-check-text: #B3A5FF; --ts-check-soft: #EEEAFD; --ts-check-ink: #4B31C2;
+  --ts-go: #13724B; --ts-go-on: #FFFFFF; --ts-go-text: #5ED69C; --ts-go-soft: #DDF1E7; --ts-go-ink: #0E5C3C; --ts-go-small: #1F9D63; --ts-go-ring: rgba(31,157,99,.35); --ts-go-hl: rgba(31,157,99,.2);
+  --ts-maybe: #F5A524; --ts-maybe-on: #1A1200; --ts-maybe-text: #F7C25E; --ts-maybe-soft: #FDEFD3; --ts-maybe-ink: #8A5300; --ts-maybe-ring: rgba(245,165,36,.3); --ts-maybe-hl: rgba(245,165,36,.26);
+  --ts-nogo: #D0452C; --ts-nogo-on: #FFFFFF; --ts-nogo-text: #FF8B80; --ts-nogo-soft: #FCE4DE; --ts-nogo-ink: #B23720; --ts-nogo-small: #D0452C; --ts-nogo-ring: rgba(208,69,44,.4); --ts-nogo-hl: rgba(208,69,44,.17);
+  --ts-check: #6145E0; --ts-check-on: #FFFFFF; --ts-check-text: #B3A5FF; --ts-check-soft: #EEEAFD; --ts-check-ink: #4B31C2; --ts-check-ring: rgba(97,69,224,.35); --ts-check-hl: rgba(97,69,224,.17);
   --ts-maybe-clip: polygon(50% 0,100% 100%,0 100%);
   /* flags (CSS stripe chips) and the paper quote card */
   --flag-de-1: #111111;
