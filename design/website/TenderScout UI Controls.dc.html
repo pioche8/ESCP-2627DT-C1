@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,0&icon_names=apps,arrow_forward,bookmarks,check,close,domain,language,north_east,radar&display=block">
+<style>
+body{margin:0;background:#0A0B0E;color:#F4F5F7;-webkit-font-smoothing:antialiased}
+a{color:#7CC6F8;text-decoration:none}
+a:hover{color:#FFFFFF}
+@keyframes ts-spin{to{transform:rotate(360deg)}}
+@keyframes ts-sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(220%)}}
+@keyframes ts-scan{from{transform:translateY(-60px)}to{transform:translateY(290px)}}
+@keyframes ts-flash{0%,40%,100%{background:#E3E8EE}50%,80%{background:rgba(93,184,245,.55)}}
+@keyframes ts-hop{0%,55%,100%{transform:translateY(0)}25%{transform:translateY(-24px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="min-height:100vh;padding-bottom:120px;font-family:'Hanken Grotesk',sans-serif">
+
+<header style="max-width:1440px;margin:0 auto;padding:44px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:30px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px;font:800 20px/1 'Hanken Grotesk';letter-spacing:-.03em"><span style="width:10px;height:10px;border-radius:50%;background:#D81E5B"></span>TenderScout UI</div>
+    <nav style="display:flex;gap:4px;padding:5px;border-radius:16px;background:#141519">
+      <a href="TenderScout%20UI%20Controls.dc.html" style="height:38px;padding:0 16px;border-radius:12px;background:#F4F5F7;color:#0A0B0E;display:flex;align-items:center;font:600 15px/1 'Hanken Grotesk'">Controls</a>
+      <a href="TenderScout%20UI%20Content.dc.html" style="height:38px;padding:0 16px;border-radius:12px;color:#C9CDD3;display:flex;align-items:center;font:600 15px/1 'Hanken Grotesk'">Content</a>
+      <a href="TenderScout%20UI%20Atmosphere.dc.html" style="height:38px;padding:0 16px;border-radius:12px;color:#C9CDD3;display:flex;align-items:center;font:600 15px/1 'Hanken Grotesk'">Atmosphere</a>
+    </nav>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="font:800 clamp(64px,9vw,132px)/.92 'Hanken Grotesk';letter-spacing:-.06em">Controls.</div>
+    <div style="max-width:760px;font:500 20px/30px 'Hanken Grotesk';color:#8A8F98;text-wrap:pretty">Buttons, forms, loaders, cursors, interactive pieces and navigation for the TenderScout app and website. Every tile works: hover, click and type.</div>
+  </div>
+</header>
+
+<div style="position:sticky;top:0;z-index:30;margin-top:36px;background:rgba(10,11,14,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)">
+  <div style="max-width:1440px;margin:0 auto;padding:14px 48px;box-sizing:border-box;display:flex;gap:8px;flex-wrap:wrap">
+    <a href="#buttons" style="height:34px;padding:0 14px;border-radius:999px;background:#1B1D22;color:#E9EBEE;display:flex;align-items:center;font:500 14px/1 'Hanken Grotesk'">Buttons</a>
+    <a href="#forms" style="height:34px;padding:0 14px;border-radius:999px;background:#1B1D22;color:#E9EBEE;display:flex;align-items:center;font:500 14px/1 'Hanken Grotesk'">Forms</a>
+    <a href="#loaders" style="height:34px;padding:0 14px;border-radius:999px;background:#1B1D22;color:#E9EBEE;display:flex;align-items:center;font:500 14px/1 'Hanken Grotesk'">Loaders</a>
+    <a href="#cursors" style="height:34px;padding:0 14px;border-radius:999px;background:#1B1D22;color:#E9EBEE;display:flex;align-items:center;font:500 14px/1 'Hanken Grotesk'">Cursors</a>
+    <a href="#interactive" style="height:34px;padding:0 14px;border-radius:999px;background:#1B1D22;color:#E9EBEE;display:flex;align-items:center;font:500 14px/1 'Hanken Grotesk'">Interactive</a>
+    <a href="#navigation" style="height:34px;padding:0 14px;border-radius:999px;background:#1B1D22;color:#E9EBEE;display:flex;align-items:center;font:500 14px/1 'Hanken Grotesk'">Navigation</a>
+  </div>
+</div>
+
+<section id="buttons" style="max-width:1440px;margin:0 auto;padding:64px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:baseline;gap:18px"><span style="font:500 14px/1 'IBM Plex Mono';color:#8A8F98">01</span><span style="font:700 44px/1 'Hanken Grotesk';letter-spacing:-.035em">Buttons</span></div>
+    <span style="font:500 13px/1 'IBM Plex Mono';color:#8A8F98">5 components</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:44px 28px">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#000;display:grid;place-items:center">
+        <button onMouseEnter="{{ on.waveIn }}" onMouseLeave="{{ on.waveOut }}" style="position:relative;overflow:hidden;isolation:isolate;height:54px;padding:0 24px 0 26px;border:0;border-radius:999px;background:#FFFFFF;color:#0E1B2B;font:600 16px/1 'Hanken Grotesk';display:flex;align-items:center;gap:10px;cursor:pointer">
+          <span style="position:absolute;left:-20%;width:140%;height:280%;top:{{ s.waveTop }};border-radius:42%;background:#5DB8F5;z-index:-1;transition:top .7s cubic-bezier(.2,.8,.2,1)"></span>
+          <span>See tonight’s tenders</span>
+          <span style="font-family:'Material Symbols Rounded';font-size:20px;line-height:1;transform:{{ s.waveArrow }};transition:transform .45s cubic-bezier(.2,.8,.2,1)">arrow_forward</span>
+        </button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Wave reveal</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website · hero call to action</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#E6E7EB;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px">
+        <button style="height:68px;padding:0 32px 0 7px;border-radius:999px;border:2px solid transparent;background:linear-gradient(#1C1D21,#1C1D21) padding-box,linear-gradient(135deg,#FFFFFF,#6B6F78 28%,#F2F3F5 52%,#4B4E55 78%,#FFFFFF) border-box;box-shadow:0 16px 30px -14px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18);display:flex;align-items:center;gap:16px;color:#F4F5F7;font:500 21px/1 'Hanken Grotesk';cursor:pointer;transition:transform .25s" style-hover="transform:translateY(-2px)">
+          <span style="position:relative;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;overflow:hidden">
+            <span style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(#FFFFFF,#6B6F78,#F2F3F5,#3A3D44,#FFFFFF);animation:ts-spin 5s linear infinite"></span>
+            <span style="position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3A3D44,#0B0C0E 70%)"></span>
+            <span style="position:relative;font-family:'Material Symbols Rounded';font-size:24px;line-height:1;color:#FFFFFF">arrow_forward</span>
+          </span>
+          Draft my profile
+        </button>
+        <button style="height:68px;padding:0 32px 0 7px;border-radius:999px;border:2px solid transparent;background:linear-gradient(#F7F7F9,#F7F7F9) padding-box,linear-gradient(135deg,#FFFFFF,#8D9099 28%,#FFFFFF 52%,#6B6F78 78%,#FFFFFF) border-box;box-shadow:0 16px 30px -14px rgba(0,0,0,.35),inset 0 1px 0 #FFFFFF;display:flex;align-items:center;gap:16px;color:#1C1D21;font:500 21px/1 'Hanken Grotesk';cursor:pointer;transition:transform .25s" style-hover="transform:translateY(-2px)">
+          <span style="position:relative;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;overflow:hidden">
+            <span style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(#FFFFFF,#6B6F78,#F2F3F5,#3A3D44,#FFFFFF);animation:ts-spin 5s linear infinite reverse"></span>
+            <span style="position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3A3D44,#0B0C0E 70%)"></span>
+            <span style="position:relative;font-family:'Material Symbols Rounded';font-size:24px;line-height:1;color:#FFFFFF">arrow_forward</span>
+          </span>
+          Draft my profile
+        </button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Liquid metal</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Primary action · dark and light surfaces</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Both</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px">
+        <button onMouseEnter="{{ on.tacIn }}" onMouseLeave="{{ on.tacOut }}" style="position:relative;height:58px;padding:0 32px;border:0;background:#15171A;color:#E6E8EB;font:500 15px/1 'IBM Plex Mono';letter-spacing:.16em;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)">
+          SAVE TO BIDS
+          <span style="position:absolute;left:{{ s.tacOff }};top:{{ s.tacOff }};width:12px;height:12px;border-left:1.5px solid {{ s.tacCol }};border-top:1.5px solid {{ s.tacCol }};transition:all .3s cubic-bezier(.2,.8,.2,1)"></span>
+          <span style="position:absolute;right:{{ s.tacOff }};top:{{ s.tacOff }};width:12px;height:12px;border-right:1.5px solid {{ s.tacCol }};border-top:1.5px solid {{ s.tacCol }};transition:all .3s cubic-bezier(.2,.8,.2,1)"></span>
+          <span style="position:absolute;left:{{ s.tacOff }};bottom:{{ s.tacOff }};width:12px;height:12px;border-left:1.5px solid {{ s.tacCol }};border-bottom:1.5px solid {{ s.tacCol }};transition:all .3s cubic-bezier(.2,.8,.2,1)"></span>
+          <span style="position:absolute;right:{{ s.tacOff }};bottom:{{ s.tacOff }};width:12px;height:12px;border-right:1.5px solid {{ s.tacCol }};border-bottom:1.5px solid {{ s.tacCol }};transition:all .3s cubic-bezier(.2,.8,.2,1)"></span>
+        </button>
+        <div style="display:flex;align-items:center;gap:8px;font:500 12px/1 'IBM Plex Mono';color:#6B7079;letter-spacing:.08em"><span style="width:7px;height:7px;background:#D23A2E"></span>LANDKREIS HOHENAU · 18 D LEFT</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Tactical</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">App · save a tender to Bids</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:linear-gradient(115deg,#050816 0%,#0F3FA8 42%,#5DB8F5 72%,#0C1633 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px">
+        <button onMouseMove="{{ radMove }}" onMouseEnter="{{ on.radIn }}" onMouseLeave="{{ on.radOut }}" style="position:relative;overflow:hidden;isolation:isolate;height:66px;width:min(290px,80%);border:0;border-radius:14px;background:#F5F6F8;color:{{ s.radCol }};font:500 18px/1 'IBM Plex Mono';letter-spacing:.06em;cursor:pointer;transition:color .3s">
+          <span style="position:absolute;left:var(--mx,50%);top:var(--my,50%);width:{{ s.radSize }};height:{{ s.radSize }};border-radius:50%;background:#0E1B2B;transform:translate(-50%,-50%);transition:width .55s cubic-bezier(.2,.8,.2,1),height .55s cubic-bezier(.2,.8,.2,1);z-index:-1"></span>
+          OPEN PAGE 12
+        </button>
+        <button onMouseEnter="{{ on.wipeIn }}" onMouseLeave="{{ on.wipeOut }}" style="position:relative;overflow:hidden;isolation:isolate;height:66px;width:min(290px,80%);border:0;border-radius:14px;background:#F5F6F8;color:{{ s.wipeCol }};font:500 18px/1 'IBM Plex Mono';letter-spacing:.06em;cursor:pointer;transition:color .3s">
+          <span style="position:absolute;inset:0;background:#0E1B2B;transform:scaleX({{ s.wipeX }});transform-origin:{{ s.wipeOrigin }};transition:transform .45s cubic-bezier(.65,0,.35,1);z-index:-1"></span>
+          SKIP TENDER
+        </button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Radial fill and linear wipe</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">App · open a citation, skip a tender</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:radial-gradient(120% 90% at 100% 100%,#F06A9B 0%,#D81E5B 30%,#3A0718 70%,#14030A 100%);display:grid;place-items:center">
+        <button style="position:relative;overflow:hidden;height:60px;padding:0 32px;border:0;border-radius:999px;background-color:#D81E5B;background-image:radial-gradient(rgba(255,255,255,.42) 1px,transparent 1.6px);background-size:6px 6px;color:#FFFFFF;font:600 17px/1 'Hanken Grotesk';box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 18px 40px -12px rgba(216,30,91,.85);cursor:pointer;text-shadow:0 1px 8px rgba(80,0,30,.6);transition:filter .2s" style-hover="filter:brightness(1.15)">
+          <span style="position:absolute;top:0;bottom:0;left:0;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);animation:ts-sheen 3.2s ease-in-out infinite"></span>
+          <span style="position:relative">Get the morning brief</span>
+        </button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Pixel shimmer</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website · newsletter sign-up</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="forms" style="max-width:1440px;margin:0 auto;padding:88px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:baseline;gap:18px"><span style="font:500 14px/1 'IBM Plex Mono';color:#8A8F98">02</span><span style="font:700 44px/1 'Hanken Grotesk';letter-spacing:-.035em">Forms</span></div>
+    <span style="font:500 13px/1 'IBM Plex Mono';color:#8A8F98">3 components</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:44px 28px">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#EEF3F8;display:grid;place-items:center">
+        <div style="width:min(calc(100% - 48px),380px);padding:22px;box-sizing:border-box;border-radius:28px;background:#FFFFFF;box-shadow:0 22px 44px -24px rgba(30,80,140,.4);display:flex;flex-direction:column;gap:12px;color:#0E1B2B">
+          <div style="font:600 13px/1 'Hanken Grotesk';color:#4A5A6D">Company website</div>
+          <div style="display:flex;align-items:center;gap:10px;height:58px;padding:0 14px 0 16px;border-radius:20px;background:#F4F7FB;box-shadow:{{ s.siteRing }};transition:box-shadow .2s">
+            <span style="font-family:'Material Symbols Rounded';font-size:21px;line-height:1;color:#6F7E92">language</span>
+            <input value="{{ site }}" onChange="{{ onSite }}" onFocus="{{ siteOn }}" onBlur="{{ siteOff }}" placeholder="yourcompany.eu" style="flex:1;min-width:0;height:56px;border:0;padding:0;background:transparent;outline:none;font:500 17px 'Hanken Grotesk';color:#0E1B2B">
+            <sc-if value="{{ siteValid }}" hint-placeholder-val="{{ true }}"><span style="width:24px;height:24px;border-radius:50%;background:#13724B;color:#FFFFFF;display:grid;place-items:center;font-family:'Material Symbols Rounded';font-size:16px;line-height:1">check</span></sc-if>
+          </div>
+          <div style="min-height:18px;font:500 13px/18px 'Hanken Grotesk';color:{{ s.siteMsgCol }}">{{ siteMsg }}</div>
+          <button style="height:56px;border:0;border-radius:20px;background:{{ s.siteBtnBg }};color:{{ s.siteBtnCol }};font:700 16px/1 'Hanken Grotesk';display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:background .25s,color .25s">Draft my profile<span style="font-family:'Material Symbols Rounded';font-size:20px;line-height:1">arrow_forward</span></button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Website field</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Onboarding · type to see validation</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0C1633;display:grid;place-items:center">
+        <div style="width:min(calc(100% - 48px),460px);display:flex;flex-direction:column;gap:18px">
+          <div style="font:800 26px/30px 'Hanken Grotesk';letter-spacing:-.03em;color:#FFFFFF">What do you sell?</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ sectorList }}" as="c" hint-placeholder-count="10">
+              <button onClick="{{ c.toggle }}" style="height:40px;padding:0 14px;border:0;border-radius:999px;display:flex;align-items:center;gap:7px;font:600 14px/1 'Hanken Grotesk';cursor:pointer;background:{{ c.bg }};color:{{ c.col }};box-shadow:{{ c.ring }};transition:background .2s,color .2s"><span style="font:500 11px/1 'IBM Plex Mono';opacity:.7">{{ c.code }}</span>{{ c.name }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:500 13px/18px 'IBM Plex Mono';color:#BCD7E8"><span>{{ sectorCount }}</span><span>{{ sectorWeekly }}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Sector picker</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Onboarding · EU CPV divisions, multi-select</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#EEF3F8;display:grid;place-items:center">
+        <div style="width:min(calc(100% - 48px),400px);padding:22px;box-sizing:border-box;border-radius:28px;background:#FFFFFF;box-shadow:0 22px 44px -24px rgba(30,80,140,.4);display:flex;flex-direction:column;gap:16px;color:#0E1B2B">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end"><div style="font:600 13px/1 'Hanken Grotesk';color:#4A5A6D">Annual turnover</div><div style="font:800 40px/1 'Hanken Grotesk';letter-spacing:-.04em;font-variant-numeric:tabular-nums">€{{ tLabel }}M</div></div>
+          <div style="position:relative;height:32px">
+            <div style="position:absolute;left:0;right:0;top:12px;height:8px;border-radius:4px;background:#DCE4ED"></div>
+            <div style="position:absolute;left:0;top:12px;height:8px;border-radius:4px;background:#5DB8F5;width:{{ s.tPct }}"></div>
+            <div style="position:absolute;left:47.4%;top:6px;width:2px;height:20px;border-radius:1px;background:#0E1B2B;opacity:.35"></div>
+            <div style="position:absolute;top:2px;left:calc({{ s.tPct }} - 14px);width:28px;height:28px;border-radius:50%;background:#FFFFFF;box-shadow:0 2px 8px rgba(14,27,43,.3),0 0 0 1px rgba(14,27,43,.06)"></div>
+            <input type="range" min="0.5" max="10" step="0.1" value="{{ turnover }}" onChange="{{ onTurnover }}" aria-label="Annual turnover" style="position:absolute;inset:0;width:100%;height:32px;margin:0;opacity:0;cursor:pointer">
+          </div>
+          <div style="position:relative;height:12px;font:500 11px/1 'IBM Plex Mono';color:#6F7E92"><span style="position:absolute;left:0">€0.5M</span><span style="position:absolute;left:47.4%;transform:translateX(-50%)">€5M</span><span style="position:absolute;right:0">€10M</span></div>
+          <div style="display:flex;gap:5px;height:44px">
+            <div style="flex:{{ vt.go }};min-width:0;border-radius:12px;background:#13724B;color:#FFFFFF;display:flex;align-items:center;gap:6px;padding:0 10px;overflow:hidden;white-space:nowrap;font:700 14px/1 'Hanken Grotesk';transition:flex .4s cubic-bezier(.2,.8,.2,1)">{{ vt.goN }} Go</div>
+            <div style="flex:{{ vt.maybe }};min-width:0;border-radius:12px;background:#F5A524;color:#1A1200;display:flex;align-items:center;gap:6px;padding:0 10px;overflow:hidden;white-space:nowrap;font:700 14px/1 'Hanken Grotesk';transition:flex .4s cubic-bezier(.2,.8,.2,1)">{{ vt.maybeN }} Maybe</div>
+            <div style="flex:{{ vt.nogo }};min-width:0;border-radius:12px;background:#E04A2F;color:#FFFFFF;display:flex;align-items:center;gap:6px;padding:0 10px;overflow:hidden;white-space:nowrap;font:700 14px/1 'Hanken Grotesk';transition:flex .4s cubic-bezier(.2,.8,.2,1)">{{ vt.nogoN }} No-go</div>
+          </div>
+          <div style="font:600 13px/18px 'Hanken Grotesk';color:{{ s.tHintCol }}">{{ tHint }}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Turnover slider</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Company · drag past €5M to re-score</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="loaders" style="max-width:1440px;margin:0 auto;padding:88px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:baseline;gap:18px"><span style="font:500 14px/1 'IBM Plex Mono';color:#8A8F98">03</span><span style="font:700 44px/1 'Hanken Grotesk';letter-spacing:-.035em">Loaders</span></div>
+    <span style="font:500 13px/1 'IBM Plex Mono';color:#8A8F98">3 components</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:44px 28px">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0C1633;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+        <div style="position:relative;width:150px;height:150px">
+          <svg width="150" height="150" viewBox="0 0 150 150" style="display:block;transform:rotate(-90deg)"><circle cx="75" cy="75" r="64" style="fill:none;stroke:rgba(255,255,255,.12);stroke-width:10px"></circle><circle ref="{{ ringRef }}" cx="75" cy="75" r="64" style="fill:none;stroke:#5DB8F5;stroke-width:10px;stroke-linecap:round;stroke-dasharray:402;stroke-dashoffset:402"></circle></svg>
+          <div ref="{{ pagesRef }}" style="position:absolute;inset:0;display:grid;place-items:center;font:800 42px/1 'Hanken Grotesk';letter-spacing:-.04em;color:#FFFFFF;font-variant-numeric:tabular-nums">1</div>
+        </div>
+        <div style="text-align:center"><div style="font:700 18px/24px 'Hanken Grotesk';color:#FFFFFF">Reading 146 pages (German)…</div><div ref="{{ pagesRef2 }}" style="margin-top:6px;font:500 13px/18px 'IBM Plex Mono';color:#7FC8E6">p. 1 of 146</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Reading ring</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Tender detail · loading the documents</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#EEF3F8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px">
+        <div style="position:relative;width:220px;height:286px;border-radius:12px;background:#FFFFFF;box-shadow:0 24px 44px -20px rgba(14,27,43,.35);transform:rotate(-3deg);overflow:hidden;padding:24px 22px;box-sizing:border-box;display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;justify-content:space-between;font:500 9px/1 'IBM Plex Mono';color:#7A8899;margin-bottom:6px"><span>Vergabeunterlagen</span><span>p. 12</span></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:100%"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:92%"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:96%"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:64%"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:100%;margin-top:8px"></div>
+          <div style="height:7px;border-radius:4px;width:88%;animation:ts-flash 2.6s linear infinite"></div>
+          <div style="height:7px;border-radius:4px;width:94%;animation:ts-flash 2.6s linear infinite"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:58%"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:100%;margin-top:8px"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:90%"></div>
+          <div style="height:7px;border-radius:4px;background:#E3E8EE;width:72%"></div>
+          <div style="position:absolute;left:0;right:0;top:0;height:60px;background:linear-gradient(rgba(93,184,245,0),rgba(93,184,245,.3));border-bottom:2px solid #5DB8F5;animation:ts-scan 2.6s cubic-bezier(.65,0,.35,1) infinite alternate"></div>
+        </div>
+        <div style="font:500 13px/1 'IBM Plex Mono';color:#4A5A6D">Finding the clause · §3.1</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Clause scan</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Requirement sheet · finding the source</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0A0B0E;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px">
+        <div style="display:flex;gap:18px;align-items:flex-end;height:64px">
+          <span style="width:30px;height:30px;border-radius:50%;background:#13724B;animation:ts-hop 1.3s cubic-bezier(.3,0,.3,1) infinite"></span>
+          <span style="width:34px;height:30px;background:#F5A524;clip-path:polygon(50% 0,100% 100%,0 100%);animation:ts-hop 1.3s cubic-bezier(.3,0,.3,1) .16s infinite"></span>
+          <span style="width:28px;height:28px;background:#D23A2E;animation:ts-hop 1.3s cubic-bezier(.3,0,.3,1) .32s infinite"></span>
+        </div>
+        <div style="font:600 16px/1 'Hanken Grotesk';color:#C9CDD3">Checking 6 requirements</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Verdict hop</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Feed · scoring a new tender</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="cursors" style="max-width:1440px;margin:0 auto;padding:88px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:baseline;gap:18px"><span style="font:500 14px/1 'IBM Plex Mono';color:#8A8F98">04</span><span style="font:700 44px/1 'Hanken Grotesk';letter-spacing:-.035em">Cursors</span></div>
+    <span style="font:500 13px/1 'IBM Plex Mono';color:#8A8F98">2 components</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:44px 28px">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div onMouseMove="{{ curMove }}" onMouseEnter="{{ curEnter }}" onMouseLeave="{{ curLeave }}" style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0E1117;cursor:none;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:0 26px;box-sizing:border-box">
+        <sc-for list="{{ reqRows }}" as="r" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-radius:18px;background:#161A22">
+            <div style="min-width:0;display:flex;flex-direction:column;gap:3px">
+              <div style="display:flex;align-items:center;gap:7px;font:700 12px/16px 'Hanken Grotesk';color:{{ r.col }}"><span style="width:8px;height:8px;background:currentColor;border-radius:{{ r.rad }};transform:{{ r.rot }}"></span>{{ r.status }}</div>
+              <div style="font:700 16px/21px 'Hanken Grotesk';color:#F4F5F7">{{ r.title }}</div>
+            </div>
+            <span onMouseEnter="{{ r.enter }}" onMouseLeave="{{ chipOut }}" style="flex:none;height:32px;padding:0 13px;border-radius:16px;background:#1F2530;color:#7CC6F8;display:flex;align-items:center;font:500 12px/1 'IBM Plex Mono'">{{ r.page }}</span>
+          </div>
+        </sc-for>
+        <div ref="{{ curRef }}" style="position:absolute;left:0;top:0;pointer-events:none;z-index:5;opacity:{{ s.curOp }};transition:opacity .2s">
+          <div style="transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:6px;height:{{ s.curH }};min-width:{{ s.curH }};padding:{{ s.curPad }};box-sizing:border-box;border-radius:999px;background:{{ s.curBg }};color:#0E1B2B;font:600 14px/1 'Hanken Grotesk';white-space:nowrap;transition:all .25s cubic-bezier(.2,.8,.2,1)">{{ cur }}<sc-if value="{{ curHas }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Material Symbols Rounded';font-size:17px;line-height:1">north_east</span></sc-if></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Citation cursor</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website demo · hover a page chip</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div onMouseMove="{{ trailMove }}" onMouseEnter="{{ trailEnter }}" onMouseLeave="{{ trailLeave }}" style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0A0B0E;cursor:none;display:grid;grid-template-columns:1fr 1fr 1fr">
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:22px;border-right:1px solid rgba(255,255,255,.06);background:{{ s.zGoBg }};transition:background .3s"><div style="font:800 26px/1 'Hanken Grotesk';letter-spacing:-.03em;color:#5ED69C">Go</div><div style="font:500 12px/16px 'IBM Plex Mono';color:#8A8F98">Bid on it</div></div>
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:22px;border-right:1px solid rgba(255,255,255,.06);background:{{ s.zMaybeBg }};transition:background .3s"><div style="font:800 26px/1 'Hanken Grotesk';letter-spacing:-.03em;color:#F7C25E">Maybe</div><div style="font:500 12px/16px 'IBM Plex Mono';color:#8A8F98">Close a gap</div></div>
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:22px;background:{{ s.zNogoBg }};transition:background .3s"><div style="font:800 26px/1 'Hanken Grotesk';letter-spacing:-.03em;color:#FF8B80">No-go</div><div style="font:500 12px/16px 'IBM Plex Mono';color:#8A8F98">Skip it</div></div>
+        <div ref="{{ followRef }}" style="position:absolute;left:0;top:0;pointer-events:none;opacity:{{ s.trailOp }};transition:opacity .2s"><span style="position:absolute;left:-27px;top:-27px;width:54px;height:54px;border-radius:50%;box-shadow:inset 0 0 0 1.5px {{ s.zCol }};transition:box-shadow .25s"></span></div>
+        <div ref="{{ dotRef }}" style="position:absolute;left:0;top:0;pointer-events:none;opacity:{{ s.trailOp }};transition:opacity .2s"><span style="position:absolute;left:-9px;top:-9px;width:18px;height:18px;background:{{ s.zCol }};border-radius:{{ s.zRad }};clip-path:{{ s.zClip }};transform:{{ s.zRot }};transition:all .25s"></span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Verdict cursor</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website · the cursor takes the verdict’s shape</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="interactive" style="max-width:1440px;margin:0 auto;padding:88px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:baseline;gap:18px"><span style="font:500 14px/1 'IBM Plex Mono';color:#8A8F98">05</span><span style="font:700 44px/1 'Hanken Grotesk';letter-spacing:-.035em">Interactive</span></div>
+    <span style="font:500 13px/1 'IBM Plex Mono';color:#8A8F98">3 components</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:44px 28px">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div onClick="{{ toggleTheme }}" style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);cursor:pointer;display:grid;place-items:center;background:{{ s.thBg }};transition:background .6s">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:22px">
+          <div style="position:relative;width:132px;height:68px;border-radius:999px;background:{{ s.thTrack }};box-shadow:inset 0 2px 6px rgba(0,0,0,.22),0 1px 0 rgba(255,255,255,.35);transition:background .5s">
+            <div style="position:absolute;top:7px;left:{{ s.thKnobX }};width:54px;height:54px;border-radius:50%;background:{{ s.thKnob }};box-shadow:{{ s.thKnobShadow }};transition:left .55s cubic-bezier(.2,.9,.25,1.2),background .4s,box-shadow .4s"></div>
+          </div>
+          <div style="font:800 30px/1 'Hanken Grotesk';letter-spacing:-.03em;color:{{ s.thInk }};transition:color .4s">{{ thName }}</div>
+          <div style="font:500 13px/1 'IBM Plex Mono';color:{{ s.thMuted }};transition:color .4s">{{ thDesc }}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Theme switcher</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Settings · Sky or Harbor · click</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#EEF3F8;display:grid;place-items:center">
+        <div style="width:min(calc(100% - 48px),380px);padding:18px;box-sizing:border-box;border-radius:28px;background:#FFFFFF;box-shadow:0 22px 44px -24px rgba(30,80,140,.4);display:flex;flex-direction:column;gap:14px;color:#0E1B2B">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 4px 0">
+            <div><div style="font:700 17px/22px 'Hanken Grotesk'">ISO 27001</div><div style="font:500 13px/18px 'Hanken Grotesk';color:#4A5A6D">Information security</div></div>
+            <button onClick="{{ toggleIso }}" role="switch" aria-checked="{{ iso }}" style="position:relative;flex:none;width:52px;height:32px;border:0;padding:0;border-radius:999px;background:{{ s.isoTrack }};cursor:pointer;transition:background .2s"><span style="position:absolute;top:3px;left:{{ s.isoKnob }};width:26px;height:26px;border-radius:50%;background:#FFFFFF;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:left .25s cubic-bezier(.2,.9,.25,1.2)"></span></button>
+          </div>
+          <div style="height:156px;border-radius:22px;background:{{ s.isoBg }};color:#FFFFFF;padding:16px 18px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;transition:background .45s">
+            <div style="display:flex;justify-content:space-between;align-items:center;font:700 15px/1 'Hanken Grotesk'"><span style="display:flex;align-items:center;gap:8px"><span style="width:11px;height:11px;background:#FFFFFF;border-radius:{{ s.isoRad }};transition:border-radius .3s"></span>{{ isoLabel }}</span><span style="font-weight:500;opacity:.85">Landkreis Hohenau</span></div>
+            <div style="display:flex;align-items:baseline;gap:4px"><span ref="{{ scoreRef }}" style="font:800 76px/.8 'Hanken Grotesk';letter-spacing:-.06em;font-variant-numeric:tabular-nums">25</span><span style="font:700 18px/1 'Hanken Grotesk'">/100</span></div>
+          </div>
+          <div style="padding:0 4px 4px;font:600 13px/18px 'Hanken Grotesk';color:{{ s.isoHintCol }}">{{ isoHint }}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Re-score switch</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Company · flip it, the verdict follows</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background-color:#07090D;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:28px 28px">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+          <path d="M40 20 C51 20 49 50 58 50" style="fill:none;stroke:{{ e0.col }};stroke-width:{{ e0.w }};vector-effect:non-scaling-stroke;opacity:{{ e0.op }};transition:opacity .25s"></path>
+          <path d="M40 40 C51 40 49 50 58 50" style="fill:none;stroke:{{ e1.col }};stroke-width:{{ e1.w }};stroke-dasharray:5 5;vector-effect:non-scaling-stroke;opacity:{{ e1.op }};transition:opacity .25s"></path>
+          <path d="M40 60 C51 60 49 50 58 50" style="fill:none;stroke:{{ e2.col }};stroke-width:{{ e2.w }};vector-effect:non-scaling-stroke;opacity:{{ e2.op }};transition:opacity .25s"></path>
+          <path d="M40 80 C51 80 49 50 58 50" style="fill:none;stroke:{{ e3.col }};stroke-width:{{ e3.w }};vector-effect:non-scaling-stroke;opacity:{{ e3.op }};transition:opacity .25s"></path>
+        </svg>
+        <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="4">
+          <div onMouseEnter="{{ n.enter }}" onMouseLeave="{{ nodeOut }}" style="position:absolute;left:5%;width:35%;top:{{ n.y }};transform:translateY(-50%);padding:10px 12px;box-sizing:border-box;border-radius:14px;background:#11151C;box-shadow:inset 0 0 0 1px {{ n.ring }};display:flex;flex-direction:column;gap:4px;opacity:{{ n.op }};transition:opacity .25s,box-shadow .25s;cursor:default">
+            <div style="display:flex;align-items:center;gap:6px;font:500 11px/1 'IBM Plex Mono';color:{{ n.col }}"><span style="width:7px;height:7px;background:currentColor;border-radius:{{ n.rad }}"></span>{{ n.k }}</div>
+            <div style="font:600 14px/18px 'Hanken Grotesk';color:#E9EBEE;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.v }}</div>
+          </div>
+        </sc-for>
+        <div style="position:absolute;left:58%;right:5%;top:50%;transform:translateY(-50%);padding:14px;border-radius:18px;background:#11151C;box-shadow:inset 0 0 0 1px rgba(255,92,141,.5),0 0 40px -10px rgba(216,30,91,.5);display:flex;flex-direction:column;gap:8px">
+          <div style="font:500 11px/1 'IBM Plex Mono';color:#8A8F98">TENDER</div>
+          <div style="font:700 16px/20px 'Hanken Grotesk';color:#F4F5F7">IT security audit</div>
+          <div style="display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;border-radius:9px;background:#D23A2E;color:#FFFFFF;font:700 13px/1 'Hanken Grotesk';align-self:flex-start"><span style="width:8px;height:8px;background:#FFFFFF"></span>No-go · 25</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Requirement graph</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website · how a score is built · hover a node</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="navigation" style="max-width:1440px;margin:0 auto;padding:88px 48px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)">
+    <div style="display:flex;align-items:baseline;gap:18px"><span style="font:500 14px/1 'IBM Plex Mono';color:#8A8F98">06</span><span style="font:700 44px/1 'Hanken Grotesk';letter-spacing:-.035em">Navigation</span></div>
+    <span style="font:500 13px/1 'IBM Plex Mono';color:#8A8F98">3 components</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:44px 28px">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0;grid-column:1 / -1">
+      <div style="position:relative;height:440px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#000000">
+        <div style="position:absolute;left:0;right:0;top:0;padding:24px 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;z-index:2">
+          <div style="display:flex;align-items:center;gap:9px;height:44px;font:800 19px/1 'Hanken Grotesk';letter-spacing:-.03em;color:#FFFFFF"><span style="width:9px;height:9px;border-radius:50%;background:#D81E5B"></span>TenderScout</div>
+          <div style="position:relative;width:min(340px,42%)">
+            <button onClick="{{ toggleNav }}" style="width:100%;height:44px;padding:0 16px;border:0;border-radius:14px;background:#141518;color:#FFFFFF;display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;font:500 15px/1 'Hanken Grotesk'"><span style="display:flex;align-items:center;gap:8px"><span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1">{{ navIcon }}</span>Menu</span><span style="font:500 13px/1 'Hanken Grotesk';color:#8A8F98;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">214 tenders tonight</span></button>
+            <div style="position:absolute;left:0;right:0;top:52px;border-radius:16px;background:#141518;overflow:hidden;max-height:{{ s.navH }};transition:max-height .45s cubic-bezier(.2,.8,.2,1)">
+              <div style="padding:8px;display:flex;flex-direction:column">
+                <a href="#navigation" style="padding:13px 12px;border-radius:10px;color:#E9EBEE;font:500 16px/1 'Hanken Grotesk';display:flex;justify-content:space-between" style-hover="background:#1E2025">How it works<span style="color:#8A8F98;font:500 12px/1 'IBM Plex Mono'">01</span></a>
+                <a href="#navigation" style="padding:13px 12px;border-radius:10px;color:#E9EBEE;font:500 16px/1 'Hanken Grotesk';display:flex;justify-content:space-between" style-hover="background:#1E2025">All 45 sectors<span style="color:#8A8F98;font:500 12px/1 'IBM Plex Mono'">02</span></a>
+                <a href="#navigation" style="padding:13px 12px;border-radius:10px;color:#E9EBEE;font:500 16px/1 'Hanken Grotesk';display:flex;justify-content:space-between" style-hover="background:#1E2025">Pricing<span style="color:#8A8F98;font:500 12px/1 'IBM Plex Mono'">03</span></a>
+                <a href="#navigation" style="padding:13px 12px;border-radius:10px;color:#E9EBEE;font:500 16px/1 'Hanken Grotesk';display:flex;justify-content:space-between" style-hover="background:#1E2025">About the prototype<span style="color:#8A8F98;font:500 12px/1 'IBM Plex Mono'">04</span></a>
+              </div>
+            </div>
+          </div>
+          <button style="flex:none;height:44px;padding:0 18px;border:0;border-radius:14px;background:#FFFFFF;color:#0E1B2B;display:flex;align-items:center;gap:8px;font:600 15px/1 'Hanken Grotesk';cursor:pointer">Get started<span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1">north_east</span></button>
+        </div>
+        <div style="position:absolute;right:28px;top:150px;max-width:380px;font:600 30px/36px 'Hanken Grotesk';letter-spacing:-.025em;color:#FFFFFF;text-wrap:balance">Find public tenders you can actually win.</div>
+        <div style="position:absolute;left:28px;right:28px;bottom:26px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:500 13px/1 'Hanken Grotesk';color:#8A8F98"><span>EU tender scout for small firms</span><span>06:41 · Leipzig, DE</span><span>Scroll to explore ↓</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Header with menu pill</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website · click Menu to expand</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#0A0B0E">
+        <div style="position:absolute;left:0;right:0;top:0;padding:22px 24px;display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:9px;font:800 18px/1 'Hanken Grotesk';letter-spacing:-.03em;color:#FFFFFF"><span style="width:9px;height:9px;border-radius:50%;background:#D81E5B"></span>TenderScout</div>
+          <button onClick="{{ toggleMenu }}" style="height:40px;padding:0 15px;border:0;border-radius:12px;background:#1B1D22;color:#FFFFFF;display:flex;align-items:center;gap:8px;font:600 14px/1 'Hanken Grotesk';cursor:pointer"><span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1">apps</span>Menu</button>
+        </div>
+        <div style="position:absolute;left:24px;bottom:26px;font:800 44px/46px 'Hanken Grotesk';letter-spacing:-.045em;color:#FFFFFF">Public tenders,<br><span style="color:#5C616B">read overnight.</span></div>
+        <div style="position:absolute;inset:0;display:grid;grid-template-columns:36% 1fr;transform:translateY({{ s.menuY }});transition:transform .7s cubic-bezier(.76,0,.24,1);z-index:3">
+          <div style="position:relative;overflow:hidden;background:#13224F"><img src="assets/app-welcome.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.15) blur(1px);mix-blend-mode:luminosity;opacity:.85"><div style="position:absolute;left:16px;top:20px;font:500 11px/15px 'IBM Plex Mono';color:#FFFFFF;max-width:120px">Built for installers, trades and engineers</div></div>
+          <div style="background:#D81E5B;padding:20px 22px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;color:#FFFFFF">
+            <div style="display:flex;justify-content:space-between;align-items:center;font:500 12px/1 'IBM Plex Mono';letter-spacing:.08em"><span>MENU</span><button onClick="{{ toggleMenu }}" style="border:0;background:transparent;color:#FFFFFF;display:flex;align-items:center;gap:6px;font:500 12px/1 'IBM Plex Mono';letter-spacing:.08em;cursor:pointer;padding:6px 0">CLOSE<span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1">close</span></button></div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="4">
+                <div onMouseEnter="{{ m.enter }}" onMouseLeave="{{ menuOut }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 10px;margin:0 -10px;background:{{ m.bg }};color:{{ m.col }};font:500 38px/48px 'Hanken Grotesk';letter-spacing:-.03em;cursor:pointer;transition:background .2s,color .2s">
+                  <span style="display:flex;align-items:baseline;gap:10px">{{ m.label }}<span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.06em;opacity:.8">{{ m.tag }}</span></span>
+                  <span style="font-family:'Material Symbols Rounded';font-size:26px;line-height:1;opacity:{{ m.arrow }};transform:translateX({{ m.ax }});transition:all .25s">arrow_forward</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font:500 12px/1 'IBM Plex Mono'"><span>Morning brief</span><span>Saved</span><span>Settings</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Motion menu</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">Website · full-screen menu · click Menu</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">Web</span></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="position:relative;height:400px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:#EEF3F8">
+        <div style="position:absolute;left:22px;right:22px;top:26px;display:flex;flex-direction:column;gap:8px">
+          <div style="height:84px;border-radius:22px;background:#FFFFFF;box-shadow:0 10px 28px -14px rgba(30,80,140,.3)"></div>
+          <div style="height:84px;border-radius:22px;background:#FFFFFF;box-shadow:0 10px 28px -14px rgba(30,80,140,.3);opacity:.75"></div>
+          <div style="height:84px;border-radius:22px;background:#FFFFFF;box-shadow:0 10px 28px -14px rgba(30,80,140,.3);opacity:.45"></div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(rgba(238,243,248,0),#EEF3F8 55%)"></div>
+        <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:298px;height:62px;border-radius:999px;background:#0E1B2B;box-shadow:0 14px 30px -10px rgba(14,27,43,.5)">
+          <div style="position:absolute;top:7px;left:{{ s.dockX }};width:140px;height:48px;border-radius:999px;background:#F2643A;transition:left .45s cubic-bezier(.2,.9,.25,1.15)"></div>
+          <sc-for list="{{ dockTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.pick }}" aria-label="{{ t.label }}" style="position:absolute;top:7px;left:{{ t.left }};width:{{ t.w }};height:48px;border:0;padding:0;background:transparent;color:{{ t.col }};display:flex;align-items:center;justify-content:center;gap:7px;font:700 15px/1 'Hanken Grotesk';cursor:pointer;overflow:hidden;white-space:nowrap;transition:left .45s cubic-bezier(.2,.9,.25,1.15),width .45s cubic-bezier(.2,.9,.25,1.15),color .3s">
+              <span style="font-family:'Material Symbols Rounded';font-size:23px;line-height:1;font-variation-settings:'FILL' {{ t.fill }}">{{ t.icon }}</span>
+              <span style="max-width:{{ t.lw }};opacity:{{ t.lo }};overflow:hidden;transition:max-width .45s,opacity .3s">{{ t.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:500 19px/25px 'Hanken Grotesk'">Floating dock</div><div style="font:500 15px/21px 'Hanken Grotesk';color:#8A8F98">App · tab bar with sliding pill · tap a tab</div></div><span style="flex:none;height:38px;padding:0 15px;border-radius:12px;background:#1B1D22;display:flex;align-items:center;font:500 15px/1 'Hanken Grotesk'">App</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div style="max-width:1440px;margin:0 auto;padding:96px 48px 0;box-sizing:border-box;display:flex;justify-content:flex-end">
+  <a href="TenderScout%20UI%20Content.dc.html" style="display:flex;align-items:center;gap:12px;font:700 32px/1 'Hanken Grotesk';letter-spacing:-.03em;color:#FFFFFF">Next: Content<span style="font-family:'Material Symbols Rounded';font-size:34px;line-height:1">arrow_forward</span></a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { hov: null, site: 'nordlicht-netzwerk.de', siteFocus: false, sel: { '32': true, '45': true, '51': true, '72': true }, turnover: 3.2, cur: '', curOn: false, zone: 'go', trailOn: false, theme: 'sky', iso: false, node: -1, menu: false, menuHover: -1, dock: 0, nav: false };
+  ringRef = React.createRef(); pagesRef = React.createRef(); pagesRef2 = React.createRef();
+  curRef = React.createRef(); dotRef = React.createRef(); followRef = React.createRef(); scoreRef = React.createRef();
+  trail = { x: 0, y: 0, rx: 0, ry: 0 };
+
+  componentDidMount() {
+    const loop = t => {
+      this.raf = requestAnimationFrame(loop);
+      const p = (t % 4200) / 4200, pg = Math.max(1, Math.round(p * 146));
+      if (this.ringRef.current) this.ringRef.current.style.strokeDashoffset = String(402 * (1 - p));
+      if (this.pagesRef.current) this.pagesRef.current.textContent = pg;
+      if (this.pagesRef2.current) this.pagesRef2.current.textContent = 'p. ' + pg + ' of 146';
+      const tr = this.trail; tr.rx += (tr.x - tr.rx) * 0.14; tr.ry += (tr.y - tr.ry) * 0.14;
+      if (this.followRef.current) this.followRef.current.style.transform = `translate(${tr.rx}px,${tr.ry}px)`;
+    };
+    this.raf = requestAnimationFrame(loop);
+  }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); cancelAnimationFrame(this.scoreRaf); }
+
+  local(e) { const r = e.currentTarget.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, w: r.width }; }
+  animateScore(to) {
+    const el = this.scoreRef.current; if (!el) return;
+    const from = parseInt(el.textContent, 10) || 0, t0 = performance.now();
+    cancelAnimationFrame(this.scoreRaf);
+    const step = t => { const p = Math.min(1, (t - t0) / 650), e = 1 - Math.pow(1 - p, 3); el.textContent = Math.round(from + (to - from) * e); if (p < 1) this.scoreRaf = requestAnimationFrame(step); };
+    this.scoreRaf = requestAnimationFrame(step);
+  }
+
+  renderVals() {
+    const S = this.state, H = k => S.hov === k;
+    const on = {};
+    ['wave', 'tac', 'rad', 'wipe'].forEach(k => {
+      on[k + 'In'] = () => this.setState({ hov: k });
+      on[k + 'Out'] = () => this.setState(s => (s.hov === k ? { hov: null } : null));
+    });
+
+    const siteValid = /^[^\s.]+(\.[^\s.]+)*\.[a-z]{2,}$/i.test(S.site.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, ''));
+    const SECT = [['32', 'Telecom equipment', 9], ['45', 'Construction work', 14], ['51', 'Installation', 6], ['72', 'IT services', 9], ['48', 'Software', 7], ['35', 'Security', 3], ['31', 'Electrical', 8], ['71', 'Engineering', 11], ['50', 'Repair & maintenance', 10], ['90', 'Cleaning', 12]];
+    const selN = SECT.filter(x => S.sel[x[0]]), weekly = selN.reduce((a, x) => a + x[2], 0);
+    const sectorList = SECT.map(([code, name]) => {
+      const on1 = !!S.sel[code];
+      return { code, name, bg: on1 ? '#5DB8F5' : 'transparent', col: on1 ? '#0E1B2B' : '#FFFFFF', ring: on1 ? 'none' : 'inset 0 0 0 1px rgba(255,255,255,.22)',
+        toggle: () => this.setState(s => ({ sel: { ...s.sel, [code]: !s.sel[code] } })) };
+    });
+
+    const T = S.turnover, tPct = ((T - 0.5) / 9.5 * 100).toFixed(2) + '%';
+    const go = T < 1 ? 0 : 1, nogo = T >= 5 ? 2 : 3, maybe = 6 - go - nogo;
+
+    const ZC = { go: '#5ED69C', maybe: '#F7C25E', nogo: '#FF8B80' };
+    const sky = S.theme === 'sky';
+    const tabsW = [0, 1, 2].map(i => (i === S.dock ? 140 : 72));
+    const lefts = tabsW.reduce((a, w, i) => { a.push(i ? a[i - 1] + tabsW[i - 1] : 7); return a; }, []);
+    const NODES = [['ISO 9001', 'Valid to 03/2027', 'met'], ['ISO 27001', 'Not in your profile', 'fail'], ['TURNOVER', '€3.2M · needs €0.5M', 'met'], ['REFERENCES', '4 · needs 3', 'met']];
+    const edge = i => {
+      const fail = NODES[i][2] === 'fail', act = S.node === i, dim = S.node >= 0 && !act;
+      return { col: fail ? '#FF5C8D' : '#5ED69C', w: act ? '2.5px' : '1.5px', op: dim ? 0.18 : act ? 1 : 0.6 };
+    };
+
+    return {
+      on,
+      radMove: e => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', (e.clientX - r.left) + 'px'); e.currentTarget.style.setProperty('--my', (e.clientY - r.top) + 'px'); },
+      site: S.site, siteValid,
+      onSite: e => this.setState({ site: e.target.value }),
+      siteOn: () => this.setState({ siteFocus: true }), siteOff: () => this.setState({ siteFocus: false }),
+      siteMsg: siteValid ? `Found ${S.site.trim()} · 18 pages, 4 references` : 'Enter your company website to start',
+      sectorList, sectorCount: `${selN.length} sector${selN.length === 1 ? '' : 's'} selected`, sectorWeekly: `about ${weekly} new tenders a week`,
+      turnover: T, tLabel: T.toFixed(1), onTurnover: e => this.setState({ turnover: parseFloat(e.target.value) }),
+      vt: { go, maybe, nogo, goN: go, maybeN: maybe, nogoN: nogo },
+      tHint: T >= 5 ? '✓ Unlocked Centre Hospitalier de Morlanne' : T < 1 ? 'Below €1M · Stadt Ellerbach drops to Maybe' : 'Reach €5M → Centre Hospitalier de Morlanne becomes Maybe',
+      reqRows: [
+        { status: 'Fails · Knock-out', col: '#FF8B80', rad: '1px', rot: 'none', title: 'ISO 27001 certification', page: 'p. 12' },
+        { status: 'Needs your check', col: '#B3A5FF', rad: '1px', rot: 'rotate(45deg)', title: 'Comparable qualification', page: 'p. 31' },
+        { status: 'Met', col: '#5ED69C', rad: '50%', rot: 'none', title: 'Three references since 2021', page: 'p. 8' }
+      ].map(r => ({ ...r, enter: () => this.setState({ cur: 'Open ' + r.page }) })),
+      chipOut: () => this.setState({ cur: '' }),
+      cur: S.cur, curHas: !!S.cur,
+      curMove: e => { const l = this.local(e); if (this.curRef.current) this.curRef.current.style.transform = `translate(${l.x}px,${l.y}px)`; },
+      curEnter: () => this.setState({ curOn: true }), curLeave: () => this.setState({ curOn: false, cur: '' }),
+      trailMove: e => {
+        const l = this.local(e); this.trail.x = l.x; this.trail.y = l.y;
+        if (this.dotRef.current) this.dotRef.current.style.transform = `translate(${l.x}px,${l.y}px)`;
+        const z = l.x < l.w / 3 ? 'go' : l.x < (2 * l.w) / 3 ? 'maybe' : 'nogo';
+        if (z !== this.state.zone) this.setState({ zone: z });
+      },
+      trailEnter: e => { const l = this.local(e); this.trail = { x: l.x, y: l.y, rx: l.x, ry: l.y }; this.setState({ trailOn: true }); },
+      trailLeave: () => this.setState({ trailOn: false }),
+      toggleTheme: () => this.setState(s => ({ theme: s.theme === 'sky' ? 'harbor' : 'sky' })),
+      thName: sky ? 'Sky' : 'Harbor', thDesc: sky ? 'Cloud white · sky blue · amber-red' : 'Navy · sea blue · crimson pink',
+      iso: S.iso,
+      toggleIso: () => { const n = !this.state.iso; this.setState({ iso: n }); this.animateScore(n ? 92 : 25); },
+      isoLabel: S.iso ? 'Go' : 'No-go',
+      isoHint: S.iso ? '✓ Unlocked Landkreis Hohenau · 5 of 6 met' : 'Turn on → Landkreis Hohenau becomes Go',
+      e0: edge(0), e1: edge(1), e2: edge(2), e3: edge(3),
+      nodes: NODES.map(([k, v, st], i) => ({ k, v, y: (20 + i * 20) + '%', col: st === 'fail' ? '#FF8B80' : '#5ED69C', rad: st === 'fail' ? '1px' : '50%',
+        ring: S.node === i ? (st === 'fail' ? '#FF5C8D' : '#5ED69C') : 'rgba(255,255,255,.08)', op: S.node >= 0 && S.node !== i ? 0.45 : 1,
+        enter: () => this.setState({ node: i }) })),
+      nodeOut: () => this.setState({ node: -1 }),
+      toggleNav: () => this.setState(s => ({ nav: !s.nav })), navIcon: S.nav ? 'close' : 'apps',
+      toggleMenu: () => this.setState(s => ({ menu: !s.menu, menuHover: -1 })),
+      menuItems: [['Feed', '6 NEW'], ['Bids', '3 SAVED'], ['Company', 'PROFILE'], ['About', 'PROTOTYPE']].map(([label, tag], i) => {
+        const a = S.menuHover === i;
+        return { label, tag, bg: a ? '#FFFFFF' : 'transparent', col: a ? '#0E1B2B' : '#FFFFFF', arrow: a ? 1 : 0, ax: a ? '0px' : '-10px', enter: () => this.setState({ menuHover: i }) };
+      }),
+      menuOut: () => this.setState({ menuHover: -1 }),
+      dockTabs: [['radar', 'Feed'], ['bookmarks', 'Bids'], ['domain', 'Company']].map(([icon, label], i) => {
+        const a = S.dock === i;
+        return { icon, label, left: lefts[i] + 'px', w: tabsW[i] + 'px', col: a ? '#1A0A04' : '#8C9AAB', fill: a ? 1 : 0, lw: a ? '80px' : '0px', lo: a ? 1 : 0, pick: () => this.setState({ dock: i }) };
+      }),
+      s: {
+        waveTop: H('wave') ? '-90%' : '100%', waveArrow: H('wave') ? 'translateX(4px)' : 'none',
+        tacOff: H('tac') ? '-6px' : '-12px', tacCol: H('tac') ? '#5DB8F5' : '#5C616B',
+        radCol: H('rad') ? '#FFFFFF' : '#0E1B2B', radSize: H('rad') ? '640px' : '0px',
+        wipeCol: H('wipe') ? '#FFFFFF' : '#0E1B2B', wipeX: H('wipe') ? 1 : 0, wipeOrigin: H('wipe') ? 'left' : 'right',
+        siteRing: S.siteFocus ? 'inset 0 0 0 2px #5DB8F5' : 'inset 0 0 0 1px #DCE4ED',
+        siteMsgCol: siteValid ? '#0E5C3C' : '#6F7E92',
+        siteBtnBg: siteValid ? '#0E1B2B' : 'rgba(16,42,72,.07)', siteBtnCol: siteValid ? '#FFFFFF' : '#6F7E92',
+        tPct, tHintCol: T >= 5 ? '#0E5C3C' : T < 1 ? '#8A5300' : '#0A6CBC',
+        curOp: S.curOn ? 1 : 0, curH: S.cur ? '40px' : '14px', curPad: S.cur ? '0 16px' : '0px', curBg: S.cur ? '#5DB8F5' : '#FFFFFF',
+        trailOp: S.trailOn ? 1 : 0, zCol: ZC[S.zone], zRad: S.zone === 'go' ? '50%' : '2px',
+        zClip: S.zone === 'maybe' ? 'polygon(50% 0,100% 100%,0 100%)' : 'none', zRot: 'none',
+        zGoBg: S.trailOn && S.zone === 'go' ? 'rgba(19,114,75,.2)' : 'transparent',
+        zMaybeBg: S.trailOn && S.zone === 'maybe' ? 'rgba(245,165,36,.16)' : 'transparent',
+        zNogoBg: S.trailOn && S.zone === 'nogo' ? 'rgba(210,58,46,.18)' : 'transparent',
+        thBg: sky ? 'linear-gradient(160deg,#F7FAFD 0%,#D6EAF9 55%,#A6D3F4 100%)' : 'linear-gradient(160deg,#1A7AA3 0%,#13224F 50%,#070B18 100%)',
+        thTrack: sky ? '#E3EAF2' : '#0A1024', thKnobX: sky ? '7px' : '71px',
+        thKnob: sky ? '#F2643A' : 'transparent',
+        thKnobShadow: sky ? '0 4px 14px rgba(242,100,58,.5)' : 'inset -14px -7px 0 0 #9AD3FA',
+        thInk: sky ? '#0E1B2B' : '#FFFFFF', thMuted: sky ? '#4A5A6D' : '#BCD7E8',
+        isoTrack: S.iso ? '#5DB8F5' : 'rgba(16,42,72,.12)', isoKnob: S.iso ? '23px' : '3px',
+        isoBg: S.iso ? '#13724B' : '#E04A2F', isoRad: S.iso ? '50%' : '1px', isoHintCol: S.iso ? '#0E5C3C' : '#0A6CBC',
+        navH: S.nav ? '240px' : '0px', menuY: S.menu ? '0%' : '-101%', dockX: lefts[S.dock] + 'px'
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
