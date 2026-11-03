@@ -88,4 +88,71 @@ test('daysBetween counts calendar days', () => {
   assert.strictEqual(E.daysBetween('2026-11-05', '2026-11-14'), 9);
 });
 
+// ---- Added 2 Nov 2026 for the DESIGN.md restyle: new functions only, the 14 tests above are unchanged ----
+
+test('evaluate() return shape is unchanged', () => {
+  const r = E.evaluate(T('hoh-security'), P, TODAY);
+  assert.deepStrictEqual(Object.keys(r), ['tenderId', 'score', 'verdict', 'reason', 'checks', 'count', 'daysLeft', 'effortHours']);
+});
+
+test('reason lines match the DESIGN.md status lines', () => {
+  const line = (id, p = P, o) => E.reasonLine(T(id), p, E.evaluate(T(id), p, TODAY, o));
+  assert.strictEqual(line('ell-schools'), 'Meets all 4 requirements');
+  assert.strictEqual(line('kal-fibre'), 'Short by 1 reference · mandatory site visit');
+  assert.strictEqual(line('val-dc'), 'Bid must be in Spanish · work in Spain');
+  assert.strictEqual(line('hoh-security'), 'ISO 27001 mandatory · 1 to check');
+  assert.strictEqual(line('vli-libraries'), 'VCA mandatory');
+  assert.strictEqual(line('mor-support'), 'Needs €5M turnover');
+});
+
+test('detail headline explains the knock-out and the open question', () => {
+  const r = E.evaluate(T('hoh-security'), P, TODAY);
+  assert.strictEqual(E.headline(T('hoh-security'), P, r), '1 knock-out requirement: you don’t hold ISO 27001. One more needs your answer.');
+  const k = E.evaluate(T('kal-fibre'), P, TODAY);
+  assert.strictEqual(E.headline(T('kal-fibre'), P, k), 'No knock-outs, but 2 risks: short by 1 reference, mandatory site visit.');
+});
+
+test('closed tender: reason and headline give the deadline date', () => {
+  const r = E.evaluate(T('ell-schools'), P, '2026-12-10');
+  assert.strictEqual(E.reasonLine(T('ell-schools'), P, r), 'Deadline passed 4 Dec');
+  assert.strictEqual(E.headline(T('ell-schools'), P, r), 'The deadline passed on 4 Dec. You can’t bid on this one any more.');
+});
+
+test('whatIf: ISO 27001 alone moves Hohenau No-go → Maybe (honest, open question remains)', () => {
+  const ch = E.whatIf(D.TENDERS, P, TODAY, {}, { certifications: ['ISO 9001', 'ISO 27001'] });
+  assert.deepStrictEqual(ch.map((c) => [c.tenderId, c.from, c.to, c.direction]), [['hoh-security', 'nogo', 'maybe', 'up']]);
+});
+
+test('whatIf: after "We meet it" on the unclear line, ISO 27001 flips Hohenau No-go → Go', () => {
+  const ch = E.whatIf(D.TENDERS, P, TODAY, { 'hoh-security': { r3: 'pass' } }, { certifications: ['ISO 9001', 'ISO 27001'] });
+  assert.deepStrictEqual(ch.map((c) => [c.tenderId, c.from, c.to]), [['hoh-security', 'nogo', 'go']]);
+});
+
+test('whatIf: VCA unlocks Vlietdam as Maybe; Spanish unlocks Valdemora as Go; +1 reference unlocks Kaltbrunn', () => {
+  const to = (patch) => E.whatIf(D.TENDERS, P, TODAY, {}, patch).map((c) => c.tenderId + ':' + c.to).join(',');
+  assert.strictEqual(to({ certifications: ['ISO 9001', 'VCA'] }), 'vli-libraries:maybe');
+  assert.strictEqual(to({ languages: ['de', 'en', 'es'] }), 'val-dc:go');
+  assert.strictEqual(to({ references: 5 }), 'kal-fibre:go');
+});
+
+test('diff: turning cross-border off only produces drops', () => {
+  const ch = E.whatIf(D.TENDERS, P, TODAY, {}, { crossBorder: false });
+  assert.ok(ch.length > 0);
+  ch.forEach((c) => assert.strictEqual(c.direction, 'down'));
+  assert.ok(ch.some((c) => c.tenderId === 'val-dc' && c.to === 'nogo'));
+});
+
+test('whatIf does not change the profile it is given', () => {
+  const p = JSON.parse(JSON.stringify(P));
+  E.whatIf(D.TENDERS, p, TODAY, {}, { certifications: ['ISO 9001', 'ISO 27001'], references: 9 });
+  assert.deepStrictEqual(p, P);
+});
+
+test('demo data: every requirement highlight is inside its original sentence; every tender names its document', () => {
+  D.TENDERS.forEach((t) => {
+    assert.ok(t.doc, t.id + ' has doc');
+    t.requirements.forEach((q) => assert.ok(q.highlight && q.src.indexOf(q.highlight) !== -1, t.id + '/' + q.id));
+  });
+});
+
 console.log(`\n${passed} tests passed`);
