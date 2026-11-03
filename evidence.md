@@ -1,12 +1,13 @@
 # evidence.md: TenderScout
 
-Team: ESCP-2627DT-[team] · Members: [names] · Market: EU (interviews in [countries])
+Team: ESCP-2627DT-C1 · Members: [names] · Market: EU (interviews in [countries])
 Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 
 > **Integrity rules.** Every entry below comes from a real interview held by the named team member. No AI-generated or "illustrative" interviews. Names and companies are anonymised. Figures are only those the interviewee gave; anything else is marked ASSUMPTION. Demo data in the prototype is fictional and is **not** evidence.
 
 ## 0. Hypotheses and kill gate (written BEFORE interview #1, tagged `v0-shell`)
 TODO: Tag `v0-shell` only if no interview happened before this commit.
+
 | # | Hypothesis | Confirmed if |
 |---|---|---|
 | H1 Pain | Small firms lose meaningful time or money **deciding whether they can bid**, not only writing the bid | Interviewee reports ≥1 h screening per tender, OR a bid lost to a missed knock-out, OR skipping tenders unread because checking is too costly |
@@ -29,5 +30,43 @@ Gate result (fill in Tue 18:00, signed by: ______): **GO / RESHAPE / KILL / prov
 | 2 | | | | | | | | | | |
 | 3 | | | | | | | | | | |
 | 4 | | | | | | | | | | |
+| 5 | | | | | | | | | | |
+| 6 | | | | | | | | | | |
 
-<!-- RECONSTRUCTION NOTE (3 Nov 2026): only the first 30 lines of this file (sections 0 and 1 header) could be recovered from the 2 Nov Claude session transcript. The remaining sections (interview notes template etc., about 1.7 KB) must be restored from the team's original ESCP-2627DT-TenderScout.zip. Do not fill this file with anything but real interview notes. -->
+## 2. Interview notes
+<!-- One block per interview, using the template in docs/INTERVIEW_KIT.md §6 -->
+
+### Interview 1 · [role] · [sector] · [size] · [country] · [date] · interviewer: [name]
+Consent: quote anonymously yes/no · recorded yes/no
+Public-sector share of revenue:
+Last tender story:
+Time spent screening one tender:
+Tenders seen / screened / bid per month:
+Knock-out surprise ever?:
+Foreign-language tenders?:
+Current tools / paid for:
+Biggest pain (their words):
+Quotes:
+  - ""
+Gate: H1 yes/no · H2 yes/no · H3 yes/no · H4 yes/no
+Surprises:
+
+## 3. Key insights (after ≥4 interviews)
+1.
+2.
+3.
+
+## 4. What changed in the product because of the evidence
+| Before (v0-shell) | After (v1-workshop) | Because of interview # |
+|---|---|---|
+| | | |
+
+## 5. Desk research (separate from interview evidence)
+- European Court of Auditors, Special Report 28/2023: EU public procurement about €2tn/yr (about 14% of GDP); single-bid share 42% in 2021, nearly double 2011; average bids fell from about 6 to 3; firms cite bureaucracy. https://www.eca.europa.eu/ECAHTMLNews/NEWS-SR-2023-28/en/body.html (accessed 2 Nov 2026)
+- Altura raised €8M Series A (Jun 2025) for AI bid management. https://tech.eu/2025/06/09/altura-raises-eur8m-for-ai-powered-bid-management-platform/ (accessed 2 Nov 2026)
+- Tendium "Qualify" bid/no-bid product. https://tendium.ai/en/tendium-qualify/ (accessed 2 Nov 2026)
+
+## 6. AI use disclosure
+- Claude (Anthropic): idea shortlist, v0 prototype scaffold, interview kit and templates, desk-research summary.
+- [Codex / ChatGPT Edu]: [what the team changed in the workshop]
+- The team: all interviews, notes, insights and the gate verdict.
