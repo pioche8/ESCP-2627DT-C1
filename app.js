@@ -415,7 +415,7 @@
       '<div class="sheet-foot">' +
         (c.confirmed ? '<p class="answered">You answered: ' + (c.status === 'pass' ? 'We meet it' : 'We don’t meet it') +
           ' · <button class="text-btn" data-confirm="clear" data-t="' + t.id + '" data-r="' + rid + '">' + icon('undo', 's18') + 'Undo</button></p>' : '') +
-        '<div class="row-btns">' +
+        '<div class="row-btns pair">' +
           '<button class="btn ' + (unresolved ? 'btn-check' : 'btn-outline') + '" data-confirm="fail" data-t="' + t.id + '" data-r="' + rid + '">We don’t meet it</button>' +
           '<button class="btn ' + (unresolved ? 'btn-check' : 'btn-primary') + ' grow-2" data-confirm="pass" data-t="' + t.id + '" data-r="' + rid + '">We meet it</button>' +
         '</div></div></div>';
@@ -506,7 +506,7 @@
       '<div id="rescore">' + rescoreCard(false) + '</div>' +
       '<div class="sec-h"><h2>Size</h2></div><div class="group">' +
         '<div class="row"><div class="txt"><p class="row-label"><label for="turnover">Turnover</label></p><p class="row-sub">Last full year, in € millions</p></div>' +
-          '<span class="money-field"><span class="unit" aria-hidden="true">€</span><input id="turnover" data-field="turnover" inputmode="decimal" autocomplete="off" value="' + (p.turnover / 1e6) + '"><span class="unit" aria-hidden="true">M</span></span></div>' +
+          '<label class="money-field" for="turnover"><span class="unit" aria-hidden="true">€</span><input id="turnover" data-field="turnover" inputmode="decimal" autocomplete="off" value="' + (p.turnover / 1e6) + '"><span class="unit" aria-hidden="true">M</span></label></div>' +
         '<div class="row"><div class="txt"><p class="row-label" id="lbl-ref">References</p><p class="row-sub">Comparable, last 3 years</p><p class="hint" data-hint="ref"></p></div>' +
           '<div class="stepper" role="group" aria-labelledby="lbl-ref"><button class="minus" data-ref="-1" aria-label="Fewer references">' + icon('remove') + '</button>' +
           '<output id="ref-out" aria-live="polite">' + p.references + '</output><button class="plus" data-ref="1" aria-label="More references">' + icon('add') + '</button></div></div>' +

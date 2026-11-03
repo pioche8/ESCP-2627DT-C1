@@ -24,7 +24,8 @@ app.js              UI rendering + hash router + event delegation + state/localS
 engine.js           REAL decision logic (UMD: window.Engine in browser, module.exports in node)
 data.js             FICTIONAL demo company + 6 fictional tenders (window.DEMO / module.exports)
 ai.js               SIMULATED AI layer (promises with delays, pre-written output)
-tests/engine.test.js   14 node tests: `node tests/engine.test.js`
+tests/engine.test.js   node tests: `node tests/engine.test.js` (the original 14 + 10 added on 2 Nov = 24)
+tests/smoke.js         Playwright smoke test, 390×844, light + dark (added 2 Nov; dev-only)
 tests.html          runs the same tests in a browser via a small require/assert shim
 BRIEF.md, evidence.md, docs/INTERVIEW_KIT.md, docs/NAVIGATION.md   project docs (don't restyle, keep content)
 ```
@@ -71,7 +72,7 @@ If a design change needs new engine output (e.g. a "what would flip this" hint),
 - If `DESIGN.md` changes the IA (tab names, screen order, new screens), follow `DESIGN.md`, update `docs/NAVIGATION.md` to match, and keep deep links and back behaviour working.
 
 ## 6. State
-- One `localStorage` key, `tenderscout.v1`: `{ onboarded, profile, overrides, saved, skipped, filter }`. All access goes through try/catch with an in-memory fallback (private mode).
+- One `localStorage` key, `tenderscout.v1`: `{ onboarded, profile, overrides, saved, skipped, filter }`. **Now `tenderscout.v2`** (since 2 Nov): `skipped[id] = { reasons: [], at }` and `theme` were added. All access goes through try/catch with an in-memory fallback (private mode).
 - `?demo=reset` wipes state and returns to welcome.
 - If the state shape changes, bump the key to `tenderscout.v2` rather than migrating.
 
@@ -106,3 +107,22 @@ If a design change needs new engine output (e.g. a "what would flip this" hint),
 
 ## 10. Out of scope
 Real tender ingestion (TED API), real LLM calls, accounts/login, push notifications, payments, bid-writing features. Mention them as "later" in docs only.
+
+## 11. Decisions log (session of 2 Nov 2026, agreed with the team before building)
+DESIGN.md vs §4–7 conflicts and how they were resolved:
+1. **Verdict rule and score: the engine wins.** DESIGN.md §10 is not implemented. Hero moment = "We meet it" on Hohenau's "comparable qualification" line, then ISO 27001 → No-go → Go. ISO 27001 alone honestly shows No-go → Maybe.
+2. **Status labels are UI-only:** pass → ● Meets (go), fail → ■ Fails (nogo), review → ◆ Needs your check (check), risk → ▲ Risk (maybe palette). Order fail → check → risk → met.
+3. **Overrides stay per tender** (not on the profile).
+4. **New engine output was added, not changed:** `reasonLine`, `headline`, `verdicts`, `diff`, `whatIf` (+10 tests). `evaluate()`/`rank()` return shapes are locked by a test.
+5. **Dates:** the workshop is **Thu 5 Nov**. The Feed header comes from the fixed demo date ("Thu 5 Nov · read overnight"). `data.js` days-left are kept.
+6. **Copy comes from data.js** ("1 of 3 met", "Reading 64 pages (German)…"), not from DESIGN.md's mockup numbers.
+7. **data.js additions (ignored by the engine):** `tender.doc` (document name) and `requirement.highlight` (decisive phrase).
+8. **Fictional labels:** bare buyer names on cards and in the re-score card; "All buyers and tenders are fictional" on Feed, Detail and Bids; "(fictional)" stays on the company name.
+9. **Closed state** is shown with the test-only `?today=YYYY-MM-DD` parameter. No 7th tender.
+10. **Skip reasons:** multi-select and optional; storage key bumped to `tenderscout.v2`.
+11. **WCAG AA wins over DESIGN.md colours:** light `--v-ink-3` #6A6D73, dark `--v-nogo` #CF3A2E, dark `--v-check` #6650EE, dark `--v-brand` #3F5DF2. Closed cards dim only the score tile and status line.
+12. **"Simulated AI" pill** also on the reading screen and the tender loading state.
+13. Closed rule wording in §4 now matches the code (days left ≤ 0).
+14. Open: whether to tag the as-received commit `v0-shell` (depends on whether interviews had started). Not tagged yet.
+
+Smaller implementation choices: fonts are vendored (no CDN; preload links removed because Chrome blocks them on `file://`); the citation chip opens the requirement sheet (there are no PDFs); Restore moves a skipped tender to Deciding (DESIGN.md §5.08); vibration only works where `navigator.vibrate` exists (Android).
