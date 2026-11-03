@@ -79,6 +79,7 @@ async function run(scheme, palette) {
   const tiles = await page.locator('.vtile .count').allInnerTexts();
   check(tiles.join(',') === '1,2,3', 'summary tiles 1 Go · 2 Maybe · 3 No-go');
   check((await text('.pages-line')).includes('Read 777 pages in 4 languages'), 'pages line');
+  check(await page.evaluate(() => getComputedStyle(document.querySelector('.pages-line span')).animationName) === 'ts-shimmer', 'pages line carries the one-shot shimmer');
   check((await text('.seg.filter')).replace(/\s+/g, ' ').includes('All 6 Go 1 Maybe 2 No-go 3'), 'filter labels with counts');
   check(!(await text('.feed-list')).includes('(fictional)'), 'bare buyer names on cards');
   check((await text('.screen')).includes('All buyers and tenders are fictional'), 'fictional line on Feed');
@@ -159,6 +160,7 @@ async function run(scheme, palette) {
   check((await page.locator('[data-hint="cert:VCA"]').innerText()).includes('Gemeente Vlietdam becomes Maybe'), 'VCA hint: Vlietdam becomes Maybe');
   await shot('company');
   await page.click('button[data-cert="ISO 27001"]');
+  check(await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false), 'a dashed ghost is left on the toggle while the re-score card grows out of it');
   await page.waitForSelector('.rescore[data-rescore]');
   await page.waitForTimeout(700);
   const sr = await page.locator('#rescore .sr-only').innerText();
@@ -297,6 +299,17 @@ async function reducedMotion() {
     setTimeout(() => resolve({ name: cs.animationName, moved: Math.abs(el.getBoundingClientRect().left - a) }), 600);
   }));
   check(r.name === 'none' && r.moved < 0.5, 'sector band is frozen under prefers-reduced-motion (' + r.name + ', moved ' + r.moved + 'px)');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await page.goto('about:blank'); await page.goto(BASE + '#/company');
+  await page.waitForSelector('.co-head');
+  await page.click('button[data-cert="ISO 27001"]');
+  await page.waitForSelector('.rescore[data-rescore]');
+  await page.waitForTimeout(200);
+  const live = await page.evaluate(() => document.getAnimations().filter((a) => (a.effect.getComputedTiming().duration || 0) > 0).length);
+  check(await page.locator('.morph-ghost').count() === 0 && live === 0, 're-score card appears without morph, ghost or any non-zero-duration animation under reduced motion (' + live + ' live)');
+  await page.goto('about:blank'); await page.goto(BASE + '#/feed');
+  await page.waitForSelector('.pages-line span');
+  check(await page.evaluate(() => getComputedStyle(document.querySelector('.pages-line span')).animationDuration) === '0s', 'shimmer has zero duration under reduced motion');
   await browser.close();
 }
 

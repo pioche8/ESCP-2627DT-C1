@@ -630,7 +630,7 @@
     });
   }
   // Apply a profile change and re-score live, without re-rendering (so toggles and tiles animate).
-  function applyLever(lever, mutate) {
+  function applyLever(lever, mutate, fromEl) {
     var before = E.verdicts(D.TENDERS, S.profile, TODAY, S.overrides);
     mutate(S.profile); save();
     var changes = E.diff(before, E.verdicts(D.TENDERS, S.profile, TODAY, S.overrides)).filter(function (c) { return !S.skipped[c.tenderId]; });
@@ -655,9 +655,43 @@
         el.style.setProperty('--n', c[v]);
         countUp(b, from, c[v]);
       });
-      var rs = document.getElementById('rescore'); if (rs) rs.innerHTML = rescoreCard(true);
+      mountRescore(fromEl);
     }, reduceMotion ? 0 : 60);
     paintHints();
+  }
+  // Re-score card = one object changing shape (design/MOTION.md rule 2, motion-effects 03): the card grows out of the
+  // control that changed (FLIP, 700 ms --ease-morph) while its contents fade in over the second half, and a faint
+  // dashed ghost stays on the control. Plain pop (480 ms easeOutBack) when the card is off-screen, when the Web
+  // Animations API is missing, or under prefers-reduced-motion.
+  var EASE_MORPH = 'cubic-bezier(.77,0,.18,1)';
+  function mountRescore(fromEl) {
+    var rs = document.getElementById('rescore'); if (!rs) return;
+    rs.innerHTML = rescoreCard(true);
+    var card = rs.firstElementChild;
+    if (!card || !fromEl || reduceMotion || typeof card.animate !== 'function') return;
+    var a = fromEl.getBoundingClientRect(), b = card.getBoundingClientRect();
+    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > window.innerHeight) return; // card off-screen: keep the pop
+    card.classList.remove('enter'); card.classList.add('morph');
+    var sx = a.width / b.width, sy = a.height / b.height;
+    var r = parseFloat(getComputedStyle(fromEl).borderTopLeftRadius) || 16;
+    card.style.transformOrigin = '0 0';
+    card.animate([
+      { transform: 'translate(' + (a.left - b.left) + 'px,' + (a.top - b.top) + 'px) scale(' + sx + ',' + sy + ')', borderRadius: (r / sx) + 'px / ' + (r / sy) + 'px', boxShadow: '0 0 0 0 rgba(0,0,0,0)' },
+      { transform: 'none', borderRadius: '24px' }
+    ], { duration: 700, easing: EASE_MORPH, fill: 'both' });
+    Array.prototype.forEach.call(card.children, function (ch) {
+      ch.animate([{ opacity: 0 }, { opacity: 0, offset: .45 }, { opacity: 1 }], { duration: 700, easing: 'ease-out', fill: 'both' });
+    });
+    ghostAt(a, r);
+  }
+  function ghostAt(rect, radius) {
+    var g = document.createElement('span');
+    g.className = 'morph-ghost'; g.setAttribute('aria-hidden', 'true');
+    g.style.cssText = 'left:' + rect.left + 'px;top:' + rect.top + 'px;width:' + rect.width + 'px;height:' + rect.height + 'px;border-radius:' + radius + 'px';
+    document.body.appendChild(g);
+    var remove = function () { if (g.parentNode) g.parentNode.removeChild(g); };
+    if (typeof g.animate === 'function') g.animate([{ opacity: .7 }, { opacity: 0 }], { duration: 700, easing: 'ease-out', fill: 'forwards' }).onfinish = remove;
+    setTimeout(remove, 900);
   }
   function countUp(el, from, to) {
     if (reduceMotion || from === to) { el.textContent = to; return; }
@@ -894,9 +928,9 @@
     }
     if (d.stage) { setStage(d.id, d.stage); return; }
     if (d.unskip) { restore(d.unskip); return; }
-    if (d.cert) { applyLever('cert:' + d.cert, function (p) { toggle(p.certifications, d.cert); }); return; }
-    if (d.lang) { applyLever('lang:' + d.lang, function (p) { toggle(p.languages, d.lang); }); return; }
-    if (d.ref) { if (S.profile.references + (+d.ref) < 0) return; applyLever('ref', function (p) { p.references = p.references + (+d.ref); }); return; }
+    if (d.cert) { applyLever('cert:' + d.cert, function (p) { toggle(p.certifications, d.cert); }, el); return; }
+    if (d.lang) { applyLever('lang:' + d.lang, function (p) { toggle(p.languages, d.lang); }, el); return; }
+    if (d.ref) { if (S.profile.references + (+d.ref) < 0) return; applyLever('ref', function (p) { p.references = p.references + (+d.ref); }, el.closest('.stepper') || el); return; }
     switch (d.act) {
       case 'back': back(); break;
       case 'draft': draft(); break;
@@ -905,7 +939,7 @@
         S.saved[d.id] = 'Deciding'; delete S.skipped[d.id]; save(); render(true);
         toast('Saved to Bids', { label: 'View', fn: function () { go('#/bids'); } });
         break;
-      case 'xb': applyLever('xb', function (p) { p.crossBorder = !p.crossBorder; }); break;
+      case 'xb': applyLever('xb', function (p) { p.crossBorder = !p.crossBorder; }, el); break;
       case 'close-sheet': closeSheet(); break;
       case 'skip-confirm': skipConfirm(d.id); break;
       case 'toast-action': var fn = toastFn; hideToast(); if (fn) fn(); break;
@@ -942,7 +976,7 @@
     if (e.target.dataset.field === 'turnover') {
       var v = parseFloat(String(e.target.value).replace(',', '.'));
       if (!isFinite(v) || v < 0) { e.target.value = S.profile.turnover / 1e6; return; }
-      applyLever('turnover', function (p) { p.turnover = Math.round(v * 1e6); });
+      applyLever('turnover', function (p) { p.turnover = Math.round(v * 1e6); }, e.target.closest('.money-field') || e.target);
     }
   });
   document.addEventListener('keydown', function (e) {
