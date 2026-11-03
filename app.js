@@ -760,14 +760,17 @@
         case 'about': html = about(); break;
         default: html = notFound();
       }
-      $screen.classList.toggle('entering', isNew); // one-shot entrances (HANDOFF_V2 §6); same-screen re-renders don't replay them
+      var top = wasPop && scrollPos[key] ? scrollPos[key] : 0;
+      // One-shot entrances (HANDOFF_V2 §6): only when a new screen opens at the top. Same-screen re-renders and
+      // returns to a remembered scroll position don't replay them (cards would sit invisible during their stagger).
+      $screen.classList.toggle('entering', isNew && top === 0);
       $screen.innerHTML = html;
       dirty = false; curKey = key;
       var docked = S.onboarded && ['feed', 'bids', 'company'].indexOf(r.name) !== -1;
       $dock.innerHTML = docked ? dock(r.name) : '';
       $toast.style.setProperty('--toast-offset', (docked ? 104 : $screen.querySelector('.action-bar') ? 102 : 24) + 'px');
       if (isNew) {
-        window.scrollTo(0, wasPop && scrollPos[key] ? scrollPos[key] : 0);
+        window.scrollTo(0, top);
         var h1 = $screen.querySelector('h1');
         if (h1 && !firstRender && !r.sub) h1.focus({ preventScroll: true });
       }

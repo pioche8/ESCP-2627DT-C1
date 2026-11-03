@@ -175,6 +175,8 @@ async function run(scheme, palette) {
   await page.waitForSelector('.vtiles');
   check((await page.locator('.vtile .count').allInnerTexts()).join(',') === '2,2,2', 'feed tiles 2 · 2 · 2');
   check(await page.locator('a.tcard[href="#/t/hoh-security"].v-go').count() === 1, 'Hohenau card is now Go');
+  check(await page.evaluate(() => window.scrollY) > 0, 'the Feed tab remembers its scroll position');
+  await page.evaluate(() => window.scrollTo(0, 0)); // show the tiles in the screenshot
   await shot('feed-after');
 
   // 07 Skip the Dutch libraries tender with a reason (BRIEF step 7)
