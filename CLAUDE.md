@@ -4,7 +4,7 @@
 > **`DESIGN.md` is the only source of truth for visual design.** Ignore every colour, font, spacing and component style in the existing `styles.css` and in the old design brief. They are superseded.
 
 ## 1. Context
-- **Course:** ESCP Digital Transformation (MG34), Digital Product Design module. Group C workshop **Wed 5 Nov 2026, 09:00**. Lecturer: David Lehmann (GitHub `@drdml`).
+- **Course:** ESCP Digital Transformation (MG34), Digital Product Design module. Group C workshop **Thu 5 Nov 2026, 09:00**. Lecturer: David Lehmann (GitHub `@drdml`).
 - **Repo:** `ESCP-2627DT-<team>`, public, deployed with GitHub Pages from `main` / root.
 - **Goal for this session:** restyle and extend the existing working prototype to match `DESIGN.md`, without breaking the decision logic or its tests.
 
@@ -41,7 +41,7 @@ No build step and no dependencies. Keep it that way unless `DESIGN.md` truly nee
   - `site_visit` → always `risk`.
 - Score = sector fit 40 (CPV division overlap) + size fit 20 + requirements 30 (pass 1, risk 0.5, review 0) + time 10 (≥21 days: 10, ≥10: 5, >0: 2).
 - Verdict:
-  - deadline passed → `closed` (score 0)
+  - deadline day or later (days left ≤ 0) → `closed` (score 0)
   - any fail or no sector match → `nogo` (score capped at 25)
   - score ≥ 70, no review and ≤ 1 risk → `go`
   - otherwise `maybe`

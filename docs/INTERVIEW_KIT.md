@@ -1,4 +1,4 @@
-# Interview kit: TenderScout (run Mon 2 Nov evening – Wed 5 Nov 08:00)
+# Interview kit: TenderScout (run Mon 2 Nov evening – Thu 5 Nov 08:00)
 
 **Rule zero (ESCP AI policy):** every note in `evidence.md` comes from a real conversation with a real person. AI may help you *structure* notes you wrote, but never invent, "fill in" or paraphrase into quotes. Keep raw notes (paper, phone notes or voice memo, with consent) until the course ends.
 

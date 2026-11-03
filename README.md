@@ -2,7 +2,7 @@
 
 **AI reads new EU public tenders in any language and tells a small firm, in one line and with the page that proves it, whether it can actually bid.**
 
-ESCP Digital Transformation (MG34) · Digital Product Design · Group C · Workshop 5 Nov 2026
+ESCP Digital Transformation (MG34) · Digital Product Design · Group C · Workshop Thu 5 Nov 2026
 Team: [names] · Lecturer: `@drdml`
 
 | | |
@@ -35,7 +35,7 @@ tests.html     same tests in the browser
 - **Simulated:** anything a language model would do (reading PDFs, translating, answering questions). Marked "Simulated AI" in the UI. No API keys, no data leaves the phone.
 - **Fictional:** every company, buyer, tender, quote and page number in `data.js`. Not evidence.
 
-## Repo setup checklist (before Wed 09:00)
+## Repo setup checklist (before Thu 5 Nov, 09:00)
 - [ ] Create repo `ESCP-2627DT-<team>` (public), push these files
 - [ ] Invite all members + `@drdml`
 - [ ] Enable GitHub Pages and paste the URL above
