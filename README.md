@@ -67,6 +67,8 @@ node scripts/contact-sheet.cjs    # the site's PhoneDemo next to the real app, s
 
 **Vercel:** import the repository, **Root Directory = `site`**, framework Next.js, build command `npm run build`, output directory left at the default (`.next`), install command `npm install`, Node 22. No environment variables. Optional: Settings → Root Directory → "Include source files outside of the Root Directory" lets `prebuild` re-sync from the app on every deploy; without it the committed copies in `site/src/generated`, `site/src/fonts` and `site/public/assets` are used (keep them in sync with `npm run sync`). The live app URL the CTAs point to is `APP_URL` in `site/src/data/copy.ts`.
 
+**Static export:** `STATIC_EXPORT=1 npm run build` writes a fully static copy to `site/out/` (relative asset paths, unoptimized images, Cache Components off) for previews or plain static hosts. The default build stays the Vercel one.
+
 **Photos:** `site/public/assets/**.jpg` are 3× upscales of the 200 px Canva previews (made by `scripts/sync-shared.mjs` from `design/assets/`). Replace them with the full-resolution exports under the same names.
 
 ## Repo setup checklist (before Thu 5 Nov, 09:00)
