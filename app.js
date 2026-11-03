@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   var E = window.Engine, D = window.DEMO, AI = window.AI;
-  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme
+  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme and palette ('sky' | 'harbor')
   var STAGES = ['Deciding', 'Bidding', 'Submitted'];
   var SKIP_REASONS = ['Too big for us', 'Missing a certificate', 'Wrong region', 'Not enough time', 'Price-only', 'Other'];
   var LANG_OPTIONS = ['de', 'en', 'es', 'fr', 'nl'];
@@ -25,13 +25,14 @@
   var params = new URLSearchParams(location.search);
   var TODAY = /^\d{4}-\d{2}-\d{2}$/.test(params.get('today') || '') ? params.get('today') : D.DEMO_TODAY; // ?today= test-only
   var forceOffline = params.get('offline') === '1';
+  var paletteParam = params.get('palette');   // ?palette=sky|harbor: demo and test deep link, persisted like the About switch
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---------- state ----------
   var mem = null; // in-memory fallback when storage is blocked
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'system' };
+    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'system', palette: 'sky' };
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -41,8 +42,10 @@
   var dirty = true;
   function save() { dirty = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } }
   var S = load();
+  if (S.palette !== 'harbor') S.palette = 'sky';   // default (and anything unknown) is Sky
+  if (paletteParam === 'sky' || paletteParam === 'harbor') { S.palette = paletteParam; save(); }
   if (params.get('demo') === 'reset') {
-    S = fresh(); save();
+    S = fresh(); if (paletteParam === 'harbor') S.palette = 'harbor'; save();
     params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
@@ -80,6 +83,26 @@
   function flag(c) { return '<span class="flag flag-' + esc(c) + '" aria-hidden="true"></span>'; }
   function aiPill(cls) { return '<span class="ai-pill' + (cls ? ' ' + cls : '') + '" title="AI output is simulated in this prototype">Simulated AI</span>'; }
   function fiction() { return '<p class="caption fiction">All buyers and tenders are fictional</p>'; }
+  // Photos (HANDOFF_V2 §2): four tenders have a 200 px Canva preview in assets/img/; the others show a document placeholder.
+  function photoSrc(t) { return t.photo ? 'assets/img/' + t.photo + '.png' : null; }
+  function photo(t, cls) {
+    var src = photoSrc(t);
+    if (src) return '<img class="' + cls + '" src="' + src + '" alt="" decoding="async">';
+    return '<span class="' + cls + ' photo-ph" aria-hidden="true">' + icon('description', 's24') + '<span class="photo-ph-doc">' + esc(t.doc || 'Tender documents') + ' · ' + t.pages + ' p.</span></span>';
+  }
+  // The 45 EU CPV divisions (HANDOFF_V2 §5), for the moving sector band on Welcome. The firm's own divisions (profile.cpv) are bold.
+  var SECTORS = [['03', 'Agriculture & forestry'], ['09', 'Fuel & energy'], ['14', 'Mining & metals'], ['15', 'Food & drink'], ['16', 'Farm machinery'], ['18', 'Clothing & footwear'], ['19', 'Textiles & plastics'], ['22', 'Printing'], ['24', 'Chemicals'], ['30', 'Office & computing'], ['31', 'Electrical & lighting'], ['32', 'Telecom equipment'], ['33', 'Medical & pharma'], ['34', 'Vehicles & transport'], ['35', 'Security & defence'], ['37', 'Sport & games'], ['38', 'Lab & precision'], ['39', 'Furniture'], ['41', 'Water supply'], ['42', 'Industrial machinery'], ['43', 'Construction machinery'], ['44', 'Building materials'], ['45', 'Construction work'], ['48', 'Software'], ['50', 'Repair & maintenance'], ['51', 'Installation'], ['55', 'Hotels & catering'], ['60', 'Transport services'], ['63', 'Logistics & travel'], ['64', 'Postal & telecom'], ['65', 'Utilities'], ['66', 'Finance & insurance'], ['70', 'Real estate'], ['71', 'Architecture & engineering'], ['72', 'IT services'], ['73', 'Research & development'], ['75', 'Public administration'], ['76', 'Oil & gas services'], ['77', 'Landscaping'], ['79', 'Business services'], ['80', 'Education & training'], ['85', 'Health & social care'], ['90', 'Cleaning & environment'], ['92', 'Culture & sport'], ['98', 'Community services']];
+  function marquee() {
+    var own = {}; (S.profile.cpv || []).forEach(function (c) { own[c] = true; });
+    var rows = [[], [], [], []], speeds = [42, 54, 38, 60];
+    SECTORS.forEach(function (x, i) { rows[i % 4].push(x); });
+    return rows.map(function (items, i) {
+      var group = '<span class="mq-group">' + items.map(function (x) {
+        return '<span class="mq-item' + (own[x[0]] ? ' own' : '') + '"><span class="mq-code">' + x[0] + '</span>' + esc(x[1]) + '<span class="mq-sep">/</span></span>';
+      }).join('') + '</span>';
+      return '<div class="mq-row"><div class="mq-track" style="--d:' + speeds[i] + 's">' + group + group + '</div></div>';
+    }).join('');
+  }
   function has(list, x) { return (list || []).indexOf(x) !== -1; }
   function toggle(list, v) { var i = list.indexOf(v); if (i === -1) list.push(v); else list.splice(i, 1); }
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); }
@@ -131,16 +154,30 @@
   }
   function offlineBanner() { return offline() ? '<div class="banner" role="note">' + icon('cloud_off') + '<span>Offline. Showing last night’s results.</span></div>' : ''; }
 
-  // ---------- 01 Welcome ----------
+  // ---------- 01 Welcome (HANDOFF_V2 §4: photo header, moving sector band, pill, preview card, headline, form) ----------
   function welcome() {
-    function tile(v, n, cls) { return '<div class="hero-tile ' + cls + ' v-' + v + ' on-solid">' + shape(SHAPE[v], 'lg') + '<b>' + n + '</b><span class="lbl">' + V[v] + '</span></div>'; }
-    return '<div class="screen no-top">' +
-      '<header class="welcome-hero">' +
-        '<div class="hero-top"><span class="wordmark">TenderScout</span>' + infoBtn('on-brand') + '</div>' +
-        '<div class="hero-tiles" aria-hidden="true">' + tile('go', 100, 't-go') + tile('maybe', 90, 't-maybe') + tile('nogo', 25, 't-nogo') + '</div>' +
-        '<h1 class="welcome-title" tabindex="-1">Find public tenders you can actually win</h1>' +
-        '<p class="welcome-sub">Every morning we read new EU public tenders in any language and tell you whether you qualify, with the page that proves it.</p>' +
+    var open = ranked().filter(function (r) { return r.verdict !== 'closed'; });
+    var r0 = open[0] || ranked()[0], t0 = tender(r0.tenderId), v0 = r0.verdict, q0 = t0.requirements[0], cp0 = citeParts(t0, q0);
+    var reason0 = E.reasonLine(t0, S.profile, r0);
+    return '<div class="screen no-top welcome-v2">' +
+      '<header class="welcome-hero v2">' +
+        '<img class="hero-photo" src="assets/img/app-welcome.png" alt="">' +
+        '<span class="hero-fade" aria-hidden="true"></span>' +
+        '<span class="mq-scrim" aria-hidden="true"></span>' +
+        '<div class="mq" aria-hidden="true">' + marquee() + '</div>' +
+        '<div class="hero-top"><span class="wordmark">TenderScout</span>' + infoBtn('on-brand glass') + '</div>' +
+        '<p class="hero-pill">' + icon('menu_book', 's15') + '<span>All ' + SECTORS.length + ' EU sectors · ' + plural(open.length, 'new tender') + ' tonight</span></p>' +
       '</header>' +
+      '<section class="preview-card v-' + v0 + '" aria-label="Example from tonight: ' + esc(V[v0]) + ', score ' + r0.score + ' of 100. ' + esc(t0.title) + ', ' + esc(bare(t0.buyer)) + '. ' + esc(reason0) + '.">' +
+        '<div class="preview-row">' + photo(t0, 'preview-photo') +
+          '<div class="min0"><span class="status-line">' + vShape(v0) + '<b>' + V[v0] + '</b><span class="reason">· ' + esc(reason0) + '</span></span>' +
+          '<p class="preview-title">' + esc(t0.title) + '</p></div>' +
+          '<span class="score-tile" aria-hidden="true">' + r0.score + '</span></div>' +
+        '<div class="preview-foot"><span class="cite-chip">' + icon('description', 's14') + '<span>p. ' + esc(cp0.page) + (cp0.section ? ' · ' + esc(cp0.section) : '') + '</span></span>' +
+          '<span class="meta-text">' + esc(bare(t0.buyer)) + ' · ' + r0.daysLeft + ' d</span></div>' +
+      '</section>' +
+      '<div class="welcome-copy"><h1 class="welcome-title" tabindex="-1">Find public tenders you can actually win</h1>' +
+        '<p class="welcome-sub">Every new EU tender, read overnight in any language, with the page that proves each answer.</p></div>' +
       '<form class="welcome-form" id="welcome-form" novalidate>' +
         '<label class="label-text" for="web">Company website</label>' +
         '<div class="input">' + icon('language') + '<input id="web" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" value="' + esc(S.website || 'nordlicht-netzwerk.example') + '"></div>' +
@@ -230,7 +267,7 @@
     } else if (!list.length) {
       body = '<div class="empty compact"><p>No ' + V[f] + ' tenders tonight.</p><button class="text-btn" data-filter="all">Show all</button></div>';
     } else {
-      body = '<div class="cards feed-list">' + list.map(card).join('') + '</div>';
+      body = '<div class="cards feed-list">' + list.map(function (r, i) { return card(r, i); }).join('') + '</div>';
     }
     pulse = {};
     return '<div class="screen has-dock">' +
@@ -246,14 +283,15 @@
       fiction() + '</div>';
   }
 
-  function card(r) {
+  function card(r, i) {
     var t = tender(r.tenderId), v = r.verdict, closed = v === 'closed', saved = S.saved[t.id];
     var reason = E.reasonLine(t, S.profile, r);
     var soon = !closed && r.daysLeft <= 10;
     var label = (closed ? 'Closed' : V[v] + ', score ' + r.score + ' of 100') + '. ' + t.title + ', ' + bare(t.buyer) + '. ' + reason + '.' + (saved ? ' Saved.' : '');
     var wasPulse = pulse[t.id];
-    return '<div class="tcard-wrap" data-id="' + t.id + '"><div>' +
+    return '<div class="tcard-wrap" data-id="' + t.id + '" style="--i:' + ((i || 0) + 1) + '"><div>' +
       '<a class="tcard v-' + v + (closed ? ' is-closed' : '') + '" href="#/t/' + t.id + '" aria-label="' + esc(label) + '">' +
+        photo(t, 'tcard-photo') +
         '<span class="score-tile' + (wasPulse ? ' pulse' : '') + '" aria-hidden="true">' + (closed ? icon('event_busy', 's21') : r.score) + '</span>' +
         '<span class="tcard-body">' +
           '<span class="status-line">' + vShape(v) + '<b>' + V[v] + '</b><span class="reason">· ' + esc(reason) + '</span></span>' +
@@ -282,8 +320,10 @@
     if (closed) actions += '<button class="btn grow-2" disabled>' + icon('lock') + 'Save to Bids</button>';
     else if (saved) actions += '<button class="btn btn-tonal grow-2" data-go="#/bids">' + icon('bookmark', 'fill') + 'In Bids · ' + esc(saved) + '</button>';
     else actions += '<button class="btn btn-primary" data-act="save" data-id="' + id + '">' + icon('bookmark_add') + 'Save to Bids</button>';
+    var withPhoto = !!t.photo && !closed;
     return '<div class="screen has-bar no-top">' +
-      '<header class="vblock v-' + v + (closed ? '' : ' on-solid') + '">' +
+      '<header class="vblock v-' + v + (closed ? '' : ' on-solid') + (withPhoto ? ' has-photo' : '') + '">' +
+        (withPhoto ? '<img class="vphoto" src="' + photoSrc(t) + '" alt=""><span class="vphoto-fade" aria-hidden="true"></span>' : '') +
         '<div class="vblock-nav">' + backBtn('circle-btn') + aiPill('on') + '</div>' + head +
         '<p class="vblock-reason">' + esc(E.headline(t, S.profile, r)) + '</p>' +
       '</header>' +
@@ -456,7 +496,7 @@
       body = STAGES.map(function (stage) {
         var inSt = ids.filter(function (id) { return S.saved[id] === stage; });
         return '<div class="sec-h"><h2>' + stage + '<span class="count-pill">' + inSt.length + '</span></h2></div>' +
-          (inSt.length ? '<div class="cards">' + inSt.map(function (id) { return bidCard(tender(id), results[id], stage); }).join('') + '</div>'
+          (inSt.length ? '<div class="cards">' + inSt.map(function (id, i) { return bidCard(tender(id), results[id], stage, i); }).join('') + '</div>'
             : '<div class="placeholder">Nothing here yet</div>');
       }).join('') +
       (sk.length ? '<div class="sec-h"><h2>Skipped<span class="count-pill">' + sk.length + '</span></h2></div><div class="skipped">' + sk.map(function (id) {
@@ -470,13 +510,13 @@
       body + fiction() + '</div>';
   }
   var enteringId = null;
-  function bidCard(t, r, stage) {
+  function bidCard(t, r, stage, i) {
     var v = r.verdict, closed = v === 'closed';
-    return '<article class="bid-card v-' + v + (enteringId === t.id ? ' entering' : '') + '" aria-label="' + esc(t.title) + '">' +
+    return '<article class="bid-card v-' + v + (enteringId === t.id ? ' entering' : '') + '" style="--i:' + ((i || 0) + 1) + '" aria-label="' + esc(t.title) + '">' +
       '<a class="top" href="#/t/' + t.id + '"><span class="score-tile sm" aria-hidden="true">' + (closed ? icon('event_busy', 's18') : r.score) + '</span>' +
-      '<span><span class="tcard-title">' + esc(t.title) + '</span><span class="meta-row">' + flag(t.country) + '<span class="buyer">' + esc(bare(t.buyer)) + '</span>' +
+      '<span class="min0"><span class="tcard-title">' + esc(t.title) + '</span><span class="meta-row">' + flag(t.country) + '<span class="buyer">' + esc(bare(t.buyer)) + '</span>' +
       '<span class="nowrap">· ' + (closed ? 'closed' : '<span class="' + (r.daysLeft <= 10 ? 'soon' : '') + '">' + r.daysLeft + ' d</span>') + '</span></span>' +
-      '<span class="sr-only">' + (closed ? 'Closed' : V[v] + ', score ' + r.score + ' of 100') + '</span></span></a>' +
+      '<span class="sr-only">' + (closed ? 'Closed' : V[v] + ', score ' + r.score + ' of 100') + '</span></span>' + photo(t, 'bid-thumb') + '</a>' +
       '<div class="seg stage" role="radiogroup" aria-label="Stage">' + STAGES.map(function (s) {
         return '<button role="radio" aria-checked="' + (s === stage) + '" data-stage="' + s + '" data-id="' + t.id + '">' + s + '</button>';
       }).join('') + '</div></article>';
@@ -496,7 +536,8 @@
     }).join('');
     var html = '<div class="screen no-top ' + (S.onboarded ? 'has-dock' : 'has-bar') + '">' +
       '<header class="co-head">' +
-        '<div class="co-top"><h1 class="screen-title" tabindex="-1">Company</h1>' + infoBtn('on-brand') + '</div>' +
+        '<img class="co-photo" src="assets/img/app-company.png" alt=""><span class="co-photo-fade" aria-hidden="true"></span>' +
+        '<div class="co-top"><h1 class="screen-title" tabindex="-1">Company</h1>' + infoBtn('on-brand glass') + '</div>' +
         '<p class="sub">' + esc(p.name) + ' · ' + esc(p.city.replace(/,.*$/, '')) + '</p>' +
         '<p class="feed-now">Your feed right now</p>' +
         '<div class="co-tiles" id="co-tiles">' + ['go', 'maybe', 'nogo'].map(function (v) {
@@ -631,6 +672,7 @@
   // ---------- 10 About ----------
   function about() {
     var seg = function (k, label) { return '<button role="radio" aria-checked="' + (S.theme === k) + '" data-act="theme" data-value="' + k + '">' + label + '</button>'; };
+    var pal = function (k, label) { return '<button role="radio" aria-checked="' + (S.palette === k) + '" data-act="palette" data-value="' + k + '">' + label + '</button>'; };
     var row = function (ic, title, text, extra) {
       return '<div class="about-row"><span class="icon-tile" aria-hidden="true">' + icon(ic, 's21') + '</span><div><h3>' + title + (extra || '') + '</h3><p>' + text + '</p></div></div>';
     };
@@ -644,8 +686,10 @@
         row('badge', 'All data is fictional', 'Every company, buyer, tender, page number and quote is invented. None of it is interview evidence.') +
         row('code', 'Built with AI assistance', 'Claude helped build the v0 scaffold and this restyle (Claude Code). The team ran the interviews and made the product decisions. See README → AI use.') +
       '</div>' +
-      '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row"><div class="seg" role="radiogroup" aria-label="Appearance">' +
-        seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
+      '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
+        '<p class="label-text" id="lbl-theme">Light or dark</p><div class="seg" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div>' +
+        '<p class="label-text" id="lbl-pal" style="margin-top:14px">Palette</p><div class="seg" role="radiogroup" aria-labelledby="lbl-pal">' + pal('sky', 'Sky') + pal('harbor', 'Harbor') + '</div>' +
+        '<p class="row-sub" style="margin-top:8px">Sky is cloud white and sky blue, Harbor is navy and sea blue. Both follow your light or dark setting.</p></div>' +
       '<div class="about-actions"><button class="btn btn-danger btn-block" data-act="reset">' + icon('restart_alt') + 'Reset demo</button>' +
       '<p class="caption">Clears your profile, answers, saved and skipped tenders. Same as adding ?demo=reset to the address.</p></div>' +
       '</div>';
@@ -716,6 +760,7 @@
         case 'about': html = about(); break;
         default: html = notFound();
       }
+      $screen.classList.toggle('entering', isNew); // one-shot entrances (HANDOFF_V2 §6); same-screen re-renders don't replay them
       $screen.innerHTML = html;
       dirty = false; curKey = key;
       var docked = S.onboarded && ['feed', 'bids', 'company'].indexOf(r.name) !== -1;
@@ -741,9 +786,7 @@
       if (w) requestAnimationFrame(function () { w.classList.add('collapsing'); setTimeout(function () { if (w.parentNode) w.parentNode.removeChild(w); }, reduceMotion ? 0 : 260); });
     }
     enteringId = null;
-    var meta = document.querySelector('meta[name="theme-color"]');
-    var top = $screen.querySelector('.welcome-hero, .vblock, .co-head');
-    if (meta) meta.setAttribute('content', getComputedStyle(top || document.body).backgroundColor);
+    paintThemeColor();
   }
 
   // ---------- bottom sheets ----------
@@ -864,6 +907,7 @@
       case 'skip-confirm': skipConfirm(d.id); break;
       case 'toast-action': var fn = toastFn; hideToast(); if (fn) fn(); break;
       case 'theme': S.theme = d.value; save(); applyTheme(); render(true); break;
+      case 'palette': S.palette = d.value === 'harbor' ? 'harbor' : 'sky'; save(); applyTheme(); render(true); break;
       case 'reset':
         if (!window.confirm('Reset the demo? This clears your profile, answers, saved and skipped tenders.')) break;
         S = fresh(); readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {};
@@ -871,6 +915,20 @@
         break;
     }
   });
+  // Card → detail morph (motion-effects 03 "Card → workspace"): the tapped card's shape grows into the colour-block
+  // header while its contents cross-fade, and a dashed ghost stays where the card was. View Transitions API with
+  // feature detection; without it (or under reduced motion) the link is a plain hash change.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a.tcard');
+    if (!a || !document.startViewTransition || reduceMotion || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    var href = a.getAttribute('href');
+    e.preventDefault();
+    a.style.viewTransitionName = 'card';
+    var wrap = a.closest('.tcard-wrap'); if (wrap) wrap.style.viewTransitionName = 'card-ghost';
+    try {
+      document.startViewTransition(function () { location.hash = href; render(); });
+    } catch (err) { go(href); }
+  }, true);
   function draft() {
     var web = document.getElementById('web');
     S.website = (web && web.value.trim()) || 'nordlicht-netzwerk.example'; save();
@@ -895,7 +953,7 @@
       var next = all[(i + all.length) % all.length], nd = next.dataset;
       var sel = nd.filter ? '[role="radio"][data-filter="' + nd.filter + '"]'
         : nd.stage ? '[data-stage="' + nd.stage + '"][data-id="' + nd.id + '"]'
-        : '[data-act="theme"][data-value="' + nd.value + '"]';
+        : '[data-act="' + nd.act + '"][data-value="' + nd.value + '"]';
       e.preventDefault(); next.click();
       var again = document.querySelector(sel); if (again) again.focus(); // the group re-renders; keep focus on the new choice
     }
@@ -903,10 +961,20 @@
   window.addEventListener('online', function () { render(true); });
   window.addEventListener('offline', function () { render(true); });
 
+  // Theme (light / dark / system) and palette (sky / harbor) live on <html> as data-v3 and data-palette (HANDOFF_V2 §1).
+  var darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   function applyTheme() {
-    if (S.theme === 'light' || S.theme === 'dark') document.documentElement.setAttribute('data-theme', S.theme);
-    else document.documentElement.removeAttribute('data-theme');
+    var t = S.theme === 'light' || S.theme === 'dark' ? S.theme : (darkMQ && darkMQ.matches ? 'dark' : 'light');
+    var d = document.documentElement;
+    d.setAttribute('data-v3', t); d.setAttribute('data-palette', S.palette === 'harbor' ? 'harbor' : 'sky');
+    paintThemeColor();
   }
+  function paintThemeColor() {
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var top = $screen.querySelector('.welcome-hero, .vblock, .co-head');
+    if (meta) meta.setAttribute('content', getComputedStyle(top || document.body).backgroundColor);
+  }
+  if (darkMQ) { var onMQ = function () { if (S.theme !== 'light' && S.theme !== 'dark') applyTheme(); }; if (darkMQ.addEventListener) darkMQ.addEventListener('change', onMQ); else if (darkMQ.addListener) darkMQ.addListener(onMQ); }
   applyTheme();
   render();
 })();

@@ -5,6 +5,8 @@
  * The "ai" blocks stand in for what a language model would extract from the tender PDF.
  * Optional display fields (added 2 Nov, ignored by engine.js): tender.doc = source document name,
  * requirement.highlight = the decisive phrase inside src, marked on the quote card.
+ * tender.photo (added 3 Nov, ignored by engine.js) = file name in assets/img/ for the card band, Bids thumbnail
+ * and detail header. Two tenders have no photo yet and show a document placeholder instead.
  */
 (function (root) {
   'use strict';
@@ -18,7 +20,7 @@
     turnover: 3200000,
     references: 4,
     certifications: ['ISO 9001'],
-    cpv: ['32', '45', '72'],          // CPV divisions: telecom equipment, construction works, IT services
+    cpv: ['32', '45', '51', '72'],    // CPV divisions: telecom equipment, construction works, installation, IT services
     sectorsLabel: ['Network cabling', 'Wi-Fi installation', 'IT support'],
     countries: ['DE', 'AT'],
     crossBorder: true,
@@ -35,7 +37,7 @@
       title: 'Structured cabling and Wi-Fi for 12 primary schools',
       original: 'Strukturierte Verkabelung und WLAN für 12 Grundschulen',
       buyer: 'Stadt Ellerbach (fictional)', country: 'DE', language: 'de',
-      value: 480000, deadline: '2026-12-04', cpv: ['32420000', '45314300'], pages: 146, doc: 'Vergabeunterlagen',
+      value: 480000, deadline: '2026-12-04', cpv: ['32420000', '45314300'], pages: 146, doc: 'Vergabeunterlagen', photo: 't-schools',
       requirements: [
         { id: 'r1', type: 'min_turnover', value: 1500000, label: 'Minimum annual turnover €1.5M', cite: 'Vergabeunterlagen p. 23, §4.2', confidence: 0.96, highlight: 'mindestens 1,5 Mio. EUR',
           src: 'Der Bieter muss einen durchschnittlichen Jahresumsatz von mindestens 1,5 Mio. EUR in den letzten drei Geschäftsjahren nachweisen.',
@@ -62,7 +64,7 @@
       title: 'IT security audit and hardening for district administration',
       original: 'IT-Sicherheitsaudit und Härtung der Kreisverwaltung',
       buyer: 'Landkreis Hohenau (fictional)', country: 'DE', language: 'de',
-      value: 95000, deadline: '2026-11-27', cpv: ['72150000'], pages: 64, doc: 'Vergabeunterlagen',
+      value: 95000, deadline: '2026-11-27', cpv: ['72150000'], pages: 64, doc: 'Vergabeunterlagen', photo: 't-audit',
       requirements: [
         { id: 'r1', type: 'certification', value: 'ISO 27001', label: 'ISO 27001 information security', cite: 'p. 12, §3.1', confidence: 0.95, highlight: 'nach ISO/IEC 27001 zertifiziert', subcontractAllowed: false,
           src: 'Der Auftragnehmer muss nach ISO/IEC 27001 zertifiziert sein.', tr: 'The contractor must be certified to ISO/IEC 27001.' },
@@ -85,7 +87,7 @@
       title: 'Data centre cabling, lot 2 (university campus)',
       original: 'Cableado del centro de datos, lote 2',
       buyer: 'Universidad de Valdemora (fictional)', country: 'ES', language: 'es',
-      value: 310000, deadline: '2026-11-14', cpv: ['45314300'], pages: 98, doc: 'Pliego',
+      value: 310000, deadline: '2026-11-14', cpv: ['45314300'], pages: 98, doc: 'Pliego', photo: 't-datacentre',
       requirements: [
         { id: 'r1', type: 'certification', value: 'ISO 9001', label: 'ISO 9001', cite: 'Pliego p. 17, cláusula 8', confidence: 0.93, highlight: 'ISO 9001 vigente',
           src: 'Certificado ISO 9001 vigente.', tr: 'Valid ISO 9001 certificate.' },
@@ -108,7 +110,7 @@
       title: 'Fibre-to-the-building rollout, municipal utility',
       original: 'Glasfaser-Anbindung kommunaler Gebäude',
       buyer: 'Stadtwerke Kaltbrunn (fictional)', country: 'AT', language: 'de',
-      value: 1100000, deadline: '2026-12-18', cpv: ['45231600', '32520000'], pages: 212, doc: 'Ausschreibungsunterlagen',
+      value: 1100000, deadline: '2026-12-18', cpv: ['45231600', '32520000'], pages: 212, doc: 'Ausschreibungsunterlagen', photo: 't-fibre',
       requirements: [
         { id: 'r1', type: 'min_turnover', value: 2000000, label: 'Minimum turnover €2M', cite: 'p. 30, §5.1', confidence: 0.95, highlight: '2 Mio. EUR pro Jahr',
           src: 'Mindestumsatz von 2 Mio. EUR pro Jahr.', tr: 'Minimum turnover of EUR 2 million per year.' },
