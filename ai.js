@@ -11,14 +11,25 @@
  *
  * Here each function returns pre-written demo output after a short delay,
  * and every result carries simulated: true so the UI can label it.
+ * 2 Nov 2026: optional progress callbacks added for the DESIGN.md reading/loading states.
+ * Signatures and return values are otherwise unchanged.
  */
 (function (root) {
   'use strict';
   var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
 
   root.AI = {
-    readTender: function (tender) {
-      return wait(700).then(function () {
+    // onProgress (optional): called with { page, pages, step } while "reading". step: 0 find, 1 translate, 2 check.
+    readTender: function (tender, onProgress) {
+      var ticks = 8, chain = Promise.resolve();
+      for (var i = 1; i <= ticks; i++) {
+        (function (i) {
+          chain = chain.then(function () { return wait(i === 1 ? 120 : 190); }).then(function () {
+            if (onProgress) onProgress({ page: Math.round(tender.pages * i / ticks), pages: tender.pages, step: i <= 3 ? 0 : i <= 6 ? 1 : 2 });
+          });
+        })(i);
+      }
+      return chain.then(function () { return wait(200); }).then(function () {
         return { simulated: true, summary: tender.ai.summary, requirements: tender.requirements, pagesRead: tender.pages };
       });
     },
@@ -28,10 +39,22 @@
         return { simulated: true, question: item.q, answer: item.a };
       });
     },
-    draftProfile: function (website, demoProfile) {
-      return wait(1200).then(function () {
-        var p = JSON.parse(JSON.stringify(demoProfile));
-        p.website = website;
+    // onStep (optional): called with (index, steps) as each reading step completes; index -1 = started.
+    draftProfile: function (website, demoProfile, onStep) {
+      var p = JSON.parse(JSON.stringify(demoProfile));
+      p.website = website;
+      var steps = [
+        { label: 'Reading ' + (website || 'your website'), meta: '18 pages', found: p.city.replace(/,.*$/, '') + ' · ' + p.staff + ' staff' },
+        { label: 'Finding public contracts you delivered', meta: p.references + ' found', found: p.references + ' comparable references' },
+        { label: 'Checking certificates', meta: p.certifications.join(', '), found: p.certifications.join(', ') + ' certificate on file' },
+        { label: 'Drafting your profile', meta: 'Done', found: 'Bid languages: ' + p.languages.map(function (l) { return l.toUpperCase(); }).join(', ') }
+      ];
+      if (onStep) onStep(-1, steps);
+      var chain = Promise.resolve();
+      steps.forEach(function (s, i) {
+        chain = chain.then(function () { return wait(i === 0 ? 900 : 700); }).then(function () { if (onStep) onStep(i, steps); });
+      });
+      return chain.then(function () { return wait(350); }).then(function () {
         return { simulated: true, profile: p };
       });
     }
