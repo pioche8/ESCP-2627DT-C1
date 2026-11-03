@@ -87,3 +87,6 @@ Detail → Skip → pick reasons (optional) → Skip tender → back to the Feed
 - Deadline day or later → "Closed", score 0, Save disabled.
 - Storage blocked (private mode) → in-memory state, so the app still works for the session. State key `tenderscout.v2`.
 - Dark mode (follows the phone, or About → Appearance) and reduced motion (no animation, same results) respected. Tap targets ≥ 44 px.
+
+## Palettes (3 Nov 2026, website fusion)
+About → Appearance offers three palettes: **Brand** (default; the marketing website’s palette on the phone), **Sky** and **Harbor** (design/HANDOFF_V2.md). `?palette=brand|sky|harbor` is the demo deep link; the choice is persisted in `tenderscout.v2`. Routes, screens and back behaviour are unchanged.

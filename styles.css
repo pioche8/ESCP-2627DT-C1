@@ -10,116 +10,23 @@
 @font-face{font-family:"Material Symbols Rounded";font-style:normal;font-weight:300 400;font-display:block;src:url("fonts/MaterialSymbolsRounded-subset.woff2") format("woff2");}
 
 /* =====================================================================
-   TenderScout · styles.css · "Bold" direction (DESIGN.md v2.0) + Sky / Harbor palettes (design/HANDOFF_V2.md §1)
-   Theme scoping: <html data-v3="light|dark" data-palette="sky|harbor">, set by a tiny inline script in index.html
-   before this sheet loads (so there is no flash) and kept in sync by app.js (About → Appearance / Palette).
-   Token values come from design/explorations/v3-tokens.css. The following differ, to meet WCAG AA (CLAUDE.md §7.5),
-   measured with scratch/contrast.py on 3 Nov 2026:
-     base light  --v-ink-3   #85888E → #6A6D73   (3.1:1 → 4.6:1 on bg)              [2 Nov]
-     base dark   --v-nogo    #E5483B → #CF3A2E   (white text 3.95:1 → 4.9:1)          [2 Nov]
-     base dark   --v-check   #7A62FF → #6650EE   (white text 4.2:1 → 5.3:1)           [2 Nov]
-     base dark   --v-brand   #4F6BFF → #3F5DF2   (white text 4.3:1 → 5.2:1)           [2 Nov]
-     sky light   --v-ink-3   #6F7E92 → #637082   (3.7:1 → 4.5:1 on bg)
-     sky light   --v-nogo    #E04A2F → #D0452C   (white text 4.05:1 → 4.6:1)
-     sky dark    --v-ink-3   #7E828A → #878B92   (4.0:1 → 4.5:1 on card-2)
-     sky dark    --v-nogo    #EE5A3D → #CA4C34   (white text 3.4:1 → 4.6:1)
-     harbor light --v-ink-3  #6E7891 → #646D84   (3.9:1 → 4.56:1 on bg)
-     harbor light --v-brand-sub #D2EAF5 → #F2F9FC (3.9:1 → 4.5:1 on brand)
-     harbor dark --v-ink-3   #7E828A → #878B92   (4.0:1 → 4.5:1 on card-2)
-     harbor dark --v-brand   #2390BD → #1A7AA3   (white text 3.6:1 → 4.8:1); --v-brand-sub #D2EAF5 → #F2F9FC
-     harbor dark --v-nogo    #E0502F → #CE4A2B   (white text 3.9:1 → 4.5:1)
-     harbor dark --v-dock-active #E5336D → #DA3068 (white text 4.2:1 → 4.6:1)
-     harbor      --v-brand-glass rgba(255,255,255,.16) → rgba(10,22,44,.32): translucent controls on brand carry
-                 white text, so the glass is dark; Sky keeps light glass under its dark text.
-     all         "Simulated AI" pill and circle buttons on verdict blocks: dark glass rgba(13,15,18,.32) under white
-                 text (was white 18%: 3.2–4.1:1), light glass 40% under dark text (Maybe, Sky brand).
+   TenderScout · styles.css · components. Colours, type, radii, shadows, easing and durations come from shared/tokens.css
+   (generated from shared/tokens.json, loaded by index.html before this file). Theme scoping: <html data-v3="light|dark"
+   data-palette="brand|sky|harbor">, set by the inline script in index.html before the first paint and kept in sync by app.js
+   (About → Appearance / Palette). Brand (default) is the website's palette on the phone; Sky and Harbor are the designer's v2
+   palettes (design/HANDOFF_V2.md). Every WCAG AA adjustment is recorded in shared/tokens.json → "adjusted" and checked by
+   `node shared/check-contrast.js` (297 pairs across the three palettes × light/dark and the website).
+   3 Nov 2026 (website fusion): the verdict tile, status line, score tile, wordmark dot, sector chip marquee, liquid-metal
+   Welcome CTA, dock badge and the re-score timing (count-up 650 ms easeOutCubic, tiles 450 ms) are the same on the site.
    ===================================================================== */
 
-:root, [data-v3="light"] {
-  --v-bg:#F1F0ED; --v-card:#FFFFFF; --v-card-2:#F6F5F2; --v-paper:#FFFFFF;
-  --v-ink:#0D0F12; --v-ink-2:#55585E; --v-ink-3:#6A6D73; --v-line:#E4E2DD; --v-track:rgba(13,15,18,.06);
-  --v-brand:#2546F0; --v-brand-on:#FFFFFF; --v-brand-sub:#DCE2FF; --v-brand-text:#2546F0; --v-brand-soft:#E3E8FE;
-  --v-brand-glass:rgba(13,15,18,.32); --v-brand-shadow:rgba(37,70,240,.6);
-  --v-dock:#0D0F12; --v-dock-icon:#8C8F94; --v-dock-active:#2546F0; --v-dock-active-on:#FFFFFF;
-  --v-go:#13724B; --v-go-on:#FFFFFF; --v-go-soft:#DDF1E7; --v-go-ink:#0E5C3C;
-  --v-maybe:#F5A524; --v-maybe-on:#1A1200; --v-maybe-soft:#FDEFD3; --v-maybe-ink:#8A5300;
-  --v-nogo:#D23A2E; --v-nogo-on:#FFFFFF; --v-nogo-soft:#FBE3E0; --v-nogo-ink:#A42A20;
-  --v-check:#6145E0; --v-check-on:#FFFFFF; --v-check-soft:#EEEAFD; --v-check-ink:#4B31C2;
-  --v-shadow:0 1px 2px rgba(13,15,18,.04),0 10px 28px -12px rgba(13,15,18,.16);
-  --v-raised:0 18px 36px -14px rgba(13,15,18,.35);
-  --v-glass-dark:rgba(13,15,18,.32); --v-glass-light:rgba(255,255,255,.4);
-  --v-toast-dot:#5ED69C; --v-toast-action:#9AABFF;
-  --v-seg-on:#FFFFFF;
-  --font-ui:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
-  --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  --ease-out:cubic-bezier(.2,.8,.2,1); --ease-spring:cubic-bezier(.2,.9,.25,1.2); --ease-sheet:cubic-bezier(.32,.72,0,1);
-  --ease-morph:cubic-bezier(.77,0,.18,1); --ease-back:cubic-bezier(.34,1.56,.64,1); /* MOTION.md: morph easeInOutQuart 700–1200 ms, pop easeOutBack 400–520 ms */
-  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
-  color-scheme:light;
-}
-[data-v3="dark"] {
-  --v-bg:#0C0D10; --v-card:#16181D; --v-card-2:#1E2127; --v-paper:#F4F3EF;
-  --v-ink:#F2F1EE; --v-ink-2:#A9ACB3; --v-ink-3:#7E828A; --v-line:#262930; --v-track:rgba(255,255,255,.08);
-  --v-brand:#3F5DF2; --v-brand-on:#FFFFFF; --v-brand-sub:#DCE2FF; --v-brand-text:#9AABFF; --v-brand-soft:#1A2246;
-  --v-brand-glass:rgba(13,15,18,.32); --v-brand-shadow:rgba(79,107,255,.5);
-  --v-dock:#1E2127; --v-dock-icon:#8C8F94; --v-dock-active:#3F5DF2; --v-dock-active-on:#FFFFFF;
-  --v-go:#1F9D63; --v-go-on:#04140C; --v-go-soft:#0F2A1F; --v-go-ink:#5ED69C;
-  --v-maybe:#F5A524; --v-maybe-on:#1A1200; --v-maybe-soft:#2E220B; --v-maybe-ink:#F7C25E;
-  --v-nogo:#CF3A2E; --v-nogo-on:#FFFFFF; --v-nogo-soft:#33161A; --v-nogo-ink:#FF8B80;
-  --v-check:#6650EE; --v-check-on:#FFFFFF; --v-check-soft:#211A40; --v-check-ink:#B3A5FF;
-  --v-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
-  --v-raised:inset 0 0 0 1px rgba(255,255,255,.08),0 18px 36px -14px rgba(0,0,0,.7);
-  --v-toast-dot:#13724B; --v-toast-action:#2546F0;
-  --v-seg-on:#2A2D34;
-  color-scheme:dark;
-}
-
-/* ---- Sky (default): sky blue, cloud white, touches of amber-red ---- */
-[data-v3="light"][data-palette="sky"] {
-  --v-bg:#EEF3F8; --v-card:#FFFFFF; --v-card-2:#F4F7FB; --v-line:#DCE4ED; --v-track:rgba(16,42,72,.07);
-  --v-ink:#0E1B2B; --v-ink-2:#4A5A6D; --v-ink-3:#637082;
-  --v-brand:#5DB8F5; --v-brand-on:#0E1B2B; --v-brand-sub:#1D3B5C; --v-brand-glass:rgba(255,255,255,.4); --v-brand-shadow:rgba(46,140,220,.45);
-  --v-brand-text:#0A6CBC; --v-brand-soft:#DCEFFD;
-  --v-dock:#0E1B2B; --v-dock-icon:#8C9AAB; --v-dock-active:#F2643A; --v-dock-active-on:#1A0A04;
-  --v-nogo:#D0452C; --v-nogo-ink:#B23720; --v-nogo-soft:#FCE4DE;
-  --v-shadow:0 1px 2px rgba(14,27,43,.04), 0 10px 28px -12px rgba(30,80,140,.22);
-  --v-raised:0 18px 36px -14px rgba(14,27,43,.35);
-  --v-toast-dot:#5ED69C; --v-toast-action:#5DB8F5;
-}
-[data-v3="dark"][data-palette="sky"] {
-  --v-bg:#0B1220; --v-card:#131C2C; --v-card-2:#1A2537; --v-line:#22304A; --v-ink-3:#878B92;
-  --v-brand:#5DB8F5; --v-brand-on:#0E1B2B; --v-brand-sub:#1D3B5C; --v-brand-glass:rgba(255,255,255,.4); --v-brand-shadow:rgba(46,140,220,.35);
-  --v-brand-text:#7CC6F8; --v-brand-soft:#132B40; --v-dock:#1A2537; --v-dock-icon:#8C9AAB; --v-dock-active:#F2643A; --v-dock-active-on:#1A0A04;
-  --v-nogo:#CA4C34; --v-nogo-ink:#FF9580;
-  --v-toast-dot:#13724B; --v-toast-action:#0A6CBC; --v-seg-on:#1A2537;
-}
-/* ---- Harbor: sea blue, navy, a touch of crimson pink ---- */
-[data-v3="light"][data-palette="harbor"] {
-  --v-bg:#EEF1F5; --v-card:#FFFFFF; --v-card-2:#F3F5F9; --v-line:#DDE2EA; --v-track:rgba(18,30,66,.07);
-  --v-ink:#0F1A36; --v-ink-2:#48536B; --v-ink-3:#646D84;
-  --v-brand:#1A7AA3; --v-brand-on:#FFFFFF; --v-brand-sub:#F2F9FC; --v-brand-glass:rgba(10,22,44,.32); --v-brand-shadow:rgba(26,122,163,.5);
-  --v-brand-text:#13698C; --v-brand-soft:#DCEEF6;
-  --v-dock:#13224F; --v-dock-icon:#8691AA; --v-dock-active:#D81E5B; --v-dock-active-on:#FFFFFF;
-  --v-nogo:#C93A22; --v-nogo-ink:#A3301A; --v-nogo-soft:#FBE4DD;
-  --v-shadow:0 1px 2px rgba(15,26,54,.05), 0 10px 28px -12px rgba(19,34,79,.22);
-  --v-raised:0 18px 36px -14px rgba(15,26,54,.35);
-  --v-toast-dot:#5ED69C; --v-toast-action:#7FC8E6;
-}
-[data-v3="dark"][data-palette="harbor"] {
-  --v-bg:#0A0F1E; --v-card:#121A30; --v-card-2:#1A2340; --v-line:#232D4A; --v-ink-3:#878B92;
-  --v-brand:#1A7AA3; --v-brand-on:#FFFFFF; --v-brand-sub:#F2F9FC; --v-brand-glass:rgba(10,22,44,.32); --v-brand-shadow:rgba(35,144,189,.4);
-  --v-brand-text:#7FC8E6; --v-brand-soft:#0F2A38; --v-dock:#1A2547; --v-dock-icon:#8691AA; --v-dock-active:#DA3068; --v-dock-active-on:#FFFFFF;
-  --v-nogo:#CE4A2B; --v-nogo-ink:#FF9277;
-  --v-toast-dot:#13724B; --v-toast-action:#13698C; --v-seg-on:#1A2340;
-}
-
 /* Verdict and requirement-status palettes. Requirement status maps: met→go, fail→nogo, check→check, risk→maybe. */
-.v-go    { --s:var(--v-go);    --on:var(--v-go-on);    --soft:var(--v-go-soft);    --ink:var(--v-go-ink);    --hl:rgba(31,157,99,.2);  --glass:var(--v-glass-dark); --glass-ink:#fff; }
+.v-go    { --s:var(--v-go);    --on:var(--v-go-on);    --soft:var(--v-go-soft);    --ink:var(--v-go-ink);    --hl:rgba(31,157,99,.2);  --glass:var(--v-go-glass); --glass-ink:var(--v-go-glass-ink); }
 .v-maybe { --s:var(--v-maybe); --on:var(--v-maybe-on); --soft:var(--v-maybe-soft); --ink:var(--v-maybe-ink); --hl:rgba(245,165,36,.26); --glass:var(--v-glass-light); --glass-ink:var(--v-maybe-on); }
 .v-nogo  { --s:var(--v-nogo);  --on:var(--v-nogo-on);  --soft:var(--v-nogo-soft);  --ink:var(--v-nogo-ink);  --hl:rgba(210,58,46,.17);  --glass:var(--v-glass-dark); --glass-ink:#fff; }
 .v-check { --s:var(--v-check); --on:var(--v-check-on); --soft:var(--v-check-soft); --ink:var(--v-check-ink); --hl:rgba(97,69,224,.17);  --glass:var(--v-glass-dark); --glass-ink:#fff; }
 .v-closed{ --s:var(--v-card-2);--on:var(--v-ink-2);   --soft:var(--v-card-2);     --ink:var(--v-ink-2);     --hl:rgba(13,15,18,.08);   --glass:var(--v-track); --glass-ink:var(--v-ink-2); }
-[data-v3="dark"] .v-go { --glass:var(--v-glass-light); --glass-ink:var(--v-go-on); } /* dark-mode Go carries dark text */
+/* dark-mode Go carries dark text in Sky and Harbor (light glass): --v-go-glass per theme in shared/tokens.css */
 
 /* ---------- base ---------- */
 *, *::before, *::after { box-sizing:border-box; }
@@ -183,7 +90,9 @@ a { color:inherit; text-decoration:none; }
 .flag-FR { background:linear-gradient(to right,#002654 0 33.34%,#FFFFFF 0 66.67%,#CE1126 0); }
 
 /* ---------- type helpers ---------- */
-.wordmark { font:800 19px/1 var(--font-ui); letter-spacing:-.03em; }
+.wordmark { display:inline-flex; align-items:center; gap:8px; font:800 19px/1 var(--font-ui); letter-spacing:-.03em; white-space:nowrap; }
+.wordmark::before { content:''; width:10px; height:10px; border-radius:50%; background:var(--v-brand); flex:none; } /* the site's 10 px sky dot */
+.welcome-hero .wordmark::before, .on-brand .wordmark::before { background:var(--v-brand-on); }
 .screen-title { font:800 32px/36px var(--font-ui); letter-spacing:-.04em; }
 .sec-h { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:26px 20px 10px; }
 .sec-h h2 { font:800 20px/26px var(--font-ui); letter-spacing:-.025em; }
@@ -232,6 +141,14 @@ a { color:inherit; text-decoration:none; }
 .btn-tonal { background:var(--v-brand-soft); color:var(--v-brand-text); }
 .btn-danger { background:var(--v-card); color:var(--v-nogo-ink); box-shadow:inset 0 0 0 1.5px var(--v-line); }
 .btn[disabled], .btn[aria-disabled="true"] { background:var(--v-track); color:var(--v-ink-3); box-shadow:none; cursor:not-allowed; }
+.btn-metal {
+  padding:0 24px 0 7px; justify-content:center; gap:12px; border-radius:999px; color:#F4F5F7;
+  border:2px solid transparent; background:linear-gradient(#1C1D21, #1C1D21) padding-box, linear-gradient(135deg, #FFFFFF, #6B6F78 28%, #F2F3F5 52%, #4B4E55 78%, #FFFFFF) border-box;
+}
+.metal-ring { position:relative; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; overflow:hidden; flex:none; }
+.metal-spin { position:absolute; inset:0; border-radius:50%; background:conic-gradient(#FFFFFF, #6B6F78, #F2F3F5, #3A3D44, #FFFFFF); animation:spin 5s linear infinite; }
+.metal-core { position:absolute; inset:3px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #3A3D44, #0B0C0E 70%); }
+.metal-ring .ms { position:relative; color:#FFFFFF; }
 .btn-sm { height:44px; border-radius:14px; padding:0 14px; font-size:14px; }
 .btn-md { height:48px; border-radius:16px; padding:0 18px; font-size:15px; }
 .btn-block { width:100%; }
@@ -271,6 +188,8 @@ html.sheet-open { overflow:hidden; }
 .dock a[aria-current="page"] { flex:1; background:var(--v-dock-active); color:var(--v-dock-active-on); padding:0 18px; font:700 15px/1 var(--font-ui); }
 .dock a[aria-current="page"] .ms { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
 .dock a:active { filter:brightness(.94); }
+.dock-ic { position:relative; display:inline-flex; }
+.dock-badge { position:absolute; top:-5px; right:-8px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:var(--v-dock-badge); color:var(--v-dock-badge-on); display:grid; place-items:center; font:700 10px/1 var(--font-ui); }
 
 /* ---------- toast ---------- */
 .toast-root { position:fixed; z-index:60; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; pointer-events:none; }
@@ -323,6 +242,7 @@ html.sheet-open { overflow:hidden; }
   border-radius:0 0 40px 40px; height:calc(366px + var(--safe-top)); flex:none;
 }
 .hero-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
+.hero-grain { position:absolute; inset:0; z-index:-1; opacity:.14; mix-blend-mode:overlay; pointer-events:none; background-image:var(--grain); }
 .hero-fade {
   position:absolute; inset:0; z-index:-1; pointer-events:none;
   background:linear-gradient(to bottom, color-mix(in srgb, var(--v-brand) 70%, transparent) 0%, color-mix(in srgb, var(--v-brand) 8%, transparent) 32%, color-mix(in srgb, var(--v-brand) 20%, transparent) 68%, var(--v-brand) 100%);
@@ -335,23 +255,27 @@ html.sheet-open { overflow:hidden; }
 .icon-btn.glass::after { content:''; position:absolute; inset:-2px; border-radius:50%; } /* 44 px hit area */
 .sub { margin-top:6px; font:500 15px/21px var(--font-ui); color:var(--v-ink-2); }
 .mq-scrim {
-  position:absolute; left:0; right:0; top:calc(var(--safe-top) + 42px); height:160px; pointer-events:none;
+  position:absolute; left:0; right:0; top:calc(var(--safe-top) + 42px); height:150px; pointer-events:none;
   background:linear-gradient(to bottom, color-mix(in srgb, var(--v-brand) 82%, transparent), color-mix(in srgb, var(--v-brand) 62%, transparent) 78%, transparent);
 }
-/* Moving sector band: 4 rows, each two identical groups sliding 0 → −50%, odd rows reversed. Frozen under reduced motion. */
+/* Moving sector band: the site's sector marquee on the phone. Two rows of pill chips (the firm's divisions filled brand),
+   each row two identical groups sliding 0 → −50%, the second row reversed. Frozen under reduced motion. */
 .mq {
-  position:absolute; left:0; right:0; top:calc(var(--safe-top) + 50px); display:flex; flex-direction:column; gap:2px; pointer-events:none;
-  font:400 20px/30px var(--font-ui); letter-spacing:-.015em; color:var(--v-brand-on);
+  position:absolute; left:0; right:0; top:calc(var(--safe-top) + 52px); display:flex; flex-direction:column; gap:8px; pointer-events:none;
   -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
 }
-.mq-row { overflow:hidden; height:30px; }
+.mq-row { overflow:hidden; height:38px; }
 .mq-track { display:flex; width:max-content; animation:ts-marquee var(--d, 48s) linear infinite; will-change:transform; }
 .mq-row:nth-child(even) .mq-track { animation-direction:reverse; }
-.mq-group { display:flex; gap:12px; padding-right:12px; flex:none; }
-.mq-item { display:inline-flex; align-items:baseline; gap:6px; white-space:nowrap; }
-.mq-item.own { font-weight:700; }
-.mq-code { font:500 11px/1 var(--font-mono); opacity:.65; }
-.mq-sep { font-weight:300; opacity:.45; margin-left:8px; }
+.mq-group { display:flex; gap:8px; padding-right:8px; flex:none; }
+.mq-item {
+  display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 14px 0 6px; border-radius:999px; white-space:nowrap;
+  background:rgba(13,15,18,.55); color:#FFFFFF; font:500 14px/1 var(--font-ui); letter-spacing:-.01em; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+.mq-item.own { background:var(--v-brand); color:var(--v-brand-on); font-weight:700; }
+.mq-code { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.12); font:500 11px/1 var(--font-mono); }
+.mq-item.own .mq-code { background:rgba(14,27,43,.12); }
+.mq-sep { display:none; }
 @keyframes ts-marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 .hero-pill {
   position:absolute; z-index:2; left:20px; top:calc(var(--safe-top) + 190px); display:inline-flex; align-items:center; gap:8px; height:30px; padding:0 12px;
@@ -419,14 +343,15 @@ html.sheet-open { overflow:hidden; }
 .feed-head .date { font:600 14px/19px var(--font-ui); color:var(--v-ink-3); }
 .vtiles { display:flex; gap:6px; padding:0 16px; }
 .vtile {
-  flex:var(--n, 1) 1 0; min-width:76px; height:94px; border:0; border-radius:22px; padding:12px 14px;
+  flex:var(--n, 1) 1 0; min-width:76px; height:88px; border:0; border-radius:20px; padding:11px;
   background:var(--s); color:var(--on); text-align:left;
   display:flex; flex-direction:column; justify-content:space-between;
-  transition:flex-grow 400ms var(--ease-out), transform 120ms var(--ease-out);
+  transition:flex-grow var(--dur-rescore-tiles, 450ms) var(--ease-out), transform 120ms var(--ease-out);
 }
 .vtile:active { transform:scale(.98); }
-.vtile .count { font:800 40px/1 var(--font-ui); letter-spacing:-.05em; }
-.vtile .lbl { display:flex; align-items:center; justify-content:space-between; font:700 13px/16px var(--font-ui); }
+.vtile .shape { --sz:9px; }
+.vtile .count { font:800 30px/1 var(--font-ui); letter-spacing:-.04em; margin-top:auto; }
+.vtile .lbl { display:flex; align-items:center; justify-content:space-between; font:700 12px/1 var(--font-ui); margin-top:3px; }
 .pages-line { display:flex; align-items:center; gap:8px; margin:14px 20px 16px; font:500 14px/19px var(--font-ui); color:var(--v-ink-2); }
 .pages-line .ms { color:var(--v-ink-3); }
 .feed-list { margin-top:12px; }
@@ -654,7 +579,7 @@ button.cite-chip::after { content:''; position:absolute; left:0; right:0; top:-9
 .co-tile {
   flex:var(--n, 1) 1 0; min-width:86px; height:52px; border-radius:16px; padding:0 12px;
   background:var(--s); color:var(--on); display:flex; align-items:center; gap:8px;
-  transition:flex-grow 400ms var(--ease-out);
+  transition:flex-grow var(--dur-rescore-tiles, 450ms) var(--ease-out);
 }
 .co-tile b { font:800 22px/1 var(--font-ui); letter-spacing:-.04em; }
 .co-tile span { font:700 13px/1 var(--font-ui); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

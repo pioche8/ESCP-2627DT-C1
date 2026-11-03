@@ -1,10 +1,10 @@
 /*
- * Playwright smoke test at 390×844 in four themes: Sky light, Sky dark, Harbor light, Harbor dark.
+ * Playwright smoke test at 390×844 in six themes: Brand, Sky and Harbor, each light and dark (Brand = the website's palette, default).
  * Dev-only: the app itself has no dependencies.
  *
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
- *   SMOKE_ONLY=light-sky node tests/smoke.js      (one theme while developing)
+ *   SMOKE_ONLY=light-brand node tests/smoke.js    (one theme while developing)
  *
  * Path (CLAUDE.md §8.6 + the BRIEF.md 75-second demo):
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
@@ -55,8 +55,10 @@ async function run(scheme, palette) {
   check(attrs[0] === scheme && attrs[1] === palette, 'html carries data-v3="' + scheme + '" data-palette="' + palette + '"');
   check(!(await page.locator('.dock').count()), 'no dock during onboarding');
   check(await page.locator('.welcome-hero img.hero-photo').count() === 1, 'welcome photo header');
-  check(await page.locator('.mq-row').count() === 4 && await page.locator('.mq-item').count() === 90, 'sector band: 4 rows, 45 EU divisions × 2 groups');
-  check(await page.locator('.mq-item.own').count() === 8, "the firm's 4 divisions are bold (32, 45, 51, 72)");
+  check(await page.locator('.mq-row').count() === 2 && await page.locator('.mq-item').count() === 90, 'sector band: 2 chip rows (the site’s marquee), 45 EU divisions × 2 groups');
+  check(await page.locator('.mq-item.own').count() === 8, "the firm's 4 divisions are filled brand (32, 45, 51, 72)");
+  check(await page.locator('.btn-metal .metal-spin').count() === 1, 'Welcome CTA carries the liquid-metal ring (the site’s button)');
+  check(await page.locator('.wordmark').evaluate((el) => getComputedStyle(el, '::before').width) === '10px', 'wordmark has the 10 px dot (shared with the site)');
   check((await text('.hero-pill')).includes('All 45 EU sectors · 6 new tenders tonight'), 'pill: "All 45 EU sectors · 6 new tenders tonight" (derived from data.js)');
   const prev = await text('.preview-card');
   check(prev.includes('Meets all 4 requirements') && prev.includes('100') && prev.includes('p. 23 · §4.2') && prev.includes('Stadt Ellerbach · 29 d'), 'preview card: Go 100 · Meets all 4 requirements · p. 23 · §4.2');
@@ -206,6 +208,8 @@ async function run(scheme, palette) {
   check((await text('#toast-root')).includes('Saved to Bids'), 'toast "Saved to Bids"');
   await shot('saved');
   await page.click('button[data-act="back"]');
+  await page.waitForSelector('.dock');
+  check((await page.locator('.dock a[href="#/bids"] .dock-badge').innerText()) === '1', 'dock shows the amber-red count badge on Bids (the site’s dock)');
   await page.click('.dock a[href="#/bids"]');
   await page.waitForSelector('.bids-head');
   check((await text('.bids-head .sub')).includes('1 saved · next deadline in 29 days'), 'Bids sub line');
@@ -222,7 +226,7 @@ async function run(scheme, palette) {
   check((await text('.screen')).includes('AI output is simulated') && (await text('.screen')).includes('All data is fictional') && (await text('.screen')).includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
   await shot('about');
   // Palette switch (persisted)
-  const other = palette === 'sky' ? 'harbor' : 'sky';
+  const other = { brand: 'sky', sky: 'harbor', harbor: 'brand' }[palette];
   await page.click('[data-act="palette"][data-value="' + other + '"]');
   check(await page.evaluate(() => document.documentElement.getAttribute('data-palette')) === other, 'palette switch applies data-palette=' + other);
   await load('', '#/about');
@@ -314,7 +318,7 @@ async function reducedMotion() {
 }
 
 (async () => {
-  const themes = [['light', 'sky'], ['dark', 'sky'], ['light', 'harbor'], ['dark', 'harbor']].filter((t) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === t[0] + '-' + t[1]);
+  const themes = [['light', 'brand'], ['dark', 'brand'], ['light', 'sky'], ['dark', 'sky'], ['light', 'harbor'], ['dark', 'harbor']].filter((t) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === t[0] + '-' + t[1]);
   try { for (const t of themes) await run(t[0], t[1]); await reducedMotion(); }
   catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);

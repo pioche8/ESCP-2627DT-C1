@@ -4,7 +4,8 @@
 (function () {
   'use strict';
   var E = window.Engine, D = window.DEMO, AI = window.AI;
-  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme and palette ('sky' | 'harbor')
+  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme and palette ('brand' | 'sky' | 'harbor')
+  var PALETTES = ['brand', 'sky', 'harbor']; // Brand (default) = the website's palette; Sky and Harbor = design/HANDOFF_V2.md
   var STAGES = ['Deciding', 'Bidding', 'Submitted'];
   var SKIP_REASONS = ['Too big for us', 'Missing a certificate', 'Wrong region', 'Not enough time', 'Price-only', 'Other'];
   var LANG_OPTIONS = ['de', 'en', 'es', 'fr', 'nl'];
@@ -25,14 +26,14 @@
   var params = new URLSearchParams(location.search);
   var TODAY = /^\d{4}-\d{2}-\d{2}$/.test(params.get('today') || '') ? params.get('today') : D.DEMO_TODAY; // ?today= test-only
   var forceOffline = params.get('offline') === '1';
-  var paletteParam = params.get('palette');   // ?palette=sky|harbor: demo and test deep link, persisted like the About switch
+  var paletteParam = params.get('palette');   // ?palette=brand|sky|harbor: demo and test deep link, persisted like the About switch
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---------- state ----------
   var mem = null; // in-memory fallback when storage is blocked
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'system', palette: 'sky' };
+    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'system', palette: 'brand' };
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -42,10 +43,10 @@
   var dirty = true;
   function save() { dirty = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } }
   var S = load();
-  if (S.palette !== 'harbor') S.palette = 'sky';   // default (and anything unknown) is Sky
-  if (paletteParam === 'sky' || paletteParam === 'harbor') { S.palette = paletteParam; save(); }
+  if (PALETTES.indexOf(S.palette) === -1) S.palette = 'brand';   // default (and anything unknown, including the old 'sky' default) is Brand
+  if (PALETTES.indexOf(paletteParam) !== -1) { S.palette = paletteParam; save(); }
   if (params.get('demo') === 'reset') {
-    S = fresh(); if (paletteParam === 'harbor') S.palette = 'harbor'; save();
+    S = fresh(); if (PALETTES.indexOf(paletteParam) !== -1) S.palette = paletteParam; save();
     params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
@@ -90,15 +91,15 @@
     if (src) return '<img class="' + cls + '" src="' + src + '" alt="" decoding="async">';
     return '<span class="' + cls + ' photo-ph" aria-hidden="true">' + icon('description', 's24') + '<span class="photo-ph-doc">' + esc(t.doc || 'Tender documents') + ' · ' + t.pages + ' p.</span></span>';
   }
-  // The 45 EU CPV divisions (HANDOFF_V2 §5), for the moving sector band on Welcome. The firm's own divisions (profile.cpv) are bold.
-  var SECTORS = [['03', 'Agriculture & forestry'], ['09', 'Fuel & energy'], ['14', 'Mining & metals'], ['15', 'Food & drink'], ['16', 'Farm machinery'], ['18', 'Clothing & footwear'], ['19', 'Textiles & plastics'], ['22', 'Printing'], ['24', 'Chemicals'], ['30', 'Office & computing'], ['31', 'Electrical & lighting'], ['32', 'Telecom equipment'], ['33', 'Medical & pharma'], ['34', 'Vehicles & transport'], ['35', 'Security & defence'], ['37', 'Sport & games'], ['38', 'Lab & precision'], ['39', 'Furniture'], ['41', 'Water supply'], ['42', 'Industrial machinery'], ['43', 'Construction machinery'], ['44', 'Building materials'], ['45', 'Construction work'], ['48', 'Software'], ['50', 'Repair & maintenance'], ['51', 'Installation'], ['55', 'Hotels & catering'], ['60', 'Transport services'], ['63', 'Logistics & travel'], ['64', 'Postal & telecom'], ['65', 'Utilities'], ['66', 'Finance & insurance'], ['70', 'Real estate'], ['71', 'Architecture & engineering'], ['72', 'IT services'], ['73', 'Research & development'], ['75', 'Public administration'], ['76', 'Oil & gas services'], ['77', 'Landscaping'], ['79', 'Business services'], ['80', 'Education & training'], ['85', 'Health & social care'], ['90', 'Cleaning & environment'], ['92', 'Culture & sport'], ['98', 'Community services']];
+  // The 45 EU CPV divisions (HANDOFF_V2 §5) live in data.js (DEMO.SECTORS, shared with the website). The firm's own divisions (profile.cpv) are bold.
+  var SECTORS = D.SECTORS;
   function marquee() {
     var own = {}; (S.profile.cpv || []).forEach(function (c) { own[c] = true; });
-    var rows = [[], [], [], []], speeds = [42, 54, 38, 60];
-    SECTORS.forEach(function (x, i) { rows[i % 4].push(x); });
+    var rows = [[], []], speeds = [110, 92]; // the site's marquee: two rows, opposite directions, 110 s / 92 s
+    SECTORS.forEach(function (x, i) { rows[i % 2].push(x); });
     return rows.map(function (items, i) {
       var group = '<span class="mq-group">' + items.map(function (x) {
-        return '<span class="mq-item' + (own[x[0]] ? ' own' : '') + '"><span class="mq-code">' + x[0] + '</span>' + esc(x[1]) + '<span class="mq-sep">/</span></span>';
+        return '<span class="mq-item' + (own[x[0]] ? ' own' : '') + '"><span class="mq-code">' + x[0] + '</span>' + esc(x[1]) + '</span>';
       }).join('') + '</span>';
       return '<div class="mq-row"><div class="mq-track" style="--d:' + speeds[i] + 's">' + group + group + '</div></div>';
     }).join('');
@@ -144,9 +145,11 @@
   function backBtn(cls) { return '<button class="' + (cls || 'icon-btn') + '" data-act="back" aria-label="Back">' + icon('chevron_left', 's22') + '</button>'; }
   function dock(active) {
     var tabs = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company']];
+    var nSaved = Object.keys(S.saved).length;
     return '<div class="dock-wrap"><nav class="dock" aria-label="Main">' + tabs.map(function (x) {
-      var on = x[0] === active;
-      return '<a href="' + x[1] + '"' + (on ? ' aria-current="page"' : ' aria-label="' + x[3] + '"') + '>' + icon(x[2], 's24') + (on ? '<span>' + x[3] + '</span>' : '') + '</a>';
+      var on = x[0] === active, badge = x[0] === 'bids' && !on && nSaved; // the site's amber-red count badge on Bids
+      var ic = badge ? '<span class="dock-ic">' + icon(x[2], 's24') + '<span class="dock-badge" aria-hidden="true">' + nSaved + '</span></span>' : icon(x[2], 's24');
+      return '<a href="' + x[1] + '"' + (on ? ' aria-current="page"' : ' aria-label="' + x[3] + (badge ? ', ' + plural(nSaved, 'saved bid') : '') + '"') + '>' + ic + (on ? '<span>' + x[3] + '</span>' : '') + '</a>';
     }).join('') + '</nav></div>';
   }
   function emptyState(ic, title, text, extra) {
@@ -162,7 +165,7 @@
     return '<div class="screen no-top welcome-v2">' +
       '<header class="welcome-hero v2">' +
         '<img class="hero-photo" src="assets/img/app-welcome.png" alt="">' +
-        '<span class="hero-fade" aria-hidden="true"></span>' +
+        '<span class="hero-fade" aria-hidden="true"></span><span class="hero-grain" aria-hidden="true"></span>' +
         '<span class="mq-scrim" aria-hidden="true"></span>' +
         '<div class="mq" aria-hidden="true">' + marquee() + '</div>' +
         '<div class="hero-top"><span class="wordmark">TenderScout</span>' + infoBtn('on-brand glass') + '</div>' +
@@ -181,7 +184,7 @@
       '<form class="welcome-form" id="welcome-form" novalidate>' +
         '<label class="label-text" for="web">Company website</label>' +
         '<div class="input">' + icon('language') + '<input id="web" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" value="' + esc(S.website || 'nordlicht-netzwerk.example') + '"></div>' +
-        '<button type="button" class="btn btn-dark btn-block" data-act="draft">Draft my profile' + icon('arrow_forward') + '</button>' +
+        '<button type="button" class="btn btn-metal btn-block" data-act="draft"><span class="metal-ring" aria-hidden="true"><span class="metal-spin"></span><span class="metal-core"></span>' + icon('arrow_forward') + '</span>Draft my profile</button>' +
         '<p class="caption">Prototype · all companies and tenders are fictional</p>' +
       '</form></div>';
   }
@@ -693,11 +696,13 @@
     if (typeof g.animate === 'function') g.animate([{ opacity: .7 }, { opacity: 0 }], { duration: 700, easing: 'ease-out', fill: 'forwards' }).onfinish = remove;
     setTimeout(remove, 900);
   }
+  // Count-up timing is shared with the website's PhoneDemo: --dur-rescore-count-up (650 ms) with easeOutCubic.
+  var COUNT_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-rescore-count-up'), 10) || 650;
   function countUp(el, from, to) {
     if (reduceMotion || from === to) { el.textContent = to; return; }
     var t0 = performance.now();
     (function step(now) {
-      var k = Math.min(1, (now - t0) / 600);
+      var k = Math.min(1, (now - t0) / COUNT_MS);
       el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
       if (k < 1) requestAnimationFrame(step);
     })(t0);
@@ -722,8 +727,8 @@
       '</div>' +
       '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
         '<p class="label-text" id="lbl-theme">Light or dark</p><div class="seg" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div>' +
-        '<p class="label-text" id="lbl-pal" style="margin-top:14px">Palette</p><div class="seg" role="radiogroup" aria-labelledby="lbl-pal">' + pal('sky', 'Sky') + pal('harbor', 'Harbor') + '</div>' +
-        '<p class="row-sub" style="margin-top:8px">Sky is cloud white and sky blue, Harbor is navy and sea blue. Both follow your light or dark setting.</p></div>' +
+        '<p class="label-text" id="lbl-pal" style="margin-top:14px">Palette</p><div class="seg" role="radiogroup" aria-labelledby="lbl-pal">' + pal('brand', 'Brand') + pal('sky', 'Sky') + pal('harbor', 'Harbor') + '</div>' +
+        '<p class="row-sub" style="margin-top:8px">Brand is the website’s night blue and sky, Sky is cloud white and sky blue, Harbor is navy and sea blue. All follow your light or dark setting.</p></div>' +
       '<div class="about-actions"><button class="btn btn-danger btn-block" data-act="reset">' + icon('restart_alt') + 'Reset demo</button>' +
       '<p class="caption">Clears your profile, answers, saved and skipped tenders. Same as adding ?demo=reset to the address.</p></div>' +
       '</div>';
@@ -944,7 +949,7 @@
       case 'skip-confirm': skipConfirm(d.id); break;
       case 'toast-action': var fn = toastFn; hideToast(); if (fn) fn(); break;
       case 'theme': S.theme = d.value; save(); applyTheme(); render(true); break;
-      case 'palette': S.palette = d.value === 'harbor' ? 'harbor' : 'sky'; save(); applyTheme(); render(true); break;
+      case 'palette': S.palette = PALETTES.indexOf(d.value) !== -1 ? d.value : 'brand'; save(); applyTheme(); render(true); break;
       case 'reset':
         if (!window.confirm('Reset the demo? This clears your profile, answers, saved and skipped tenders.')) break;
         S = fresh(); readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {};
@@ -998,12 +1003,12 @@
   window.addEventListener('online', function () { render(true); });
   window.addEventListener('offline', function () { render(true); });
 
-  // Theme (light / dark / system) and palette (sky / harbor) live on <html> as data-v3 and data-palette (HANDOFF_V2 §1).
+  // Theme (light / dark / system) and palette (brand / sky / harbor) live on <html> as data-v3 and data-palette (HANDOFF_V2 §1 + shared/tokens.json).
   var darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   function applyTheme() {
     var t = S.theme === 'light' || S.theme === 'dark' ? S.theme : (darkMQ && darkMQ.matches ? 'dark' : 'light');
     var d = document.documentElement;
-    d.setAttribute('data-v3', t); d.setAttribute('data-palette', S.palette === 'harbor' ? 'harbor' : 'sky');
+    d.setAttribute('data-v3', t); d.setAttribute('data-palette', PALETTES.indexOf(S.palette) !== -1 ? S.palette : 'brand');
     paintThemeColor();
   }
   function paintThemeColor() {
