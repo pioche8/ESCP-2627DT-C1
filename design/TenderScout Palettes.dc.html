@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400..800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,0&icon_names=add,arrow_forward,battery_full,bookmark,bookmark_add,bookmarks,check,chevron_left,close,description,domain,help,info,language,menu_book,priority_high,question_mark,radar,remove,signal_cellular_alt,trending_up,wifi&display=block">
+<link rel="stylesheet" href="explorations/v3-tokens.css">
+<style>
+body{margin:0;background:#E2E1DD;-webkit-font-smoothing:antialiased}
+a{color:#2546F0;text-decoration:none}
+a:hover{color:#1A32B8}
+</style>
+</helmet>
+<div style="padding:100px 100px 180px;display:flex;flex-direction:column;gap:72px;min-width:max-content;font-family:'Hanken Grotesk',sans-serif;color:#0D0F12">
+
+<header style="display:flex;flex-direction:column;gap:14px;max-width:1100px">
+  <div style="font:600 13px/16px 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#6E7076">TURN 4 · PALETTES · SAME BOLD SYSTEM</div>
+  <div style="font:800 72px/72px 'Hanken Grotesk',sans-serif;letter-spacing:-.05em">Four palettes.</div>
+  <div style="font:500 20px/30px 'Hanken Grotesk',sans-serif;color:#55585E;max-width:860px;text-wrap:pretty">Each one changes the brand, background, dock and accent. Go, Maybe and No-go keep their shapes and stay recognisable in every palette. Pick one, or name a mix, and I’ll apply it to the renders, tokens and DESIGN.md.</div>
+</header>
+
+<section id="turn-4" style="display:flex;flex-direction:column;gap:56px">
+
+  <div id="4a" data-v3="light" data-palette="sky" style="display:flex;flex-direction:column;gap:40px;padding:56px;border-radius:44px;background:var(--v-bg);color:var(--v-ink)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:560px">
+        <div style="display:flex;align-items:center;gap:14px"><a href="#4a" style="display:inline-grid;place-items:center;height:30px;padding:0 11px;border-radius:999px;background:var(--v-ink);color:var(--v-bg);font:600 13px/1 'IBM Plex Mono',monospace">4a</a><span style="font:800 48px/1 'Hanken Grotesk',sans-serif;letter-spacing:-.045em">Sky</span></div>
+        <div style="font:500 18px/27px 'Hanken Grotesk',sans-serif;color:var(--v-ink-2);text-wrap:pretty">Sky blue and cloud white, with amber-red as the accent. Headers carry dark navy text on sky, so it stays readable outdoors.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#5DB8F5"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Sky blue</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#5DB8F5 · brand</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#EEF3F8;box-shadow:inset 0 0 0 1px #D3DCE6"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Cloud white</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#EEF3F8 · background</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#0E1B2B"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Night navy</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#0E1B2B · ink, dock</div></div></div>
+        <div style="width:96px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#F2643A"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Amber-red</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#F2643A · accent</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;height:120px;justify-content:space-between">
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-go);color:var(--v-go-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:9px;height:9px;border-radius:50%;background:currentColor"></span>Go</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-maybe);color:var(--v-maybe-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:10px;height:9px;background:currentColor;clip-path:polygon(50% 0,100% 100%,0 100%)"></span>Maybe</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-nogo);color:var(--v-nogo-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:8px;height:8px;background:currentColor"></span>No-go</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:40px">
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="welcome" palette="sky" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Welcome</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="feed" palette="sky" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Feed</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="detail" palette="sky" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Tender detail</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="company" palette="sky" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Company</span></div>
+    </div>
+  </div>
+
+  <div id="4b" data-v3="light" data-palette="ember" style="display:flex;flex-direction:column;gap:40px;padding:56px;border-radius:44px;background:var(--v-bg);color:var(--v-ink);box-shadow:0 0 0 3px #0D0D0D,10px 10px 0 #0D0D0D">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:560px">
+        <div style="display:flex;align-items:center;gap:14px"><a href="#4b" style="display:inline-grid;place-items:center;height:30px;padding:0 11px;border-radius:999px;background:var(--v-ink);color:var(--v-bg);font:600 13px/1 'IBM Plex Mono',monospace">4b</a><span style="font:800 48px/1 'Hanken Grotesk',sans-serif;letter-spacing:-.045em">Ember</span><span style="height:30px;padding:0 12px;border-radius:8px;background:#FFE135;box-shadow:0 0 0 2px #0D0D0D,3px 3px 0 #0D0D0D;display:flex;align-items:center;font:800 14px/1 'Hanken Grotesk',sans-serif;transform:rotate(-4deg)">PUNK</span></div>
+        <div style="font:500 18px/27px 'Hanken Grotesk',sans-serif;color:var(--v-ink-2);text-wrap:pretty">Red-orange on snow white, black type, yellow as the accent. Cards get hard black outlines and offset shadows. No-go moves to crimson so it doesn’t clash with the brand orange.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#FF4A1C;box-shadow:0 0 0 2px #0D0D0D,4px 4px 0 #0D0D0D"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Red-orange</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#FF4A1C · brand</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#FAFAF7;box-shadow:0 0 0 2px #0D0D0D,4px 4px 0 #0D0D0D"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Snow white</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#FAFAF7 · background</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#0D0D0D;box-shadow:4px 4px 0 #0D0D0D"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Black</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#0D0D0D · ink, outlines</div></div></div>
+        <div style="width:96px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#FFE135;box-shadow:0 0 0 2px #0D0D0D,4px 4px 0 #0D0D0D"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Yellow</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#FFE135 · accent</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;height:120px;justify-content:space-between">
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-go);color:var(--v-go-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:9px;height:9px;border-radius:50%;background:currentColor"></span>Go</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-maybe);color:var(--v-maybe-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:10px;height:9px;background:currentColor;clip-path:polygon(50% 0,100% 100%,0 100%)"></span>Maybe</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-nogo);color:var(--v-nogo-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:8px;height:8px;background:currentColor"></span>No-go</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:40px">
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="welcome" palette="ember" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Welcome</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="feed" palette="ember" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Feed</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="detail" palette="ember" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Tender detail</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="company" palette="ember" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Company</span></div>
+    </div>
+  </div>
+
+  <div id="4c" data-v3="light" data-palette="ocean" style="display:flex;flex-direction:column;gap:40px;padding:56px;border-radius:44px;background:var(--v-bg);color:var(--v-ink)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:560px">
+        <div style="display:flex;align-items:center;gap:14px"><a href="#4c" style="display:inline-grid;place-items:center;height:30px;padding:0 11px;border-radius:999px;background:var(--v-ink);color:var(--v-bg);font:600 13px/1 'IBM Plex Mono',monospace">4c</a><span style="font:800 48px/1 'Hanken Grotesk',sans-serif;letter-spacing:-.045em">Ocean</span></div>
+        <div style="font:500 18px/27px 'Hanken Grotesk',sans-serif;color:var(--v-ink-2);text-wrap:pretty">Sapphire for headers and the main button, ocean blue for the dock and citations, and green as the accent through the Go verdict. Deep and trustworthy, close to a banking app.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#0F3FA8"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Sapphire</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#0F3FA8 · brand</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#0B76A0"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Ocean blue</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#0B76A0 · dock, links</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#EDF2F7;box-shadow:inset 0 0 0 1px #D2DBE5"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Mist</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#EDF2F7 · background</div></div></div>
+        <div style="width:96px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#0E8A5B"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Green</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#0E8A5B · Go</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;height:120px;justify-content:space-between">
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-go);color:var(--v-go-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:9px;height:9px;border-radius:50%;background:currentColor"></span>Go</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-maybe);color:var(--v-maybe-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:10px;height:9px;background:currentColor;clip-path:polygon(50% 0,100% 100%,0 100%)"></span>Maybe</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-nogo);color:var(--v-nogo-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:8px;height:8px;background:currentColor"></span>No-go</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:40px">
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="welcome" palette="ocean" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Welcome</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="feed" palette="ocean" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Feed</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="detail" palette="ocean" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Tender detail</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="company" palette="ocean" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Company</span></div>
+    </div>
+  </div>
+
+  <div id="4d" data-v3="light" data-palette="harbor" style="display:flex;flex-direction:column;gap:40px;padding:56px;border-radius:44px;background:var(--v-bg);color:var(--v-ink)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:560px">
+        <div style="display:flex;align-items:center;gap:14px"><a href="#4d" style="display:inline-grid;place-items:center;height:30px;padding:0 11px;border-radius:999px;background:var(--v-ink);color:var(--v-bg);font:600 13px/1 'IBM Plex Mono',monospace">4d</a><span style="font:800 48px/1 'Hanken Grotesk',sans-serif;letter-spacing:-.045em">Harbor</span></div>
+        <div style="font:500 18px/27px 'Hanken Grotesk',sans-serif;color:var(--v-ink-2);text-wrap:pretty">Sea blue for headers and buttons, navy for type and the dock, and crimson pink only on the active tab. No-go shifts toward orange-red so it reads apart from the pink.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#1A7AA3"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Sea blue</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#1A7AA3 · brand</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#13224F"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Navy</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#13224F · dock, ink</div></div></div>
+        <div style="width:136px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#EEF1F5;box-shadow:inset 0 0 0 1px #D5DBE4"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Fog</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#EEF1F5 · background</div></div></div>
+        <div style="width:96px;display:flex;flex-direction:column;gap:10px"><div style="height:120px;border-radius:24px;background:#D81E5B"></div><div><div style="font:700 15px/20px 'Hanken Grotesk',sans-serif">Crimson pink</div><div style="font:500 12px/16px 'IBM Plex Mono',monospace;color:var(--v-ink-3)">#D81E5B · accent</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;height:120px;justify-content:space-between">
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-go);color:var(--v-go-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:9px;height:9px;border-radius:50%;background:currentColor"></span>Go</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-maybe);color:var(--v-maybe-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:10px;height:9px;background:currentColor;clip-path:polygon(50% 0,100% 100%,0 100%)"></span>Maybe</span>
+          <span style="height:30px;padding:0 12px;border-radius:10px;background:var(--v-nogo);color:var(--v-nogo-on);display:flex;align-items:center;gap:8px;font:700 13px/1 'Hanken Grotesk',sans-serif"><span style="width:8px;height:8px;background:currentColor"></span>No-go</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:40px">
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="welcome" palette="harbor" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Welcome</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="feed" palette="harbor" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Feed</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="detail" palette="harbor" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Tender detail</span></div>
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:center"><dc-import name="PhoneScreen" screen="company" palette="harbor" theme="light" hint-size="414px,868px"></dc-import><span style="font:700 15px/1 'Hanken Grotesk',sans-serif">Company</span></div>
+    </div>
+  </div>
+
+</section>
+
+<section id="turn-3" style="display:flex;flex-direction:column;gap:10px">
+  <div style="font:600 13px/16px 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#6E7076">TURN 3 · COBALT</div>
+  <div style="font:500 17px/24px 'Hanken Grotesk',sans-serif;color:#55585E">The original cobalt version is in <a href="TenderScout%20Renders.dc.html" style="text-decoration:underline">TenderScout Renders.dc.html</a>. Its Palette tweak now switches all of its phones to any of these four.</div>
+</section>
+
+</div>
+</x-dc>
+</body>
+</html>

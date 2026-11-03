@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Engine tests</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;padding:16px;max-width:640px;margin:auto}.ok{color:#0f8a4b}.fail{color:#b42318}</style></head>
+<body>
+<h1>Engine tests (browser)</h1>
+<p>Same checks as <code>node tests/engine.test.js</code>, run in this browser.</p>
+<ul id="out"></ul>
+<script src="engine.js"></script>
+<script src="data.js"></script>
+<script>
+  // Minimal shims so the node test file runs unchanged in the browser
+  var module = undefined;
+  function require(p) {
+    if (p === 'assert') return assertShim;
+    if (p.indexOf('engine') !== -1) return window.Engine;
+    return window.DEMO;
+  }
+  function assertShim(v, m) { if (!v) throw new Error(m || 'assertion failed'); }
+  assertShim.ok = assertShim;
+  assertShim.strictEqual = function (a, b) { if (a !== b) throw new Error(JSON.stringify(a) + ' !== ' + JSON.stringify(b)); };
+  assertShim.deepStrictEqual = function (a, b) { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error('not deep-equal'); };
+  var process = { exitCode: 0 };
+  var out = document.getElementById('out');
+  var origLog = console.log, origErr = console.error;
+  console.log = function () { var li = document.createElement('li'); li.className = 'ok'; li.textContent = [].join.call(arguments, ' '); out.appendChild(li); origLog.apply(console, arguments); };
+  console.error = function () { var li = document.createElement('li'); li.className = 'fail'; li.textContent = [].join.call(arguments, ' '); out.appendChild(li); origErr.apply(console, arguments); };
+</script>
+<script src="tests/engine.test.js"></script>
+</body>
+</html>
