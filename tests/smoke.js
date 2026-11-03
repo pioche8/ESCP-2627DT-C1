@@ -1,15 +1,19 @@
 /*
- * Playwright smoke test at 390×844, light and dark. Dev-only: the app itself has no dependencies.
+ * Playwright smoke test at 390×844 in four themes: Sky light, Sky dark, Harbor light, Harbor dark.
+ * Dev-only: the app itself has no dependencies.
  *
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
+ *   SMOKE_ONLY=light-sky node tests/smoke.js      (one theme while developing)
  *
  * Path (CLAUDE.md §8.6 + the BRIEF.md 75-second demo):
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
  * "comparable qualification" sheet (Escape / scrim / Back close it) → "We meet it" →
  * Ask this tender → Company → ISO 27001 → re-score "Landkreis Hohenau: No-go → Go" →
  * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → About.
- * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link.
+ * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link,
+ * Welcome v2 (photo header, moving sector band, preview card), photo bands and thumbnails, the palette switch
+ * on About (persisted), and the sector band frozen under prefers-reduced-motion.
  * Fails on any console error, page error or failed request.
  */
 const path = require('path');
@@ -25,8 +29,8 @@ fs.mkdirSync(OUT, { recursive: true });
 let failures = 0;
 function check(cond, msg) { if (cond) console.log('  ok   ' + msg); else { failures++; console.log('  FAIL ' + msg); } }
 
-async function run(scheme) {
-  console.log('\n== ' + scheme + ' · ' + BASE);
+async function run(scheme, palette) {
+  console.log('\n== ' + scheme + ' · ' + palette + ' · ' + BASE);
   const browser = await playwright.chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true });
   const problems = [];
@@ -36,7 +40,7 @@ async function run(scheme) {
   let n = 0;
   const shot = async (name, full) => {
     await page.waitForTimeout(450);
-    await page.screenshot({ path: path.join(OUT, `${scheme}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
+    await page.screenshot({ path: path.join(OUT, `${scheme}-${palette}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
   };
   const url = (q, hash) => BASE + (q ? '?' + q : '') + (hash || '');
   const load = async (q, hash) => { await page.goto('about:blank'); await page.goto(url(q, hash)); }; // a real page load, not a same-document hash change
@@ -44,10 +48,19 @@ async function run(scheme) {
   const sheetOpen = () => page.locator('#sheet-root.open [role="dialog"][aria-modal="true"]').count();
   const waitSheet = async (open) => { await page.waitForFunction((o) => !!document.querySelector('#sheet-root.open') === o, open); await page.waitForTimeout(360); };
 
-  // 01–03 Onboarding
-  await page.goto(url('demo=reset'));
+  // 01–03 Onboarding (Welcome v2: HANDOFF_V2 §4–5)
+  await page.goto(url('demo=reset&palette=' + palette));
   await page.waitForSelector('.welcome-hero');
+  const attrs = await page.evaluate(() => [document.documentElement.getAttribute('data-v3'), document.documentElement.getAttribute('data-palette')]);
+  check(attrs[0] === scheme && attrs[1] === palette, 'html carries data-v3="' + scheme + '" data-palette="' + palette + '"');
   check(!(await page.locator('.dock').count()), 'no dock during onboarding');
+  check(await page.locator('.welcome-hero img.hero-photo').count() === 1, 'welcome photo header');
+  check(await page.locator('.mq-row').count() === 4 && await page.locator('.mq-item').count() === 90, 'sector band: 4 rows, 45 EU divisions × 2 groups');
+  check(await page.locator('.mq-item.own').count() === 8, "the firm's 4 divisions are bold (32, 45, 51, 72)");
+  check((await text('.hero-pill')).includes('All 45 EU sectors · 6 new tenders tonight'), 'pill: "All 45 EU sectors · 6 new tenders tonight" (derived from data.js)');
+  const prev = await text('.preview-card');
+  check(prev.includes('Meets all 4 requirements') && prev.includes('100') && prev.includes('p. 23 · §4.2') && prev.includes('Stadt Ellerbach · 29 d'), 'preview card: Go 100 · Meets all 4 requirements · p. 23 · §4.2');
+  check((await text('.welcome-copy')).includes('Find public tenders you can actually win'), 'headline');
   await shot('welcome');
   await page.click('button[data-act="draft"]');
   await page.waitForSelector('#rd-steps .step');
@@ -70,6 +83,9 @@ async function run(scheme) {
   check(!(await text('.feed-list')).includes('(fictional)'), 'bare buyer names on cards');
   check((await text('.screen')).includes('All buyers and tenders are fictional'), 'fictional line on Feed');
   check(await page.locator('.dock a[aria-current="page"] span:not(.ms)').innerText() === 'Feed', 'dock shows Feed active');
+  check(await page.locator('img.tcard-photo').count() === 4 && await page.locator('.tcard-photo.photo-ph').count() === 2, 'feed cards: 4 photo bands + 2 document placeholders');
+  const tileBox = await page.locator('.tcard .score-tile').first().boundingBox();
+  check(tileBox && Math.round(tileBox.width) === 56 && Math.round(tileBox.height) === 56, 'score tile is 56 × 56 over the photo band');
   await shot('feed');
 
   // Filter
@@ -103,6 +119,7 @@ async function run(scheme) {
   await page.click('a.tcard[href="#/t/hoh-security"]');
   await page.waitForSelector('.vblock.v-nogo', { timeout: 8000 });
   check((await text('.vblock')).includes('1 knock-out requirement: you don’t hold ISO 27001. One more needs your answer.'), 'No-go header reason');
+  check(await page.locator('.vblock.has-photo img.vphoto').count() === 1, 'detail header has the multiplied photo');
   check((await text('.sec-h .aside')) === '1 of 3 met', '"1 of 3 met"');
   const order = await page.locator('a.req .status-line b').allInnerTexts();
   check(order.join(' > ') === 'Fails > Needs your check > Meets', 'requirement order fail → check → met');
@@ -136,6 +153,7 @@ async function run(scheme) {
   await page.waitForSelector('.vtiles');
   await page.click('.dock a[href="#/company"]');
   await page.waitForSelector('.co-head');
+  check(await page.locator('.co-head img.co-photo').count() === 1, 'company header photo');
   const hint = await page.locator('[data-hint="cert:ISO 27001"]').innerText();
   check(hint.includes('Turn on → Landkreis Hohenau becomes Go'), 'impact hint before toggling: ' + hint);
   check((await page.locator('[data-hint="cert:VCA"]').innerText()).includes('Gemeente Vlietdam becomes Maybe'), 'VCA hint: Vlietdam becomes Maybe');
@@ -187,6 +205,7 @@ async function run(scheme) {
   await page.click('.dock a[href="#/bids"]');
   await page.waitForSelector('.bids-head');
   check((await text('.bids-head .sub')).includes('1 saved · next deadline in 29 days'), 'Bids sub line');
+  check(await page.locator('.bid-card img.bid-thumb').count() === 1, 'bid card has a 48 px thumbnail');
   check((await text('.skipped')).includes('Missing a certificate'), 'skipped row shows the reason');
   await page.click('button[data-stage="Bidding"][data-id="ell-schools"]');
   check(await page.locator('button[data-stage="Bidding"][data-id="ell-schools"][aria-checked="true"]').count() === 1, 'stage switch to Bidding');
@@ -198,6 +217,15 @@ async function run(scheme) {
   await page.waitForSelector('.about-row');
   check((await text('.screen')).includes('AI output is simulated') && (await text('.screen')).includes('All data is fictional') && (await text('.screen')).includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
   await shot('about');
+  // Palette switch (persisted)
+  const other = palette === 'sky' ? 'harbor' : 'sky';
+  await page.click('[data-act="palette"][data-value="' + other + '"]');
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-palette')) === other, 'palette switch applies data-palette=' + other);
+  await load('', '#/about');
+  await page.waitForSelector('.about-row');
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-palette')) === other && await page.locator('[data-act="palette"][data-value="' + other + '"][aria-checked="true"]').count() === 1, 'palette persists across a reload');
+  await shot('about-' + other);
+  await page.click('[data-act="palette"][data-value="' + palette + '"]');
 
   // Deep link after onboarding
   await load('', '#/t/kal-fibre');
@@ -255,8 +283,24 @@ function watch(page, problems) {
   page.on('requestfailed', (r) => problems.push('requestfailed: ' + r.url() + ' ' + ((r.failure() || {}).errorText || '')));
 }
 
+async function reducedMotion() {
+  console.log('\n== reduced motion · ' + BASE);
+  const browser = await playwright.chromium.launch();
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light', reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto(BASE + '?demo=reset');
+  await page.waitForSelector('.mq-track');
+  const r = await page.evaluate(() => new Promise((resolve) => {
+    const el = document.querySelector('.mq-track'), cs = getComputedStyle(el), a = el.getBoundingClientRect().left;
+    setTimeout(() => resolve({ name: cs.animationName, moved: Math.abs(el.getBoundingClientRect().left - a) }), 600);
+  }));
+  check(r.name === 'none' && r.moved < 0.5, 'sector band is frozen under prefers-reduced-motion (' + r.name + ', moved ' + r.moved + 'px)');
+  await browser.close();
+}
+
 (async () => {
-  try { await run('light'); await run('dark'); }
+  const themes = [['light', 'sky'], ['dark', 'sky'], ['light', 'harbor'], ['dark', 'harbor']].filter((t) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === t[0] + '-' + t[1]);
+  try { for (const t of themes) await run(t[0], t[1]); await reducedMotion(); }
   catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);
   process.exitCode = failures ? 1 : 0;

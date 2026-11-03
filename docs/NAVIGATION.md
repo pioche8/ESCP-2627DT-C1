@@ -2,7 +2,7 @@
 
 Context of use: an owner on a phone, between jobs, often in a van or on site. **One hand, short sessions (1–3 min), patchy signal.** So: a floating dock within thumb reach, one primary action per screen in a bottom bar, every verdict readable in under 3 seconds (shape + label + colour), and no typing in the core loop.
 
-> Updated 2 Nov 2026 for the DESIGN.md "Bold" restyle. Routes and deep links are unchanged; what changed is marked **(new)**.
+> Updated 2 Nov 2026 for the DESIGN.md "Bold" restyle, and 3 Nov 2026 for the design handoff v2 (`design/HANDOFF_V2.md`: Sky and Harbor palettes, photography, Welcome v2, entrances). Routes and deep links are unchanged; what changed is marked **(new)** or **(v2)**.
 
 ## Structure
 Three tabs, three questions the owner asks:
@@ -37,16 +37,16 @@ flowchart TD
 ## Screen list
 | # | Route | Screen | Primary action | Notes |
 |---|---|---|---|---|
-| S1 | `#/welcome/1` | Welcome + website | Draft my profile | Only typed input in the core flow is here |
+| S1 | `#/welcome/1` | Welcome + website | Draft my profile | **(v2)** Photo header with the moving band of all 45 EU sectors (the firm's four in bold, frozen under reduced motion), the pill "All 45 EU sectors · 6 new tenders tonight", and a preview card of tonight's top verdict computed by the engine. Only typed input in the core flow is here |
 | S2 | `#/welcome/2` | Reading (transient) | none | Step list and progress bar **(new)**; replaced in history, not a back target |
 | S3 | `#/welcome/3` | Check profile | Looks right | "Edit" goes to S6 |
-| S4 | `#/feed` | Feed | Open a tender | Summary tiles (tap = filter) and filter All/Go/Maybe/No-go with counts; skipped hidden; saved = bookmark on the card |
-| S5 | `#/t/:id` | Tender detail | Save to Bids | First open per session shows "Reading N pages (lang)…" with progress **(new)**. Requirements sorted fail → check → risk → met |
+| S4 | `#/feed` | Feed | Open a tender | Summary tiles (tap = filter) and filter All/Go/Maybe/No-go with counts; skipped hidden; saved = bookmark on the card. **(v2)** Cards carry a 96 px photo band with the score tile overlapping it; tenders without a photo show a document placeholder. Tapping a card morphs it into the detail header where the browser supports view transitions |
+| S5 | `#/t/:id` | Tender detail | Save to Bids | First open per session shows "Reading N pages (lang)…" with progress **(new)**. **(v2)** The verdict header multiplies the tender photo (grayscale) over the verdict colour. Requirements sorted fail → check → risk → met |
 | S5a | `#/t/:id/req/:rid` | Requirement sheet | We meet it / We don't meet it | Own history entry. Shows status, AI confidence, quote card with the decisive phrase marked, translation |
 | S5b | `#/t/:id/skip` | Skip sheet | Skip tender | Pick any number of reasons, or none **(new)**. Feeds tomorrow's ranking (future) |
-| S6 | `#/company` | Company profile | (live) | Re-score card "Landkreis Hohenau · No-go → Go" and unlock hints such as "Turn on → Gemeente Vlietdam becomes Maybe" **(new)** |
-| S7 | `#/bids` | Bids pipeline | Change stage | Empty groups show "Nothing here yet". **Restore moves a skipped tender to Deciding (new)** |
-| S8 | `#/about` | About / AI disclosure | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)**. `?demo=reset` does the same reset |
+| S6 | `#/company` | Company profile | (live) | Re-score card "Landkreis Hohenau · No-go → Go" and unlock hints such as "Turn on → Gemeente Vlietdam becomes Maybe" **(new)**. **(v2)** Photo behind the top of the header |
+| S7 | `#/bids` | Bids pipeline | Change stage | Empty groups show "Nothing here yet". **Restore moves a skipped tender to Deciding (new)**. **(v2)** 48 px photo thumbnail on each bid card |
+| S8 | `#/about` | About / AI disclosure | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)** and Palette: Sky / Harbor **(v2)**, both persisted. `?demo=reset` does the same reset |
 | – | anything else | Not found | Open Feed | |
 
 **Later (not in prototype):** push notification each morning → deep link `#/t/:id`; consortium-partner finder; calendar export of deadlines and site visits; share a verdict to a colleague by WhatsApp; opening the tender PDF at the cited page (today the citation chip opens the requirement sheet).

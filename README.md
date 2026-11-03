@@ -13,27 +13,30 @@ Team: [names] · Lecturer: `@drdml`
 | Navigation map and flows | [`docs/NAVIGATION.md`](docs/NAVIGATION.md) |
 | Visual design spec (source of truth) | [`DESIGN.md`](DESIGN.md) |
 | Build handoff for Claude Code | [`CLAUDE.md`](CLAUDE.md) |
-| Live prototype | `https://<github-user>.github.io/ESCP-2627DT-<team>/` |
+| Design handoff v2 (wins over DESIGN.md where they differ) | [`design/HANDOFF_V2.md`](design/HANDOFF_V2.md) · [`design/MOTION.md`](design/MOTION.md) |
+| Live prototype | [`https://pioche8.github.io/ESCP-2627DT-C1/`](https://pioche8.github.io/ESCP-2627DT-C1/) (GitHub Pages from `main` / root) |
 
 ## Prototype
 Mobile-first static web app: plain HTML/CSS/JS, no build step, no dependencies.
 
 ```
 index.html     app shell
-styles.css     DESIGN.md "Bold" visual system: tokens, components, light + dark
+styles.css     DESIGN.md "Bold" visual system + the Sky and Harbor palettes (HANDOFF_V2): tokens, components, light + dark
 fonts/         vendored Hanken Grotesk, IBM Plex Mono, Material Symbols subset (no CDN)
+assets/img/    six photos from the design pack (200 px Canva previews, replace with the full-res originals)
+design/        the designer's handoff: HANDOFF_V2.md, MOTION.md, token file, drawn screens and the three films (reference pages, not app code)
 app.js         screens + hash router (#/feed, #/t/:id, #/bids, #/company, #/about)
 engine.js      REAL CODE: qualification check, score, Go/Maybe/No-go verdict (unit-tested)
 ai.js          SIMULATED AI: tender reading, Q&A, profile drafting (pre-written output)
 data.js        FICTIONAL demo company and 6 fictional tenders (DE, AT, ES, NL, FR)
 tests/         node tests/engine.test.js   (24 tests: the original 14 + 10 for the restyle)
-               node tests/smoke.js         (optional Playwright smoke test, 390×844, light + dark)
+               node tests/smoke.js         (optional Playwright smoke test, 390×844, Sky and Harbor in light and dark, plus reduced motion)
 tests.html     same engine tests in the browser
 ```
 
 **Run locally:** open `index.html`, or `python3 -m http.server` and go to `http://localhost:8000`.
 **Reset the demo:** add `?demo=reset` to the URL, or ⓘ → Reset demo.
-**Test-only URL options:** `?today=2026-12-23` shows the Closed state (deadlines passed); `?offline=1` shows the offline banner. Without them the demo date stays fixed at Thu 5 Nov 2026.
+**Test-only URL options:** `?today=2026-12-23` shows the Closed state (deadlines passed); `?offline=1` shows the offline banner; `?palette=harbor` (or `sky`) picks the palette, same as About → Palette. Without them the demo date stays fixed at Thu 5 Nov 2026 and the palette is Sky.
 **Deploy:** repo Settings → Pages → Deploy from branch `main`, folder `/ (root)`.
 
 ### What's real and what's simulated
