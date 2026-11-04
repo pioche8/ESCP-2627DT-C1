@@ -133,6 +133,11 @@
     return '<div class="nav"><span class="wordmark">TenderScout</span>' + (right || '') + '</div>';
   }
   function infoBtn() { return '<button class="icon-btn" data-go="#/about" aria-label="About this prototype">' + icon('info', 's22') + '</button>'; }
+  // Light / dark in one tap from the header (About → Appearance keeps the three-way choice incl. System).
+  function themeBtn() {
+    var next = effectiveScheme() === 'dark' ? 'light' : 'dark';
+    return '<button class="icon-btn" data-act="theme-toggle" aria-label="Switch to ' + next + ' mode" title="Switch to ' + next + ' mode">' + icon('contrast', 's22') + '</button>';
+  }
   function backBtn() { return '<button class="icon-btn" data-act="back" aria-label="Back">' + icon('chevron_left', 's22') + '</button>'; }
   // The bottom tab bar: full width, icon + label; the active tab is brand-coloured with a filled icon and a bolder label.
   var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company']];
@@ -157,7 +162,7 @@
   function welcome() {
     var open = ranked().filter(function (r) { return r.verdict !== 'closed'; });
     return '<div class="screen welcome">' +
-      navRow('<span class="spacer"></span>' + infoBtn()) +
+      navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<img class="photo" src="assets/img/app-welcome.png" alt="">' +
       '<div class="welcome-copy"><h1 class="screen-title" tabindex="-1">Find public tenders you can actually win</h1>' +
         '<p class="welcome-sub">New EU tenders, read overnight in any language. Each answer cites its page.</p>' +
@@ -252,7 +257,7 @@
     }
     pulse = {};
     return '<div class="screen has-tabs">' +
-      navRow(ai() + '<span class="spacer"></span>' + infoBtn()) +
+      navRow(ai() + '<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<div class="feed-head"><h1 class="screen-title reveal" tabindex="-1">' + (open ? words(plural(open, 'new tender'), 'accent') : words('No open tenders')) + '</h1>' +
       '<p class="pages-line">' + esc(dayLabel(TODAY)) + ' · read <b class="count-up" data-n="' + pages + '">' + pages + '</b> pages in ' + langs + ' languages</p></div>' +
       offlineBanner() +
@@ -427,7 +432,7 @@
           ' · <button class="text-btn" data-confirm="clear" data-t="' + t.id + '" data-r="' + rid + '">Undo</button></p>' : '') +
         '<div class="row-btns pair">' +
           '<button class="btn btn-secondary' + (unresolved ? ' btn-check' : '') + '" data-confirm="fail" data-t="' + t.id + '" data-r="' + rid + '">We don’t meet it</button>' +
-          '<button class="btn ' + (unresolved ? 'btn-secondary btn-check' : 'btn-primary') + ' grow-2" data-confirm="pass" data-t="' + t.id + '" data-r="' + rid + '">We meet it</button>' +
+          '<button class="btn ' + (unresolved ? 'btn-secondary btn-check' : 'btn-primary grow-2') + '" data-confirm="pass" data-t="' + t.id + '" data-r="' + rid + '">We meet it</button>' +
         '</div></div></div>';
   }
 
@@ -473,7 +478,7 @@
           '<button class="btn btn-secondary btn-sm" data-unskip="' + id + '" aria-label="Restore ' + esc(t.title) + '">Restore</button></div>';
       }).join('') + '</div>' : '');
     }
-    return '<div class="screen has-tabs">' + navRow('<span class="spacer"></span>' + infoBtn()) +
+    return '<div class="screen has-tabs">' + navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<div class="bids-head"><h1 class="screen-title" tabindex="-1">Bids</h1><p class="sub">' + esc(sub) + '</p></div>' +
       body + fiction() + '</div>';
   }
@@ -504,7 +509,7 @@
         '<button class="switch" role="switch" aria-checked="' + has(p.languages, l) + '" aria-labelledby="lang-' + i + '" data-lang="' + l + '"></button></div>';
     }).join('');
     var html = '<div class="screen ' + (S.onboarded ? 'has-tabs' : 'has-bar') + '">' +
-      navRow('<span class="spacer"></span>' + infoBtn()) +
+      navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<header class="co-head">' +
         '<h1 class="screen-title" tabindex="-1">Company</h1>' +
         '<p class="sub">' + esc(p.name) + ' · ' + esc(p.city) + '</p>' +
@@ -913,6 +918,7 @@
       case 'skip-confirm': skipConfirm(d.id); break;
       case 'toast-action': var fn = toastFn; hideToast(); if (fn) fn(); break;
       case 'theme': S.theme = d.value; save(); applyTheme(); render(true); break;
+      case 'theme-toggle': S.theme = effectiveScheme() === 'dark' ? 'light' : 'dark'; save(); applyTheme(); haptic('select'); render(true); break;
       case 'reset':
         if (!window.confirm('Reset the demo? This clears your profile, answers, saved and skipped tenders.')) break;
         S = fresh(); readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {};
@@ -971,9 +977,9 @@
 
   // Theme (light / dark / system) lives on <html> as data-scheme (shared/tokens.json).
   var darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function effectiveScheme() { return S.theme === 'light' || S.theme === 'dark' ? S.theme : (darkMQ && darkMQ.matches ? 'dark' : 'light'); }
   function applyTheme() {
-    var t = S.theme === 'light' || S.theme === 'dark' ? S.theme : (darkMQ && darkMQ.matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-scheme', t);
+    document.documentElement.setAttribute('data-scheme', effectiveScheme());
     paintThemeColor();
   }
   function paintThemeColor() {
