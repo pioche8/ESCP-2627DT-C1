@@ -257,9 +257,10 @@
     }
     pulse = {};
     return '<div class="screen has-tabs">' +
-      navRow(ai() + '<span class="spacer"></span>' + themeBtn() + infoBtn()) +
+      navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<div class="feed-head"><h1 class="screen-title reveal" tabindex="-1">' + (open ? words(plural(open, 'new tender'), 'accent') : words('No open tenders')) + '</h1>' +
-      '<p class="pages-line">' + esc(dayLabel(TODAY)) + ' · read <b class="count-up" data-n="' + pages + '">' + pages + '</b> pages in ' + langs + ' languages</p></div>' +
+      // "Simulated AI" labels the overnight reading itself (it used to sit in the nav, which overflows a 320 px phone with two header buttons)
+      '<p class="pages-line">' + esc(dayLabel(TODAY)) + ' · read <b class="count-up" data-n="' + pages + '">' + pages + '</b> pages in ' + langs + ' languages<span class="nowrap"> · ' + ai() + '</span></p></div>' +
       offlineBanner() +
       '<div class="tabs filter" role="radiogroup" aria-label="Filter tenders">' + tab('all', 'All') + tab('go', 'Go') + tab('maybe', 'Maybe') + tab('nogo', 'No-go') + '</div>' +
       body +

@@ -96,7 +96,8 @@ async function run(scheme) {
   check(await page.locator('.feed-head h1 .w').count() === 3, 'word-by-word reveal on the headline (three words)');
   check(!(await page.locator('.eyebrow, .ai-pill, .ground, .grain, .glow, .vtiles, .dock').count()), 'no eyebrow, pill, grain, glow, count tiles or floating dock');
   await page.waitForFunction(() => document.querySelector('.pages-line').innerText.includes('777'), null, { timeout: 5000 });
-  check((await text('.pages-line')).includes('Thu 5 Nov · read 777 pages in 4 languages'), 'pages line: "Thu 5 Nov · read 777 pages in 4 languages"');
+  check((await text('.pages-line')).includes('Thu 5 Nov · read 777 pages in 4 languages') && await page.locator('.pages-line .ai').count() === 1 && !(await page.locator('.nav .ai').count()), 'pages line: "Thu 5 Nov · read 777 pages in 4 languages" with the "Simulated AI" label on it (not in the nav)');
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth && document.querySelector('.nav').scrollWidth <= document.querySelector('.nav').clientWidth), 'the Feed header fits the viewport (no horizontal overflow at ' + VW + ' px)');
   check((await text('.tabs.filter')).replace(/\s+/g, ' ').includes('All 6 Go 1 Maybe 2 No-go 3'), 'filter tabs with counts (plain text, the active one underlined)');
   check(await css('.tabs.filter [aria-checked="true"]', 'textDecorationLine') === 'underline' && await css('.tabs.filter [aria-checked="true"]', 'color') === rgb(await token('--c-brand')), 'active filter tab is underlined in brand');
   check(!(await text('.feed-list')).includes('(fictional)'), 'bare buyer names on cards');

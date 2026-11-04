@@ -232,6 +232,7 @@ html.sheet-open { overflow:hidden; }
 .feed-head { padding:6px 20px 16px; }
 .pages-line { margin-top:6px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
 .pages-line b { font-weight:700; color:var(--c-ink); }
+.pages-line .nowrap { white-space:nowrap; } /* the separator wraps together with the "Simulated AI" label */
 .feed-list { margin-top:12px; }
 .feed-foot { margin:20px 20px 0; text-align:center; }
 .tcard-wrap { display:grid; grid-template-rows:1fr; transition:grid-template-rows 240ms var(--ease-out), opacity 240ms var(--ease-out); }
