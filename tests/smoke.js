@@ -96,7 +96,8 @@ async function run(scheme) {
   check(await page.locator('.feed-head h1 .w').count() === 3, 'word-by-word reveal on the headline (three words)');
   check(!(await page.locator('.eyebrow, .ai-pill, .ground, .grain, .glow, .vtiles, .dock').count()), 'no eyebrow, pill, grain, glow, count tiles or floating dock');
   await page.waitForFunction(() => document.querySelector('.pages-line').innerText.includes('777'), null, { timeout: 5000 });
-  check((await text('.pages-line')).includes('Thu 5 Nov · read 777 pages in 4 languages'), 'pages line: "Thu 5 Nov · read 777 pages in 4 languages"');
+  check((await text('.pages-line')).includes('Thu 5 Nov · read 777 pages in 4 languages') && await page.locator('.pages-line .ai').count() === 1 && !(await page.locator('.nav .ai').count()), 'pages line: "Thu 5 Nov · read 777 pages in 4 languages" with the "Simulated AI" label on it (not in the nav)');
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth && document.querySelector('.nav').scrollWidth <= document.querySelector('.nav').clientWidth), 'the Feed header fits the viewport (no horizontal overflow at ' + VW + ' px)');
   check((await text('.tabs.filter')).replace(/\s+/g, ' ').includes('All 6 Go 1 Maybe 2 No-go 3'), 'filter tabs with counts (plain text, the active one underlined)');
   check(await css('.tabs.filter [aria-checked="true"]', 'textDecorationLine') === 'underline' && await css('.tabs.filter [aria-checked="true"]', 'color') === rgb(await token('--c-brand')), 'active filter tab is underlined in brand');
   check(!(await text('.feed-list')).includes('(fictional)'), 'bare buyer names on cards');
@@ -106,6 +107,15 @@ async function run(scheme) {
   check(bar && Math.round(bar.width) === VW && Math.round(bar.height) >= 60 && Math.round(bar.y + bar.height) === VH, 'the tab bar is a full-width 60 px bar at the bottom of the ' + VW + '×' + VH + ' viewport');
   check(await css('.tabbar a[aria-current="page"]', 'color') === rgb(await token('--c-brand')) && await css('.tabbar a[aria-current="page"]', 'fontWeight') === '700' && (await css('.tabbar a[aria-current="page"] .ms', 'fontVariationSettings')).includes('"FILL" 1'), 'active tab = brand colour + filled icon + bolder label');
   check(await page.locator('.tcard img').count() === 0 && await page.locator('.tcard .flag, .tcard .orig, .tcard .why').count() === 0, 'cards carry no photo, flag, original title or reason');
+  // Header appearance toggle: one tap flips the scheme, the next tap flips it back; About keeps System / Light / Dark
+  const otherScheme = scheme === 'dark' ? 'light' : 'dark';
+  const tgl = page.locator('.nav [data-act="theme-toggle"]');
+  const tglBox = await tgl.boundingBox();
+  check(await tgl.count() === 1 && tglBox && tglBox.width >= 44 && tglBox.height >= 44 && (await tgl.getAttribute('aria-label')) === 'Switch to ' + otherScheme + ' mode', 'header has a 44 px appearance toggle labelled "Switch to ' + otherScheme + ' mode"');
+  await tgl.click(); await page.waitForTimeout(50);
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === otherScheme && (await page.locator('.nav [data-act="theme-toggle"]').getAttribute('aria-label')) === 'Switch to ' + scheme + ' mode', 'toggle switches to ' + otherScheme + ' and relabels itself');
+  await page.locator('.nav [data-act="theme-toggle"]').click(); await page.waitForTimeout(50);
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === scheme, 'second tap returns to ' + scheme);
   const card0 = (await text('.tcard')).replace(/\s+/g, ' ');
   check(/^100 Go Structured cabling and Wi-Fi for 12 primary schools Stadt Ellerbach · €480k · 29 d$/.test(card0), 'card = verdict (shape + word + score), title, buyer, value, days left: "' + card0 + '"');
   const tileBox = await page.locator('.tcard .score').first().boundingBox();
@@ -127,6 +137,9 @@ async function run(scheme) {
   check(!(await page.locator('.tabbar').count()), 'no tab bar on detail');
   check((await text('.vhead')).includes('You meet all 4 requirements'), 'Go header reason');
   check((await text('.facts')).replace(/\s+/g, ' ') === 'Value €480k Deadline 4 Dec · 29 days left', 'facts keep value and deadline only');
+  check(await css('.action-bar .btn-secondary', 'backgroundColor') === rgb(await token('--c-muted')) && await css('.action-bar .btn-secondary', 'color') === rgb(await token('--c-bg')) && await css('.action-bar .btn-primary', 'backgroundColor') === rgb(await token('--c-brand')), 'action bar: secondary = muted fill with ground text, primary = brand');
+  const barBtns = await page.locator('.action-bar .btn').evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return [Math.round(r.height), Math.round(r.width)]; }));
+  check(barBtns.length === 2 && barBtns.every((b) => b[0] === 52) && barBtns[1][1] > barBtns[0][1] * 1.6, 'action bar buttons are 52 px tall, Save about twice as wide as Skip: ' + JSON.stringify(barBtns));
   check(await page.locator('.detail-photo').count() === 1 && await page.locator('.detail-photo').evaluate((el) => el.previousElementSibling.classList.contains('vhead')), 'the photo is its own block under the verdict header');
   await scan('detail-go'); await shot('detail-go');
   await page.click('a.req[href="#/t/ell-schools/req/r1"]');
@@ -172,6 +185,8 @@ async function run(scheme) {
   }
   await page.click(reqSel); await waitSheet(true);
   check(await page.locator('.sheet .btn-check').count() === 2, 'unresolved sheet: both answers equal weight, none preselected');
+  const pairW = await page.locator('.sheet .row-btns .btn').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().width)));
+  check(pairW.length === 2 && Math.abs(pairW[0] - pairW[1]) <= 1 && await css('.sheet .row-btns .btn', 'backgroundColor') === rgb(await token('--c-muted')), 'unresolved answers are the same width and both secondary (muted fill): ' + pairW.join(' / '));
   check((await text('.sheet .confidence')).includes('58%'), 'confidence readout 58%');
   check((await text('.sheet .sheet-top')).includes('Needs your check') && (await text('.sheet .sheet-top')).includes('Simulated AI'), 'status and "Simulated AI" as plain text in the sheet');
   await scan('sheet-check'); await shot('sheet-check');

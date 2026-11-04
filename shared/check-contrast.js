@@ -42,6 +42,7 @@ Object.keys(T.color.themes).forEach((s) => {
   check(g, 'bg text on brand (primary button, selected option)', t.bg, t.brand);
   VERDICTS.forEach((v) => check(g, 'bg text on ' + v + ' fill (score tile, count tile)', t.bg, t[v]));
   check(g, 'bg text on ink (toast, primary hover)', t.bg, t.ink);
+  check(g, 'bg text on muted fill (secondary button)', t.bg, t.muted);
   check(g, 'brand fill against bg (switch on, tab underline)', t.brand, t.bg, 'ui');
   check(g, 'muted fill against bg (switch off)', t.muted, t.bg, 'ui');
 });
