@@ -1,6 +1,6 @@
 # evidence.md: TenderScout
 
-Team: ESCP-2627DT-C1 · Members: [names] · Market: EU (interviews in [countries])
+Team: ESCP-2627DT-C1 · Members: <!-- TEAM NAMES -->[names] · Market: EU (interviews in [countries])
 Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 
 > **Integrity rules.** Every entry below comes from a real interview held by the named team member. No AI-generated or "illustrative" interviews. Names and companies are anonymised. Figures are only those the interviewee gave; anything else is marked ASSUMPTION. Demo data in the prototype is fictional and is **not** evidence.

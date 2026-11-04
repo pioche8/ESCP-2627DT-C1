@@ -74,3 +74,9 @@ Open `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` (`?demo=fast` a
 5. **Company** tab → toggle ISO 27001 → green banner "Hohenau: No-go → Go" (10 s). *This is the live code, not a mock.*
 6. "Ask this tender" → "Can we subcontract?" → answer with page (10 s)
 7. Skip the Dutch libraries tender with "Missing a certificate" → Bids (10 s)
+
+## If the phone or the Wi-Fi fails
+In this order, whichever works first:
+1. **The laptop, no network needed.** Open `index.html` from the repository folder in Chrome or Safari (the app is classic scripts, so it runs from `file://`), or run `python3 -m http.server 8000` in the folder and open `http://localhost:8000/?demo=reset,fast`. Press F12 → the phone icon → 390 × 844 so it looks like the phone. Same 7 steps as above.
+2. **The recording.** [`docs/demo/demo-path-390x844.mp4`](docs/demo/demo-path-390x844.mp4) is the 7-step path above, recorded at 390 × 844 (2×, dark, `?demo=reset,fast`), about 2.5 s on each screen, 51 s in all. Talk over it. One still per step for the slides: [`step-1-welcome.png`](docs/demo/step-1-welcome.png), [`step-2-feed.png`](docs/demo/step-2-feed.png), [`step-3-go-tender-citation.png`](docs/demo/step-3-go-tender-citation.png), [`step-4-hohenau-needs-your-check.png`](docs/demo/step-4-hohenau-needs-your-check.png), [`step-5-company-rescore.png`](docs/demo/step-5-company-rescore.png), [`step-6-ask-this-tender.png`](docs/demo/step-6-ask-this-tender.png), [`step-7-bids.png`](docs/demo/step-7-bids.png). Re-record after any change with `node tests/demo-record.js`.
+3. **The film.** `marketing/TenderScout-launch-film-1920x1080.mp4` (also linked from the website) if the pitch needs a visual while the app is fixed.

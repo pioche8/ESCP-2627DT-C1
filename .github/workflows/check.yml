@@ -1,0 +1,28 @@
+# Runs on every push and pull request: the engine's unit tests, the static declutter scan of the five stylesheets,
+# the WCAG AA audit and a check that the generated token files match shared/tokens.json. Node only, no browsers,
+# under a minute. The Playwright smoke test and the site build stay local (docs/START_HERE.md §4).
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Engine tests (24)
+        run: node tests/engine.test.js
+      - name: Declutter scan (static, five stylesheets)
+        run: node tests/declutter-scan.js
+      - name: WCAG AA audit of shared/tokens.json
+        run: node shared/check-contrast.js
+      - name: Generated token files match shared/tokens.json
+        run: |
+          node shared/build-tokens.js
+          git diff --exit-code -- shared/tokens.css site/src/styles/tokens.css site/src/generated/tokens.ts

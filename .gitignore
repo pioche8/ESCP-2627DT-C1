@@ -3,3 +3,5 @@ screenshots/
 .design-cache/
 site/screenshots/
 site/lighthouse/
+
+node_modules/
