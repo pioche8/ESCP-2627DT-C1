@@ -1,12 +1,13 @@
-# TenderScout (ESCP-2627DT-[team])
+# TenderScout (ESCP-2627DT-C1)
 
 **AI reads new EU public tenders in any language and tells a small firm, in one line and with the page that proves it, whether it can actually bid.**
 
 ESCP Digital Transformation (MG34) · Digital Product Design · Group C · Workshop Thu 5 Nov 2026
-Team: [names] · Lecturer: `@drdml`
+Team: <!-- TEAM NAMES -->[names] · Lecturer: `@drdml`
 
 | | |
 |---|---|
+| **Start here** (build day: run it, where things live, verification, conventions, tasks) | [`docs/START_HERE.md`](docs/START_HERE.md) |
 | Idea brief and pitch | [`BRIEF.md`](BRIEF.md) |
 | Stakeholder evidence | [`evidence.md`](evidence.md) |
 | Interview kit | [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md) |
@@ -16,6 +17,7 @@ Team: [names] · Lecturer: `@drdml`
 | Design handoff v2 (wins over DESIGN.md where they differ) | [`design/HANDOFF_V2.md`](design/HANDOFF_V2.md) · [`design/MOTION.md`](design/MOTION.md) |
 | Website handoff (v3) and the shared design system | [`design/website/HANDOFF_WEBSITE.md`](design/website/HANDOFF_WEBSITE.md) · [`shared/tokens.json`](shared/tokens.json) · [`docs/WEBSITE_BUILD_LOG.md`](docs/WEBSITE_BUILD_LOG.md) |
 | Live prototype | [`https://pioche8.github.io/ESCP-2627DT-C1/`](https://pioche8.github.io/ESCP-2627DT-C1/) (GitHub Pages from `main` / root) |
+| Backup demo (if the phone or the Wi-Fi fails) | [`docs/demo/`](docs/demo/): the 7-step path as MP4 and one PNG per step, linked from `BRIEF.md` |
 
 ## Prototype
 Mobile-first static web app: plain HTML/CSS/JS, no build step, no dependencies.
@@ -39,7 +41,11 @@ data.js        FICTIONAL demo company and 6 fictional tenders (DE, AT, ES, NL, F
 tests/         node tests/engine.test.js   (24 tests: the original 14 + 10 for the restyle)
                node tests/smoke.js         (optional Playwright smoke test, 390×844, light + dark + reduced motion; scans every screen for the 18 declutter patterns)
                node tests/declutter-scan.js (static scan of the app's and the site's stylesheets for the same patterns)
+               node tests/demo-record.js   (records the BRIEF.md demo path into docs/demo/: MP4 + one PNG per step; Playwright + ffmpeg)
+               node tests/live-check.js    (compares the files GitHub Pages serves with this checkout, byte for byte; no dependencies)
 tests.html     same engine tests in the browser
+.github/       CI on every push and PR: engine tests, static declutter scan, AA audit, generated tokens in sync (node only, under a minute);
+               the pull-request template carries the verification checklist
 ```
 
 **Run locally:** open `index.html`, or `python3 -m http.server` and go to `http://localhost:8000`.
@@ -81,7 +87,8 @@ node scripts/contact-sheet.cjs    # the site's PhoneDemo next to the real app, s
 - [ ] `git tag v0-shell` on the first commit **only if no interview happened before it** (see the TODO in `evidence.md` §0; not tagged on 3 Nov)
 - [ ] Interviews → `evidence.md` → gate verdict Tue 18:00
 - [x] Update `data.js` / copy with what the evidence changed → the workshop version is the branch **`release/v1-workshop`** (tag pushes are blocked from the build sessions, so the freeze point is a branch at the final `main` commit of 4 Nov). Roll the app and the site back to it in one command: `git push --force-with-lease origin release/v1-workshop:main`
-- [ ] Rehearse the 75-second demo on a real phone (BRIEF.md) and keep a screen recording as backup
+- [ ] Rehearse the 75-second demo on a real phone (BRIEF.md); the backup recording is in `docs/demo/` (BRIEF.md → "If the phone or the Wi-Fi fails")
+- [ ] From a laptop: `node tests/live-check.js` (the live URL serves `main`) and `SMOKE_URL=https://pioche8.github.io/ESCP-2627DT-C1/ node tests/smoke.js`
 
 ## AI use (ESCP policy disclosure)
 - **Claude (Anthropic):** idea selection support, v0 prototype scaffold (all code in this commit), brief draft, interview kit and templates, desk research summary. Session date: 2 Nov 2026.
@@ -94,5 +101,6 @@ node scripts/contact-sheet.cjs    # the site's PhoneDemo next to the real app, s
 - **Claude Code (Anthropic), 3 Nov 2026 (vibe pass):** made the app look and feel like the marketing website (the site's PhoneDemo and its dark, restrained atmosphere). Changed: `styles.css` rewritten on the shared tokens (the website's near-black ground with one audited glow blob per screen and the grain overlay, dark glass chrome, the PhoneDemo dock with its sliding pill, the white pill primary with an arrow, mono eyebrows and two-tone titles, the compact count row, the glass tender header with the score in the verdict colour, the Company photo with the soft-light tint); `app.js` render functions for that markup plus the persistent dock, the word-by-word reveal, the 777 count-up and the touch glow; `index.html` and `app.js` open dark by default with `?theme=` as a deep link; `shared/tokens.json` gained the glass, pill, primary, switch, unlit, scrim, grain, input and per-screen glow tokens (and lost `seg-on`), with seven AA adjustments listed under `adjusted`; `shared/check-contrast.js` now audits every glow peak and the glass header over it (729 pairs, 0 failures); `tests/smoke.js` checks the new chrome and the reduced-motion behaviour; one type fix in the site's `GlowBlob`. Not changed: `engine.js` and its 24 tests, `ai.js`, `data.js`, routes, storage shape, the "Simulated AI" and fictional-data labels. Decisions taken alone are `CLAUDE.md` §11 items 41–52; the rollback branch is `backup/pre-vibe`.
 - **Claude Code (Anthropic), 4 Nov 2026 (declutter, app + website):** removed eighteen visual patterns from both products on the team's brief: pills, tags, chips and badges (statuses and labels are plain text, the floating dock became a full-width bottom tab bar, filters and stages are underlined text tabs), italics, negative tracking, mono type (IBM Plex Mono and the italic font files were deleted), eyebrows, section numbering, all-caps text, dividers, bordered containers, shadows, gradients, glow blobs, grain, photo overlays, large radii (one 8 px radius now) and file or library names in visible text. The palette was cut to nine solid colours per scheme in `shared/tokens.json` (`adjusted` lists every value that differs from the handoff and why); Sky and Harbor were dropped because they only differed by tints and glass the brief removes. Copy on every screen was shortened. Changed: `shared/tokens.json`, `build-tokens.js`, `check-contrast.js` (44 pairs, 0 failures), `styles.css`, `app.js` render functions, `index.html`, `tests/smoke.js`, the new `tests/declutter-scan.js`, and most of `site/src/` plus its scripts. Not changed: `engine.js` and its 24 tests, `ai.js`, `data.js`, routes, `data-*` hooks, the `tenderscout.v2` storage shape, the "Simulated AI" and fictional-data labels, the card → detail and switch → re-score motion. Decisions taken alone are `CLAUDE.md` §11 items 53–68; the rollback branch is `backup/pre-declutter`.
 - **Claude Code (Anthropic), 4 Nov 2026 (workshop follow-up):** the Welcome form sits under the subtitle (no dead space on 375×667 / 390×844 / 430×932); `?demo=fast` (and `?demo=reset,fast`) caps the simulated waits in `ai.js` for the live demo; the ◆ "Needs your check" line shows a 44 px "Check →" call to action; `scroll-padding` for the fixed bars, the re-score card scrolls back into view on short screens, and aborted view transitions are swallowed; the smoke test takes `SMOKE_BROWSER` and `SMOKE_DEVICE` (iPhone 13 and iPhone SE profiles run in Chromium; WebKit cannot be downloaded here); the launch film source was restyled to the token set and both MP4s re-rendered; the freeze point is the branch `release/v1-workshop`; the README says the site is not on Vercel yet. Decisions: `CLAUDE.md` §11 items 69–75.
+- **Claude Code (Anthropic), 4 Nov 2026 (workshop-day preparation):** hardening and preparation only, no feature or copy change in the app. Safari (iOS 17) inspection: three CSS additions (`touch-action: manipulation` on tap targets, `-webkit-user-select` on the icon glyphs, `touch-action: none` on the sheet scrim); everything else on the checklist already held (feature-detected View Transitions, `100dvh` with a `100vh` fallback, `viewport-fit=cover` with `env(safe-area-inset-bottom)` on every fixed bar, storage access in try/catch, self-hosted Hanken Grotesk with `font-display: swap`, 16 px inputs, no CSS nesting or other post-iOS-17 syntax). New: `tests/demo-record.js` and the backup recording in `docs/demo/`; `tests/live-check.js`; two smoke checks on `?demo=reset`; `.github/workflows/check.yml` and the PR template; `docs/START_HERE.md`. The live site could not be fetched from the build container (github.io and the Pages API are blocked there), so the live checks are listed for the team to run from a laptop. Decisions: `CLAUDE.md` §11 items 76–83; the frozen workshop version stays `release/v1-workshop`.
 - **Claude Code (Anthropic), 3 Nov 2026 (design v2):** applied the designer's handoff v2 (`design/HANDOFF_V2.md`): the Sky and Harbor palettes with a persisted switch on About, photography on the feed cards, Bids, tender header and Company, the redesigned Welcome with the moving band of all 45 EU sectors, the handoff's entrance animations and a card-to-detail morph (View Transitions, feature-detected, off under reduced motion). Engine, data and tests are unchanged except for a display-only `photo` field and the firm's fourth CPV division, which changes no score. Fourteen token values were adjusted to keep WCAG AA in all four themes (listed at the top of `styles.css`; decisions in `CLAUDE.md` §11 items 15–24). The smoke test now runs in four themes. The launch film in `design/films/` was rendered to MP4 offline (local copies of React and Babel driving the stage's seek event frame by frame) as a backup demo in `marketing/`. Later the same day the in-app motion was tightened to `design/MOTION.md`: the re-score card now grows out of the control that changed (with a ghost left behind), pops are 480 ms easeOutBack, and the Feed's pages line gets a one-shot shimmer; all off under reduced motion.
 

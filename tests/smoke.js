@@ -67,6 +67,10 @@ async function run(scheme) {
   await page.goto(url('demo=reset&theme=' + scheme));
   await page.waitForSelector('.welcome');
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === scheme, 'html carries data-scheme="' + scheme + '" (?theme= deep link)');
+  // ?demo=reset must leave a fresh tenderscout.v2 behind (every live run starts clean) and drop "reset" from the address
+  const freshState = await page.evaluate(() => { try { return JSON.parse(localStorage.getItem('tenderscout.v2')); } catch (e) { return null; } });
+  check(freshState && freshState.onboarded === false && Object.keys(freshState.overrides).length === 0 && Object.keys(freshState.saved).length === 0 && Object.keys(freshState.skipped).length === 0 && freshState.profile.certifications.join() === 'ISO 9001', '?demo=reset writes a fresh tenderscout.v2 (not onboarded, no answers, saved or skipped tenders, demo profile)');
+  check(!page.url().includes('demo=') && page.url().endsWith('#/welcome/1'), '?demo=reset is removed from the address (a reload does not reset again)');
   check(!(await page.locator('.tabbar').count()), 'no tab bar during onboarding');
   check(await page.locator('.welcome img.photo').count() === 1 && await page.locator('.welcome img.photo').evaluate((el) => el.closest('h1, p, .btn') === null), 'welcome photo sits in its own block, no text on it');
   check((await text('.welcome-copy')).includes('Find public tenders you can actually win') && (await text('.welcome-copy')).includes('All 45 EU sectors · 6 new tenders tonight'), 'headline and the sector line (derived from the data)');
