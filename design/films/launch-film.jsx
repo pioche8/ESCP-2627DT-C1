@@ -1,12 +1,9 @@
-// TenderScout · 45s launch film (1920×1080). Harbor night → Sky morning. Built on animations-v3.
+// TenderScout · 45s launch film (1920×1080). Built on animations-v3. Restyled 4 Nov 2026 to the decluttered token set:
+// the dark scheme's nine colours, one typeface, one 8 px radius, no gradients, shadows, pills, mono or text on photos.
 const { useComposition, CompositionStage, animate, Easing } = window;
 
-const C = {
-  navy: '#0C1633', night: '#121A30', white: '#FFFFFF', nightMuted: '#BCD7E8', pink: '#D81E5B', sea: '#1A7AA3',
-  cloud: '#EEF3F8', ink: '#0E1B2B', muted: '#4A5A6D', amber: '#F2643A', sky: '#5DB8F5', card: '#FFFFFF', line: '#DCE4ED',
-  go: '#13724B', maybe: '#F5A524', maybeOn: '#1A1200', nogo: '#D23A2E', check: '#6145E0', blueText: '#0A6CBC'
-};
-const F = "'Hanken Grotesk', sans-serif", MONO = "'IBM Plex Mono', monospace", ICON = "'Material Symbols Rounded'";
+const C = { bg: '#02040A', surface: '#0B111C', ink: '#FFFFFF', muted: '#8A93A3', brand: '#5DB8F5', go: '#5ED69C', maybe: '#F7C25E', nogo: '#FF8B80', check: '#B3A5FF' };
+const F = "'Hanken Grotesk', sans-serif", ICON = "'Material Symbols Rounded'", R = 8;
 
 // The three motion helpers (MOTION.md): enter, morph, pop. Each returns progress 0..1 at T.
 const MOTION = {
@@ -29,39 +26,35 @@ const Shape = ({ k, s = 12, color = 'currentColor' }) => {
   return <span style={{ ...base, width: s * .9, height: s * .9 }} />;
 };
 const Icon = ({ n, s = 20, style }) => <span style={{ fontFamily: ICON, fontSize: s, lineHeight: 1, fontWeight: 400, ...style }}>{n}</span>;
+const Status = ({ k, label, s = 11, size = 16 }) => <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: `700 ${size}px/1 ${F}`, color: C[k] }}><Shape k={k} s={s} color={C[k]} />{label}</span>;
 
 const SECTORS = [['03','Agriculture & forestry'],['09','Fuel & energy'],['14','Mining & metals'],['15','Food & drink'],['16','Farm machinery'],['18','Clothing & footwear'],['19','Textiles & plastics'],['22','Printing'],['24','Chemicals'],['30','Office & computing'],['31','Electrical & lighting'],['32','Telecom equipment'],['33','Medical & pharma'],['34','Vehicles & transport'],['35','Security & defence'],['37','Sport & games'],['38','Lab & precision'],['39','Furniture'],['41','Water supply'],['42','Industrial machinery'],['43','Construction machinery'],['44','Building materials'],['45','Construction work'],['48','Software'],['50','Repair & maintenance'],['51','Installation'],['55','Hotels & catering'],['60','Transport services'],['63','Logistics & travel'],['64','Postal & telecom'],['65','Utilities'],['66','Finance & insurance'],['70','Real estate'],['71','Architecture & engineering'],['72','IT services'],['73','Research & development'],['75','Public administration'],['76','Oil & gas services'],['77','Landscaping'],['79','Business services'],['80','Education & training'],['85','Health & social care'],['90','Cleaning & environment'],['92','Culture & sport'],['98','Community services']];
 
-function Backdrop({ T, CUES, total }) {
-  const sky = MOTION.morph(T, CUES.Morning - 0.2, 1.6);
-  const push = 1.04 + 0.05 * (T / total);
+// Opening: the harbour photo in its own block on the right (no text on it), gone before the phone lands.
+function Opening({ T, CUES }) {
+  const o = vis(T, CUES.Night + 0.1, CUES.Morning - 0.6);
+  const push = 1 + 0.04 * Math.min(1, Math.max(0, (T - CUES.Night) / 10));
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: C.navy }}>
-      <img src="assets/harbor-dusk.png" style={{ position: 'absolute', inset: -40, width: 2000, height: 1160, objectFit: 'cover', transform: `scale(${push})` }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(12,22,51,.92) 0%, rgba(12,22,51,.55) 55%, rgba(12,22,51,.25) 100%)' }} />
-      <div style={{ position: 'absolute', inset: 0, clipPath: `inset(${(1 - sky) * 100}% 0 0 0)`, background: C.cloud }}>
-        <img src="assets/sky-clouds.png" style={{ position: 'absolute', inset: -40, width: 2000, height: 1160, objectFit: 'cover', transform: `scale(${push})` }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg, rgba(238,243,248,.95) 0%, rgba(238,243,248,.7) 45%, rgba(238,243,248,.15) 100%)' }} />
-      </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, height: 3, top: `${(1 - sky) * 100}%`, background: C.amber, opacity: sky > 0.02 && sky < 0.98 ? 1 : 0 }} />
+    <div style={{ position: 'absolute', left: 1180, top: 140, width: 600, height: 800, borderRadius: R, overflow: 'hidden', background: C.surface, opacity: o }}>
+      <img src="assets/harbor-dusk.png" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${push})` }} />
     </div>
   );
 }
 
 function Marquee({ T, CUES }) {
-  const o = vis(T, CUES.Night + 1.2, CUES.Morning - 0.4);
-  const rows = [0, 1, 2, 3].map(r => SECTORS.filter((_, i) => i % 4 === r));
+  const o = vis(T, CUES.Night + 1.2, CUES.Morning - 0.6);
+  const rows = [0, 1, 2].map(r => SECTORS.filter((_, i) => i % 3 === r));
   const own = { '32': 1, '45': 1, '51': 1, '72': 1 };
   return (
-    <div style={{ position: 'absolute', left: 0, right: 0, top: 640, opacity: o, WebkitMaskImage: 'linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)', maskImage: 'linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)' }}>
+    <div style={{ position: 'absolute', left: 140, width: 980, top: 660, opacity: o, overflow: 'hidden' }}>
       {rows.map((items, i) => {
-        const speed = [70, 52, 84, 60][i] * (i % 2 ? -1 : 1);
+        const speed = [70, 52, 84][i] * (i % 2 ? -1 : 1);
         const x = ((T * speed) % 1800 + 1800) % 1800;
         return (
-          <div key={i} style={{ height: 70, display: 'flex', whiteSpace: 'nowrap', transform: `translateX(${-x}px)`, font: `300 44px/70px ${F}`, color: C.white, letterSpacing: '-.02em' }}>
+          <div key={i} style={{ height: 64, display: 'flex', whiteSpace: 'nowrap', transform: `translateX(${-x}px)`, font: `400 38px/64px ${F}`, color: C.muted }}>
             {[0, 1, 2].map(g => items.map(([c, t]) => (
-              <span key={g + c} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 10, marginRight: 34, fontWeight: own[c] ? 700 : 300, opacity: own[c] ? 1 : .78 }}>
-                <span style={{ font: `500 18px/1 ${MONO}`, opacity: .6 }}>{c}</span>{t}
+              <span key={g + c} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 10, marginRight: 34, fontWeight: own[c] ? 700 : 400, color: own[c] ? C.ink : C.muted }}>
+                <span style={{ font: `500 18px/1 ${F}`, color: C.muted }}>{c}</span>{t}
               </span>
             )))}
           </div>
@@ -72,12 +65,10 @@ function Marquee({ T, CUES }) {
 }
 
 function Headlines({ T, CUES }) {
-  const sky = MOTION.morph(T, CUES.Morning - 0.2, 1.6);
-  const ink = mix('#FFFFFF', C.ink, sky);
   const line = (text, a, b, y, extra = {}) => {
     const p = MOTION.enter(T, a, 0.8), q = MOTION.enter(T, b, 0.5);
     return (
-      <div style={{ position: 'absolute', left: 140, top: y, width: 980, opacity: p * (1 - q), transform: `translateY(${(1 - p) * 40 - q * 30}px)`, font: `800 96px/100px ${F}`, letterSpacing: '-.045em', color: ink, textWrap: 'balance', ...extra }}>{text}</div>
+      <div style={{ position: 'absolute', left: 140, top: y, width: 980, opacity: p * (1 - q), transform: `translateY(${(1 - p) * 40 - q * 30}px)`, font: `800 96px/100px ${F}`, color: C.ink, textWrap: 'balance', ...extra }}>{text}</div>
     );
   };
   const nightUp = MOTION.morph(T, CUES.Reading, 0.8);
@@ -96,135 +87,137 @@ function PageCounter({ T, CUES }) {
   const o = vis(T, CUES.Reading + 0.6, CUES.Morning + 0.2);
   const n = Math.round(777 * MOTION.enter(T, CUES.Reading + 0.8, 4.2));
   return (
-    <div style={{ position: 'absolute', left: 140, top: 552, opacity: o, display: 'flex', alignItems: 'baseline', gap: 22, color: C.white }}>
-      <span style={{ font: `800 72px/1 ${F}`, letterSpacing: '-.04em', fontVariantNumeric: 'tabular-nums' }}>{n}</span>
-      <span style={{ font: `600 26px/1 ${F}`, color: C.nightMuted }}>pages · DE · ES · NL · FR</span>
+    <div style={{ position: 'absolute', left: 140, top: 552, opacity: o, display: 'flex', alignItems: 'baseline', gap: 22, color: C.ink }}>
+      <span style={{ font: `800 72px/1 ${F}`, fontVariantNumeric: 'tabular-nums' }}>{n}</span>
+      <span style={{ font: `600 26px/1 ${F}`, color: C.muted }}>pages in German, Spanish, Dutch and French</span>
     </div>
   );
 }
 
+// The phone: the app's Feed (counts line, three cards), the Hohenau card growing into its detail, and the re-score.
 function Phone({ T, CUES }) {
   const inP = MOTION.pop(T, CUES.Morning + 0.4, 0.8);
   const out = MOTION.morph(T, CUES.Number, 0.9);
-  const lever = MOTION.morph(T, CUES.Lever + 2.2, 1.0);
+  const iso = MOTION.morph(T, CUES.Lever + 2.2, 0.8);     // ISO 27001 on: No-go 25 → Maybe 90
+  const met = MOTION.morph(T, CUES.Lever + 4.6, 0.6);     // "We meet it": Maybe 90 → Go 100
   const expand = MOTION.morph(T, CUES.Proof + 0.2, 1.1);
-  const counts = { go: lerp(1, 2, lever), maybe: 2, nogo: lerp(3, 2, lever) };
-  const tiles = [['go', C.go, '#fff', 'Go', counts.go, Math.round(counts.go)], ['maybe', C.maybe, C.maybeOn, 'Maybe', 2, 2], ['nogo', C.nogo, '#fff', 'No-go', counts.nogo, Math.round(counts.nogo)]];
+  const counts = { go: lerp(1, 2, met), maybe: lerp(2, lerp(3, 2, met), iso), nogo: lerp(3, 2, iso) };
   const cards = [
-    ['go', C.go, '#fff', 100, 'Structured cabling and Wi-Fi for 12 primary schools', 'Stadt Ellerbach · €480k · 29 d', 't-schools', 248],
-    ['maybe', C.maybe, C.maybeOn, 90, 'Fibre-to-the-building rollout', 'Stadtwerke Kaltbrunn · €1.1M · 43 d', 't-fibre', 434]
+    ['go', 100, 'Structured cabling and Wi-Fi for 12 primary schools', 'Stadt Ellerbach · €480k · 29 d', 262],
+    ['maybe', 90, 'Fibre-to-the-building rollout, municipal utility', 'Stadtwerke Kaltbrunn · €1.1M · 43 d', 412]
   ];
-  const r0 = { x: 16, y: 600, w: 358, h: 168, r: 24 }, r1 = { x: 0, y: 0, w: 390, h: 844, r: 0 };
-  const R = k => lerp(r0[k], r1[k], expand);
-  const headCol = mix(C.nogo, C.go, lever);
-  const score = Math.round(lerp(25, 92, lever));
+  const r0 = { x: 16, y: 562, w: 358, h: 140, r: R }, r1 = { x: 0, y: 0, w: 390, h: 844, r: 0 };
+  const Rk = k => lerp(r0[k], r1[k], expand);
+  const verdict = met > .5 ? 'go' : iso > .5 ? 'maybe' : 'nogo';
+  const label = { go: 'Go', maybe: 'Maybe', nogo: 'No-go' }[verdict];
+  const score = Math.round(met > .5 ? lerp(90, 100, met) : lerp(25, 90, iso));
   const detail = MOTION.enter(T, CUES.Proof + 0.9, 0.6);
+  const headline = verdict === 'go' ? 'You meet all 3 requirements.' : verdict === 'maybe' ? 'No knock-outs. One line needs your answer.' : '1 knock-out requirement: you don’t hold ISO 27001.';
   return (
     <div style={{ position: 'absolute', left: 1240, top: 70, transform: `translateY(${(1 - inP) * 140 + out * 40}px) translateX(${out * 760}px) scale(${lerp(.9, 1, inP) * 1.12})`, transformOrigin: '50% 0', opacity: Math.min(1, inP * 1.4) * (1 - out) }}>
-      <div style={{ position: 'absolute', left: -60, right: -60, bottom: -50, height: 140, background: 'radial-gradient(closest-side, rgba(10,30,60,.35), rgba(10,30,60,0))' }} />
-      <div style={{ position: 'relative', width: 414, height: 868, boxSizing: 'border-box', padding: 11, borderRadius: 70, background: '#1B1C20' }}>
-        <div style={{ position: 'relative', width: 390, height: 844, borderRadius: 58, overflow: 'hidden', background: C.cloud, fontFamily: F, color: C.ink }}>
-          <div style={{ position: 'absolute', left: 20, top: 66, font: `700 14px/1 ${F}`, color: C.muted }}>Mon 2 Nov · read overnight</div>
-          <div style={{ position: 'absolute', left: 20, top: 84, font: `800 30px/1.2 ${F}`, letterSpacing: '-.04em' }}>6 new tenders</div>
-          <div style={{ position: 'absolute', left: 16, right: 16, top: 136, height: 92, display: 'flex', gap: 6 }}>
-            {tiles.map(([k, bg, on, l, grow, n], i) => {
+      <div style={{ position: 'relative', width: 414, height: 868, boxSizing: 'border-box', padding: 12, borderRadius: R, background: C.surface }}>
+        <div style={{ position: 'relative', width: 390, height: 844, borderRadius: R, overflow: 'hidden', background: C.bg, fontFamily: F, color: C.ink }}>
+          <div style={{ position: 'absolute', left: 20, top: 40, font: `800 30px/1.1 ${F}` }}>6 new tenders</div>
+          <div style={{ position: 'absolute', left: 20, top: 80, font: `500 15px/1 ${F}`, color: C.muted }}>Thu 5 Nov · read 777 pages in 4 languages</div>
+          <div style={{ position: 'absolute', left: 20, top: 118, display: 'flex', gap: 16, font: `600 15px/1 ${F}` }}>
+            {[['go', counts.go], ['maybe', counts.maybe], ['nogo', counts.nogo]].map(([k, n], i) => {
               const p = MOTION.pop(T, CUES.Morning + 1.0 + i * 0.08, 0.5);
-              return (
-                <div key={k} style={{ flex: grow, minWidth: 0, borderRadius: 22, background: bg, color: on, padding: '12px 12px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transform: `scale(${lerp(.6, 1, p)})`, opacity: Math.min(1, p * 1.5) }}>
-                  <Shape k={k} s={10} />
-                  <div><div style={{ font: `800 38px/1 ${F}`, letterSpacing: '-.05em' }}>{n}</div><div style={{ font: `700 13px/16px ${F}`, marginTop: 3 }}>{l}</div></div>
-                </div>
-              );
+              return <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: C[k], opacity: Math.min(1, p * 1.5), transform: `scale(${lerp(.8, 1, p)})` }}><Shape k={k} s={9} color={C[k]} /><b style={{ fontWeight: 800 }}>{Math.round(n)}</b>{{ go: 'Go', maybe: 'Maybe', nogo: 'No-go' }[k]}</span>;
             })}
           </div>
-          {cards.map(([k, bg, on, sc, title, meta, img, y], i) => {
+          {cards.map(([k, sc, title, meta, y], i) => {
             const p = MOTION.enter(T, CUES.Morning + 1.4 + i * 0.12, 0.7);
             return (
-              <div key={i} style={{ position: 'absolute', left: 16, right: 16, top: y, borderRadius: 24, background: C.card, overflow: 'hidden', boxShadow: '0 10px 28px -12px rgba(30,80,140,.22)', opacity: p * (1 - expand * .6), transform: `translateY(${(1 - p) * 30}px)` }}>
-                <img src={`assets/${img}.png`} style={{ display: 'block', width: '100%', height: 70, objectFit: 'cover' }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '52px 1fr', gap: 12, padding: '0 14px 14px' }}>
-                  <div style={{ width: 52, height: 52, marginTop: -26, borderRadius: 16, background: bg, color: on, display: 'grid', placeItems: 'center', font: `800 20px/1 ${F}`, boxShadow: '0 0 0 4px #fff' }}>{sc}</div>
-                  <div style={{ paddingTop: 10 }}><div style={{ font: `700 15px/19px ${F}` }}>{title}</div><div style={{ font: `500 12px/16px ${F}`, color: C.muted, marginTop: 4 }}>{meta}</div></div>
-                </div>
+              <div key={i} style={{ position: 'absolute', left: 16, right: 16, top: y, borderRadius: R, background: C.surface, padding: 16, display: 'grid', gridTemplateColumns: '48px 1fr', gap: 14, opacity: p * (1 - expand * .6), transform: `translateY(${(1 - p) * 30}px)` }}>
+                <div style={{ width: 48, height: 48, borderRadius: R, background: C[k], color: C.bg, display: 'grid', placeItems: 'center', font: `800 20px/1 ${F}` }}>{sc}</div>
+                <div><Status k={k} label={{ go: 'Go', maybe: 'Maybe' }[k]} s={8} size={13} /><div style={{ font: `700 16px/21px ${F}`, marginTop: 4 }}>{title}</div><div style={{ font: `500 13px/18px ${F}`, color: C.muted, marginTop: 6 }}>{meta}</div></div>
               </div>
             );
           })}
-          <div style={{ position: 'absolute', left: r0.x, top: r0.y, width: r0.w, height: r0.h, borderRadius: r0.r, boxShadow: 'inset 0 0 0 2px rgba(14,27,43,.18)', opacity: expand > 0.05 && expand < 0.999 ? 0.7 * (1 - lever) : 0 }} />
-          <div style={{ position: 'absolute', left: R('x'), top: R('y'), width: R('w'), height: R('h'), borderRadius: R('r'), overflow: 'hidden', background: C.card, boxShadow: '0 10px 28px -12px rgba(30,80,140,.25)', opacity: MOTION.enter(T, CUES.Morning + 1.64, 0.7) }}>
-            <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: lerp(70, 400, expand), background: '#fff', overflow: 'hidden', isolation: 'isolate', borderRadius: `0 0 ${36 * expand}px ${36 * expand}px` }}>
-              <div style={{ position: 'absolute', inset: 0, background: headCol, opacity: Math.min(1, expand * 1.6) }} />
-              <img src="assets/t-audit.png" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', mixBlendMode: 'multiply', opacity: lerp(1, .5, expand), filter: `grayscale(${expand})` }} />
+          <div style={{ position: 'absolute', left: r0.x, top: r0.y, width: r0.w, height: r0.h, borderRadius: r0.r, outline: `1.5px dashed ${C.muted}`, outlineOffset: -1, opacity: expand > 0.05 && expand < 0.999 ? 0.7 : 0 }} />
+          <div style={{ position: 'absolute', left: Rk('x'), top: Rk('y'), width: Rk('w'), height: Rk('h'), borderRadius: Rk('r'), overflow: 'hidden', background: mix(C.surface, C.bg, expand), opacity: MOTION.enter(T, CUES.Morning + 1.64, 0.7) }}>
+            <div style={{ position: 'absolute', left: 16, right: 16, top: 16, display: 'grid', gridTemplateColumns: '48px 1fr', gap: 14, opacity: 1 - Math.min(1, expand * 3) }}>
+              <div style={{ width: 48, height: 48, borderRadius: R, background: C.nogo, color: C.bg, display: 'grid', placeItems: 'center', font: `800 20px/1 ${F}` }}>25</div>
+              <div><Status k="nogo" label="No-go" s={8} size={13} /><div style={{ font: `700 16px/21px ${F}`, marginTop: 4 }}>IT security audit and hardening</div><div style={{ font: `500 13px/18px ${F}`, color: C.muted, marginTop: 6 }}>Landkreis Hohenau · €95k · 22 d</div></div>
             </div>
-            <div style={{ position: 'absolute', left: 14, right: 14, top: 70, display: 'grid', gridTemplateColumns: '52px 1fr', gap: 12, opacity: 1 - Math.min(1, expand * 3) }}>
-              <div style={{ width: 52, height: 52, marginTop: -26, borderRadius: 16, background: C.nogo, color: '#fff', display: 'grid', placeItems: 'center', font: `800 20px/1 ${F}`, boxShadow: '0 0 0 4px #fff' }}>25</div>
-              <div style={{ paddingTop: 10 }}><div style={{ font: `700 15px/19px ${F}` }}>IT security audit</div><div style={{ font: `500 12px/16px ${F}`, color: C.muted, marginTop: 4 }}>Landkreis Hohenau · €95k · 18 d</div></div>
+            <div style={{ position: 'absolute', left: 20, top: 70, opacity: detail }}>
+              <Status k={verdict} label={label} s={12} size={17} />
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6, color: C[verdict] }}><span style={{ font: `800 72px/1 ${F}`, fontVariantNumeric: 'tabular-nums' }}>{score}</span><span style={{ font: `700 20px/1 ${F}`, color: C.muted }}>/100</span></div>
+              <div style={{ marginTop: 14, width: 340, font: `600 18px/25px ${F}`, color: C.ink }}>{headline}</div>
             </div>
-            <div style={{ position: 'absolute', left: 22, top: 112, color: '#fff', opacity: detail }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, font: `700 16px/1 ${F}` }}><Shape k={lever > .5 ? 'go' : 'nogo'} s={11} color="#fff" />{lever > .5 ? 'Go' : 'No-go'}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 14 }}><span style={{ font: `800 140px/.78 ${F}`, letterSpacing: '-.075em', fontVariantNumeric: 'tabular-nums' }}>{score}</span><span style={{ font: `700 22px/1 ${F}` }}>/100</span></div>
-              <div style={{ marginTop: 22, width: 340, font: `600 17px/24px ${F}` }}>{lever > .5 ? 'Meets 5 of 6 requirements. One more needs your answer.' : '1 knock-out requirement: you don’t hold ISO 27001.'}</div>
+            <div style={{ position: 'absolute', left: 20, top: 262, opacity: detail }}>
+              <div style={{ font: `800 24px/30px ${F}` }}>IT security audit and hardening</div>
+              <div style={{ font: `400 14px/20px ${F}`, color: C.muted, marginTop: 4 }}>IT-Sicherheitsaudit und Härtung der Kreisverwaltung</div>
+              <div style={{ font: `500 14px/20px ${F}`, color: C.muted, marginTop: 8 }}>Landkreis Hohenau · Germany</div>
             </div>
-            <div style={{ position: 'absolute', left: 20, top: 424, opacity: detail }}>
-              <div style={{ font: `800 24px/30px ${F}`, letterSpacing: '-.03em' }}>IT security audit</div>
-              <div style={{ font: `italic 400 14px/19px ${F}`, color: C.muted }}>IT-Sicherheitsaudit · Landkreis Hohenau</div>
-            </div>
-            <div style={{ position: 'absolute', left: 16, right: 16, top: 500, padding: '14px 16px', borderRadius: 22, background: '#fff', boxShadow: '0 10px 28px -12px rgba(30,80,140,.3), inset 0 0 0 1px #E4E8EE', opacity: MOTION.enter(T, CUES.Proof + 1.4, 0.6) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, font: `700 12px/16px ${F}`, color: lever > .5 ? '#0E5C3C' : '#A42A20' }}><Shape k={lever > .5 ? 'go' : 'nogo'} s={8} />{lever > .5 ? 'Met' : 'Fails · Knock-out'}</div>
-              <div style={{ font: `700 16px/21px ${F}`, marginTop: 3 }}>ISO 27001 certification</div>
-              <div style={{ font: `500 14px/19px ${F}`, color: C.muted }}>{lever > .5 ? 'In your profile since today.' : 'Not in your profile.'}</div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, height: 26, padding: '0 10px', borderRadius: 13, background: '#F4F7FB', font: `500 12px/1 ${MONO}`, color: C.blueText }}><Icon n="description" s={14} />Vergabeunterlagen p. 12</div>
+            <div style={{ position: 'absolute', left: 16, right: 16, top: 400, padding: 16, borderRadius: R, background: C.surface, opacity: MOTION.enter(T, CUES.Proof + 1.4, 0.6) }}>
+              <Status k={verdict === 'nogo' ? 'nogo' : 'go'} label={verdict === 'nogo' ? 'Fails · Knock-out' : 'Meets · Certificate'} s={8} size={13} />
+              <div style={{ font: `700 16px/21px ${F}`, marginTop: 4 }}>ISO 27001 information security</div>
+              <div style={{ font: `500 14px/20px ${F}`, color: C.muted, marginTop: 2 }}>{verdict === 'nogo' ? 'Missing ISO 27001 (mandatory)' : 'In your profile'}</div>
+              <div style={{ font: `500 13px/18px ${F}`, color: C.muted, marginTop: 8 }}>Vergabeunterlagen, p. 12, §3.1</div>
             </div>
           </div>
-          <div style={{ position: 'absolute', top: 11, left: 133, width: 124, height: 36, borderRadius: 20, background: '#000' }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 60, background: C.surface, display: 'flex', opacity: 1 - Math.min(1, expand * 2) }}>
+            {[['radar', 'Feed', 1], ['bookmarks', 'Bids', 0], ['domain', 'Company', 0]].map(([ic, l, on]) => (
+              <span key={l} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, font: `${on ? 700 : 600} 11px/14px ${F}`, color: on ? C.brand : C.muted }}><Icon n={ic} s={24} />{l}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// The proof: the original sentence and its translation, the decisive phrase underlined in the check colour.
 function Quote({ T, CUES }) {
   const p = MOTION.enter(T, CUES.Proof + 2.4, 0.8), q = MOTION.enter(T, CUES.Lever, 0.5);
   const hl = MOTION.morph(T, CUES.Proof + 3.4, 0.9);
   return (
-    <div style={{ position: 'absolute', left: 150, top: 470, width: 860, padding: '40px 40px 34px', borderRadius: 30, background: '#fff', boxShadow: '0 40px 80px -30px rgba(14,27,43,.45)', opacity: p * (1 - q), transform: `translate(${(1 - p) * -60 - q * 80}px, 0) rotate(-1.5deg)`, color: C.ink }}>
-      <span style={{ position: 'absolute', top: -18, left: 32, height: 36, padding: '0 16px', borderRadius: 999, background: C.ink, color: '#fff', font: `600 15px/36px ${MONO}`, letterSpacing: '.08em' }}>ORIGINAL · GERMAN</span>
-      <div style={{ display: 'flex', justifyContent: 'space-between', font: `500 18px/1 ${MONO}`, color: '#7A8899' }}><span>Vergabeunterlagen</span><span>p. 12 · §3.1</span></div>
-      <div style={{ marginTop: 22, font: `500 34px/50px ${F}` }}>„Der Bieter muss eine gültige <span style={{ backgroundImage: `linear-gradient(rgba(93,184,245,.45), rgba(93,184,245,.45))`, backgroundSize: `${hl * 100}% 100%`, backgroundRepeat: 'no-repeat', boxShadow: `inset 0 -3px 0 ${hl > .99 ? C.blueText : 'transparent'}`, borderRadius: 6, padding: '0 4px' }}>Zertifizierung nach ISO/IEC 27001</span> nachweisen.“</div>
-      <div style={{ marginTop: 18, paddingTop: 16, borderTop: '2px dashed #DCE4ED', font: `500 26px/36px ${F}`, color: C.muted }}>“The bidder must hold a valid ISO/IEC 27001 certification.”</div>
+    <div style={{ position: 'absolute', left: 150, top: 470, width: 860, padding: '34px 40px', borderRadius: R, background: C.surface, opacity: p * (1 - q), transform: `translate(${(1 - p) * -60 - q * 80}px, 0)`, color: C.ink }}>
+      <div style={{ font: `500 20px/1 ${F}`, color: C.muted }}>Original (German) · Vergabeunterlagen, p. 12, §3.1</div>
+      <div style={{ marginTop: 22, font: `400 34px/50px ${F}` }}>„Der Bieter muss eine gültige <span style={{ position: 'relative', display: 'inline-block', fontWeight: 700, color: mix(C.ink, C.check, hl) }}>Zertifizierung nach ISO/IEC 27001<span style={{ position: 'absolute', left: 0, bottom: 2, height: 3, width: `${hl * 100}%`, background: C.check }} /></span> nachweisen.“</div>
+      <div style={{ marginTop: 18, font: `500 26px/36px ${F}`, color: C.muted }}>“The bidder must hold a valid ISO/IEC 27001 certification.”</div>
     </div>
   );
 }
 
+// The lever: the Company switches (ISO 27001, then "We meet it") and the re-score card, as in the app.
 function Lever({ T, CUES }) {
   const p = MOTION.enter(T, CUES.Lever + 0.6, 0.8), q = MOTION.enter(T, CUES.Number, 0.5);
   const flip = MOTION.morph(T, CUES.Lever + 2.0, 0.35);
+  const met = MOTION.morph(T, CUES.Lever + 4.4, 0.3);
   const card = MOTION.pop(T, CUES.Lever + 2.6, 0.6);
-  const cx = lerp(1300, 905, MOTION.morph(T, CUES.Lever + 1.0, 0.9)), cy = lerp(900, 560, MOTION.morph(T, CUES.Lever + 1.0, 0.9));
-  const press = MOTION.enter(T, CUES.Lever + 1.9, 0.12) * (1 - MOTION.enter(T, CUES.Lever + 2.1, 0.2));
-  const Row = ({ t, s, on, hint }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '22px 28px', borderTop: '1px solid #E4E8EE' }}>
-      <div style={{ flex: 1 }}><div style={{ font: `700 30px/38px ${F}` }}>{t}</div><div style={{ font: `500 22px/30px ${F}`, color: C.muted }}>{s}</div>{hint}</div>
-      <span style={{ width: 86, height: 52, borderRadius: 999, background: mix('#D7DEE7', C.sky, on), position: 'relative', flex: 'none' }}><span style={{ position: 'absolute', top: 5, left: lerp(5, 39, on), width: 42, height: 42, borderRadius: '50%', background: '#fff', boxShadow: '0 3px 8px rgba(0,0,0,.2)' }} /></span>
+  const to = met > .5 ? 'go' : 'maybe';
+  const cx = lerp(1300, 905, MOTION.morph(T, CUES.Lever + 1.0, 0.9)) + lerp(0, -60, MOTION.morph(T, CUES.Lever + 3.6, 0.6));
+  const cy = lerp(900, 560, MOTION.morph(T, CUES.Lever + 1.0, 0.9)) + lerp(0, 124, MOTION.morph(T, CUES.Lever + 3.6, 0.6));
+  const press = MOTION.enter(T, CUES.Lever + 1.9, 0.12) * (1 - MOTION.enter(T, CUES.Lever + 2.1, 0.2)) + MOTION.enter(T, CUES.Lever + 4.3, 0.12) * (1 - MOTION.enter(T, CUES.Lever + 4.5, 0.2));
+  const Switch = ({ on }) => (
+    <span style={{ width: 86, height: 52, borderRadius: 26, background: mix(C.muted, C.brand, on), position: 'relative', flex: 'none' }}><span style={{ position: 'absolute', top: 5, left: lerp(5, 39, on), width: 42, height: 42, borderRadius: '50%', background: mix(C.surface, C.bg, on) }} /></span>
+  );
+  const Row = ({ t, s, control, hint }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '18px 28px' }}>
+      <div style={{ flex: 1 }}><div style={{ font: `700 30px/38px ${F}` }}>{t}</div>{s ? <div style={{ font: `500 22px/30px ${F}`, color: C.muted }}>{s}</div> : null}{hint}</div>
+      {control}
     </div>
   );
   return (
     <div style={{ position: 'absolute', inset: 0, opacity: p * (1 - q) }}>
-      <div style={{ position: 'absolute', left: 150, top: 380, width: 820, borderRadius: 36, background: '#fff', boxShadow: '0 40px 80px -30px rgba(14,27,43,.4)', overflow: 'hidden', color: C.ink, transform: `translateY(${(1 - p) * 50}px)` }}>
-        <div style={{ padding: '26px 28px 18px', font: `700 22px/1 ${F}`, color: C.muted }}>Company · Certificates</div>
-        <Row t="ISO 9001" s="Quality management" on={1} />
-        <Row t="ISO 27001" s="Information security" on={flip} hint={<div style={{ font: `700 20px/28px ${F}`, color: flip > .5 ? '#0E5C3C' : C.blueText, marginTop: 4 }}>{flip > .5 ? '✓ Unlocked Landkreis Hohenau' : 'Turn on → Landkreis Hohenau becomes Go'}</div>} />
+      <div style={{ position: 'absolute', left: 150, top: 330, width: 820, borderRadius: R, background: C.surface, color: C.ink, transform: `translateY(${(1 - p) * 50}px)`, padding: '10px 0' }}>
+        <div style={{ padding: '18px 28px 6px', font: `700 22px/1 ${F}`, color: C.muted }}>Company · Certificates</div>
+        <Row t="ISO 9001" s="Quality management" control={<Switch on={1} />} />
+        <Row t="ISO 27001" control={<Switch on={flip} />} hint={<div style={{ font: `700 20px/28px ${F}`, color: flip > .5 ? C.go : C.brand, marginTop: 4 }}>{flip > .5 ? 'Landkreis Hohenau moved up to Maybe' : 'Turn on → Landkreis Hohenau becomes Maybe'}</div>} />
+        <Row t="Staff with “comparable qualification”" control={<span style={{ height: 52, padding: '0 20px', borderRadius: R, background: met > .5 ? C.go : C.bg, color: met > .5 ? C.bg : C.check, display: 'inline-flex', alignItems: 'center', font: `700 22px/1 ${F}`, flex: 'none' }}>{met > .5 ? 'Met' : 'We meet it'}</span>} hint={<div style={{ font: `700 20px/28px ${F}`, color: met > .5 ? C.go : C.brand, marginTop: 4 }}>{met > .5 ? 'Unlocked Landkreis Hohenau' : 'Answer → Landkreis Hohenau becomes Go'}</div>} />
       </div>
-      <div style={{ position: 'absolute', left: 150, top: 800, display: 'flex', alignItems: 'center', gap: 22, padding: '22px 30px 22px 22px', borderRadius: 30, background: '#fff', boxShadow: '0 30px 60px -24px rgba(14,27,43,.45)', color: C.ink, opacity: Math.min(1, card * 1.4), transform: `translateY(${(1 - card) * -24}px) scale(${lerp(.94, 1, card)})`, transformOrigin: '0 0' }}>
-        <span style={{ width: 64, height: 64, borderRadius: 20, background: C.go, color: '#fff', display: 'grid', placeItems: 'center' }}><Icon n="trending_up" s={36} /></span>
-        <div><div style={{ font: `800 28px/34px ${F}` }}>Landkreis Hohenau</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, font: `700 20px/1 ${F}` }}>
-            <span style={{ height: 34, padding: '0 12px', borderRadius: 10, background: C.nogo, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}><Shape k="nogo" s={10} />No-go</span>
-            <Icon n="arrow_forward" s={24} style={{ color: '#7A8899' }} />
-            <span style={{ height: 34, padding: '0 12px', borderRadius: 10, background: C.go, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}><Shape k="go" s={10} />Go</span>
-            <span style={{ font: `500 20px/1 ${F}`, color: C.muted, marginLeft: 6 }}>just now</span></div></div>
+      <div style={{ position: 'absolute', left: 150, top: 820, display: 'flex', flexDirection: 'column', gap: 8, padding: '22px 30px', borderRadius: R, background: C.surface, color: C.ink, opacity: Math.min(1, card * 1.4), transform: `translateY(${(1 - card) * -24}px) scale(${lerp(.94, 1, card)})`, transformOrigin: '0 0' }}>
+        <div style={{ font: `800 28px/34px ${F}` }}>Landkreis Hohenau</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, font: `700 22px/1 ${F}` }}>
+          <Status k="nogo" label="No-go" s={12} size={22} />
+          <Icon n="arrow_forward" s={26} style={{ color: C.muted }} />
+          <Status k={to} label={to === 'go' ? 'Go' : 'Maybe'} s={12} size={22} />
+          <span style={{ font: `500 20px/1 ${F}`, color: C.muted, marginLeft: 6 }}>just now</span></div>
       </div>
-      <div style={{ position: 'absolute', left: cx, top: cy, width: 40, height: 40, transform: `scale(${1 - press * .15})`, opacity: 1 - MOTION.enter(T, CUES.Lever + 3.4, 0.5) }}>
-        <svg width="40" height="40" viewBox="0 0 24 24"><path d="M4 2l16 11-7 1.5L9.5 21z" fill="#0E1B2B" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+      <div style={{ position: 'absolute', left: cx, top: cy, width: 40, height: 40, transform: `scale(${1 - press * .15})`, opacity: 1 - MOTION.enter(T, CUES.Lever + 5.6, 0.5) }}>
+        <svg width="40" height="40" viewBox="0 0 24 24"><path d="M4 2l16 11-7 1.5L9.5 21z" fill={C.ink} stroke={C.bg} strokeWidth="1.5" strokeLinejoin="round" /></svg>
       </div>
     </div>
   );
@@ -239,7 +232,7 @@ function Numbers({ T, CUES }) {
         const p = MOTION.enter(T, CUES.Number + 0.4 + i * 0.5, 0.8);
         return (
           <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 30, opacity: p, transform: `translateX(${(1 - p) * -60}px)`, color: C.ink }}>
-            <span style={{ font: `800 168px/.9 ${F}`, letterSpacing: '-.06em', minWidth: 520, fontVariantNumeric: 'tabular-nums' }}>{n}</span>
+            <span style={{ font: `800 168px/.9 ${F}`, minWidth: 560, fontVariantNumeric: 'tabular-nums' }}>{n}</span>
             <span style={{ font: `600 40px/1.1 ${F}`, color: C.muted }}>{l}</span>
           </div>
         );
@@ -252,22 +245,21 @@ function CTA({ T, CUES }) {
   const a = MOTION.enter(T, CUES.CTA + 0.3, 0.9), b = MOTION.enter(T, CUES.CTA + 0.9, 0.8), c = MOTION.pop(T, CUES.CTA + 1.5, 0.6);
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: C.ink, textAlign: 'center' }}>
-      <div style={{ font: `800 190px/1 ${F}`, letterSpacing: '-.06em', opacity: a, transform: `translateY(${(1 - a) * 40}px) scale(${lerp(.96, 1, a)})` }}>TenderScout</div>
-      <div style={{ marginTop: 26, font: `600 48px/1.2 ${F}`, letterSpacing: '-.02em', color: C.muted, opacity: b, transform: `translateY(${(1 - b) * 24}px)` }}>Find public tenders you can actually win</div>
-      <div style={{ marginTop: 56, height: 96, padding: '0 48px', borderRadius: 32, background: C.ink, color: '#fff', display: 'flex', alignItems: 'center', gap: 16, font: `700 38px/1 ${F}`, opacity: Math.min(1, c * 1.5), transform: `scale(${lerp(.85, 1, c)})` }}>Draft my profile<Icon n="arrow_forward" s={42} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 36, font: `800 190px/1 ${F}`, opacity: a, transform: `translateY(${(1 - a) * 40}px) scale(${lerp(.96, 1, a)})` }}><span style={{ width: 56, height: 56, borderRadius: '50%', background: C.brand, display: 'inline-block' }} />TenderScout</div>
+      <div style={{ marginTop: 26, font: `600 48px/1.2 ${F}`, color: C.muted, opacity: b, transform: `translateY(${(1 - b) * 24}px)` }}>Find public tenders you can actually win</div>
+      <div style={{ marginTop: 56, height: 96, padding: '0 48px', borderRadius: R, background: C.brand, color: C.bg, display: 'flex', alignItems: 'center', font: `700 38px/1 ${F}`, opacity: Math.min(1, c * 1.5), transform: `scale(${lerp(.85, 1, c)})` }}>Draft my profile</div>
     </div>
   );
 }
 
 function Film() {
-  const { T, CUES, authoredTotal } = useComposition();
-  const sky = MOTION.morph(T, CUES.Morning - 0.2, 1.6);
+  const { T, CUES } = useComposition();
   return (
-    <div data-screen-label={`t=${Math.floor(T)}s`} style={{ position: 'absolute', inset: 0, overflow: 'hidden', fontFamily: F }}>
-      <Backdrop T={T} CUES={CUES} total={authoredTotal} />
-      <div style={{ position: 'absolute', left: 140, top: 92, display: 'flex', alignItems: 'center', gap: 12, font: `800 30px/1 ${F}`, letterSpacing: '-.03em', color: mix('#FFFFFF', C.ink, sky), opacity: 1 - MOTION.enter(T, CUES.CTA, 0.4) }}>
-        <span style={{ width: 12, height: 12, borderRadius: '50%', background: mix(C.pink, C.amber, sky) }} />TenderScout
+    <div data-screen-label={`t=${Math.floor(T)}s`} style={{ position: 'absolute', inset: 0, overflow: 'hidden', fontFamily: F, background: C.bg }}>
+      <div style={{ position: 'absolute', left: 140, top: 92, display: 'flex', alignItems: 'center', gap: 12, font: `800 30px/1 ${F}`, color: C.ink, opacity: 1 - MOTION.enter(T, CUES.CTA, 0.4) }}>
+        <span style={{ width: 12, height: 12, borderRadius: '50%', background: C.brand }} />TenderScout
       </div>
+      <Opening T={T} CUES={CUES} />
       <Marquee T={T} CUES={CUES} />
       <Headlines T={T} CUES={CUES} />
       <PageCounter T={T} CUES={CUES} />
@@ -276,7 +268,7 @@ function Film() {
       <Phone T={T} CUES={CUES} />
       <Numbers T={T} CUES={CUES} />
       <CTA T={T} CUES={CUES} />
-      <div style={{ position: 'absolute', right: 60, bottom: 44, font: `500 18px/1 ${MONO}`, color: mix('#BCD7E8', C.muted, sky), letterSpacing: '.04em' }}>Prototype · fictional data</div>
+      <div style={{ position: 'absolute', right: 60, bottom: 44, font: `500 18px/1 ${F}`, color: C.muted }}>Prototype · fictional data</div>
     </div>
   );
 }
@@ -285,7 +277,7 @@ function LaunchFilmApp() {
   const [t, setTweak] = window.useTweaks(window.TWEAK_DEFAULTS);
   return (
     <>
-      <CompositionStage width={1920} height={1080} scenes={window.OM_SCENES} playback={window.OM_PLAYBACK} bg="#0C1633">
+      <CompositionStage width={1920} height={1080} scenes={window.OM_SCENES} playback={window.OM_PLAYBACK} bg="#02040A">
         <Film />
       </CompositionStage>
       <window.TweaksPanel>

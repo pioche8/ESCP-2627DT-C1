@@ -6,7 +6,10 @@
 // The design pages load React, ReactDOM and Babel from unpkg. Serve the repo root over HTTP and, where the CDN is
 // not reachable, serve local copies of the three UMD files and point LIBS at them (default http://127.0.0.1:8125/libs):
 //   react@18.3.1/umd/react.production.min.js, react-dom@18.3.1/umd/react-dom.production.min.js, @babel/standalone@7.29.0/babel.min.js
-// Used on 3 Nov 2026 for marketing/TenderScout-launch-film-1920x1080.mp4 (1350 frames at 30 fps), then marketing/encode.sh.
+//   (all three come from the npm registry: npm install --no-save react@18.3.1 react-dom@18.3.1 @babel/standalone@7.29.0)
+// The film page declares the vendored fonts itself (fonts/ next to the repo root), so no font CDN is needed.
+// Used on 3 Nov 2026 and again on 4 Nov 2026 (decluttered film) for marketing/TenderScout-launch-film-1920x1080.mp4
+// (1350 frames at 30 fps), then marketing/encode.sh.
 const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path');
 const [,, URL_, DIR, FPS_ = '30', MAX_ = ''] = process.argv; const FPS = +FPS_;
 fs.mkdirSync(DIR, { recursive: true });
@@ -30,7 +33,7 @@ fs.mkdirSync(DIR, { recursive: true });
   });
   // Load every font the films use before the first frame (frame 0 must not paint in a fallback face).
   await page.evaluate(async () => {
-    const faces = ['300 44px "Hanken Grotesk"', '400 30px "Hanken Grotesk"', '500 30px "Hanken Grotesk"', '600 30px "Hanken Grotesk"', '700 30px "Hanken Grotesk"', '800 96px "Hanken Grotesk"', 'italic 400 30px "Hanken Grotesk"', '500 18px "IBM Plex Mono"', '600 18px "IBM Plex Mono"', '400 24px "Material Symbols Rounded"'];
+    const faces = ['400 30px "Hanken Grotesk"', '500 30px "Hanken Grotesk"', '600 30px "Hanken Grotesk"', '700 30px "Hanken Grotesk"', '800 96px "Hanken Grotesk"', '400 24px "Material Symbols Rounded"'];
     await Promise.all(faces.map(f => document.fonts.load(f).catch(() => null)));
     await document.fonts.ready;
   });

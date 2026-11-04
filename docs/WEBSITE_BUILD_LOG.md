@@ -65,7 +65,7 @@ See `CLAUDE.md` §11 items 26–40: Brand palette as the app default (Sky / Harb
    git push origin v1-workshop-safe
    ```
    Roll back the app in one command: `git checkout v1-workshop-safe -- index.html styles.css app.js data.js fonts`.
-2. **Vercel**: import the repository → Root Directory `site` → framework Next.js → build `npm run build` → output default → install `npm install` → Node 22 → no environment variables → Deploy. Optionally enable "Include source files outside of the Root Directory in the Build Step" so `prebuild` re-syncs from the app on each deploy. Then put the production URL in `README.md`.
+2. **Vercel** (still open on 4 Nov: project creation in the team was refused): someone with team access imports the repository → Root Directory `site` → framework Next.js → build `npm run build` → output default → install `npm install` → Node 22 → no environment variables → Deploy. Optionally enable "Include source files outside of the Root Directory in the Build Step" so `prebuild` re-syncs from the app on each deploy. Then put the production URL in `README.md`. Until then `STATIC_EXPORT=1 npm run build` gives a static preview.
 3. **Replace the photos** in `site/public/assets/` (and `assets/img/`, `design/assets/`) with the full-resolution Canva exports under the same names, then run `cd site && npm run sync && npm run check`.
 4. **Merge** `claude/festive-ptolemy-xzsoe1` into `main` if the session's push to `main` was refused (see the final report): `git checkout main && git merge --ff-only claude/festive-ptolemy-xzsoe1 && git push origin main`.
 

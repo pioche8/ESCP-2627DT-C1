@@ -11,6 +11,6 @@ node scripts/a11y-motion.cjs      # reduced-motion and keyboard checks
 node scripts/contact-sheet.cjs    # the PhoneDemo next to the real app in the same states
 ```
 
-Deploy on Vercel with **Root Directory = `site`** (build `npm run build`, Node 22, no environment variables). Design tokens come from `../shared/tokens.json`: run `npm run tokens` after editing it. Map data: Natural Earth via the `world-atlas` npm package, drawn with `d3-geo` (nothing fetched at runtime). Full notes: the root `README.md` ("Website") and `../docs/WEBSITE_BUILD_LOG.md`.
+Not deployed yet: creating the project in the Vercel team was refused. It deploys to Vercel once someone with team access imports the repository with **Root Directory = `site`** (build `npm run build`, Node 22, no environment variables); `STATIC_EXPORT=1 npm run build` produces a static preview in `out/` meanwhile. Design tokens come from `../shared/tokens.json`: run `npm run tokens` after editing it. Map data: Natural Earth via the `world-atlas` npm package, drawn with `d3-geo` (nothing fetched at runtime). Full notes: the root `README.md` ("Website") and `../docs/WEBSITE_BUILD_LOG.md`.
 
 Prototype · AI output is simulated · all companies and tenders are fictional.

@@ -65,7 +65,8 @@ Subscription per company: **€49/month** (1 user, 2 countries) or **€149/mont
 > TenderScout reads every new tender for you overnight. In the morning you get three answers: Go, Maybe, No-go, each with the exact page that proves it. Unsure? It asks you, it doesn't guess. Add a certificate to your profile and watch tenders flip from No-go to Go.
 > Search tools exist and bid-writing tools are funded. We're the 60-second qualification check for the 20-person firm with no bid manager. We spoke to [N] owners: [insert evidence]."
 
-## 75-second demo (on a real phone, after `?demo=reset`)
+## 75-second demo (on a real phone, after `?demo=reset,fast`)
+Open `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` (`?demo=fast` alone keeps your state). `fast` shortens the two simulated AI waits (profile draft, tender reading) to about 300 ms so the path fits in 75 seconds; the "Simulated AI" labels and everything else are unchanged.
 1. Welcome → "Draft my profile" → reading → "Looks right" (10 s)
 2. Feed: "1 Go · 2 Maybe · 3 No-go, read 777 pages in 4 languages" (5 s)
 3. Open the **Go** tender → the qualification check → tap a line → original German sentence + translation + page (15 s)

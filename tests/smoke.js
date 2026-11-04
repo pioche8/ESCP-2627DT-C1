@@ -5,6 +5,7 @@
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
  *   SMOKE_ONLY=light node tests/smoke.js          (one scheme while developing)
+ *   SMOKE_BROWSER=webkit SMOKE_DEVICE="iPhone 13" node tests/smoke.js   (Safari engine with a Playwright device profile; also "iPhone SE")
  *
  * Path (CLAUDE.md §8.6 + the BRIEF.md 75-second demo):
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
@@ -31,18 +32,25 @@ fs.mkdirSync(OUT, { recursive: true });
 let failures = 0;
 function check(cond, msg) { if (cond) console.log('  ok   ' + msg); else { failures++; console.log('  FAIL ' + msg); } }
 
+const BROWSER = process.env.SMOKE_BROWSER || 'chromium';
+const DEVICE = process.env.SMOKE_DEVICE ? playwright.devices[process.env.SMOKE_DEVICE] : null;
+if (process.env.SMOKE_DEVICE && !DEVICE) { console.error('Unknown device ' + process.env.SMOKE_DEVICE); process.exit(2); }
+const contextOptions = (extra) => ({ ...(DEVICE || { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }), ...extra });
+
 async function run(scheme) {
-  console.log('\n== ' + scheme + ' · ' + BASE);
-  const browser = await playwright.chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true });
+  console.log('\n== ' + scheme + ' · ' + BROWSER + (DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '') + ' · ' + BASE);
+  const browser = await playwright[BROWSER].launch();
+  const ctx = await browser.newContext(contextOptions({ colorScheme: scheme }));
+  const VW = (DEVICE ? DEVICE.viewport : { width: 390, height: 844 }).width, VH = (DEVICE ? DEVICE.viewport : { width: 390, height: 844 }).height;
   const problems = [];
   ctx.on('page', (p) => watch(p, problems));
   const page = await ctx.newPage();
   page.on('dialog', (d) => d.accept());
   let n = 0;
+  const tag = scheme + (DEVICE ? '-' + process.env.SMOKE_DEVICE.replace(/\s+/g, '').toLowerCase() : '') + (BROWSER !== 'chromium' ? '-' + BROWSER : '');
   const shot = async (name, full) => {
     await page.waitForTimeout(450);
-    await page.screenshot({ path: path.join(OUT, `${scheme}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
+    await page.screenshot({ path: path.join(OUT, `${tag}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
   };
   const url = (q, hash) => BASE + (q ? '?' + q : '') + (hash || '');
   const load = async (q, hash) => { await page.goto('about:blank'); await page.goto(url(q, hash)); }; // a real page load, not a same-document hash change
@@ -65,6 +73,8 @@ async function run(scheme) {
   check((await text('.welcome')).includes('all companies and tenders are fictional'), 'fictional line on Welcome');
   check(await css('.welcome .field', 'borderStyle') === 'none' && await css('.btn-primary', 'borderRadius') === '8px', 'input has no border; the primary button is a plain 8 px rectangle');
   check(await css('.btn-primary', 'backgroundColor') === rgb(await token('--c-brand')), 'primary button is the brand colour');
+  const gap = await page.evaluate(() => document.querySelector('.welcome-form').getBoundingClientRect().top - document.querySelector('.welcome-copy').getBoundingClientRect().bottom);
+  check(gap >= 8 && gap <= 40, 'the website field sits directly under the subtitle (gap ' + Math.round(gap) + ' px, no dead space)');
   await scan('welcome'); await shot('welcome');
   await page.click('button[data-act="draft"]');
   await page.waitForSelector('#rd-steps .step');
@@ -89,7 +99,7 @@ async function run(scheme) {
   check((await text('.screen')).includes('All companies and tenders are fictional'), 'fictional line on Feed');
   check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Feed', 'tab bar shows Feed active');
   const bar = await page.locator('.tabbar').boundingBox();
-  check(bar && Math.round(bar.width) === 390 && Math.round(bar.height) === 60 && Math.round(bar.y + bar.height) === 844, 'the tab bar is a full-width 60 px bar at the bottom');
+  check(bar && Math.round(bar.width) === VW && Math.round(bar.height) >= 60 && Math.round(bar.y + bar.height) === VH, 'the tab bar is a full-width 60 px bar at the bottom of the ' + VW + '×' + VH + ' viewport');
   check(await css('.tabbar a[aria-current="page"]', 'color') === rgb(await token('--c-brand')) && await css('.tabbar a[aria-current="page"]', 'fontWeight') === '700' && (await css('.tabbar a[aria-current="page"] .ms', 'fontVariationSettings')).includes('"FILL" 1'), 'active tab = brand colour + filled icon + bolder label');
   check(await page.locator('.tcard img').count() === 0 && await page.locator('.tcard .flag, .tcard .orig, .tcard .why').count() === 0, 'cards carry no photo, flag, original title or reason');
   const card0 = (await text('.tcard')).replace(/\s+/g, ' ');
@@ -140,14 +150,22 @@ async function run(scheme) {
   const order = await page.locator('a.req .status b').allInnerTexts();
   check(order.join(' > ') === 'Fails > Needs your check > Meets', 'requirement order fail → check → met');
   check((await page.locator('a.req .cite').first().innerText()) === 'Vergabeunterlagen, p. 12, §3.1', 'citation as regular text "Vergabeunterlagen, p. 12, §3.1"');
+  const cta = await page.locator('a.req[href="#/t/hoh-security/req/r3"] .req-cta').boundingBox();
+  check(cta && cta.height >= 44 && (await page.locator('a.req[href="#/t/hoh-security/req/r3"] .req-cta').innerText()).startsWith('Check') && await page.locator('a.req .req-cta').count() === 1, 'the "Needs your check" line shows a 44 px "Check" call to action, the other lines do not');
   await scan('detail-nogo'); await shot('detail-nogo'); await shot('detail-nogo-full', true);
   const reqSel = 'a.req[href="#/t/hoh-security/req/r3"]';
   await page.click(reqSel); await waitSheet(true);
   await page.keyboard.press('Escape'); await waitSheet(false);
   check(page.url().endsWith('#/t/hoh-security'), 'Escape closes the sheet');
   await page.click(reqSel); await waitSheet(true);
-  await page.mouse.click(195, 30); await waitSheet(false); // scrim, above the sheet
-  check(page.url().endsWith('#/t/hoh-security'), 'scrim tap closes the sheet');
+  const sheetTop = await page.locator('#sheet-root .sheet').evaluate((el) => el.getBoundingClientRect().top);
+  if (sheetTop >= 40) { // the scrim is visible above the sheet
+    await page.locator('#sheet-root .scrim').click({ position: { x: Math.round(VW / 2), y: Math.round(sheetTop / 2) } }); await waitSheet(false); // a real tap on the scrim (coordinates through the element, which mobile emulation hit-tests correctly)
+    check(page.url().endsWith('#/t/hoh-security'), 'scrim tap closes the sheet');
+  } else { // on a short viewport the sheet fills the screen: Back and Escape are the ways out (checked above and below)
+    console.log('  info the sheet fills this ' + VW + '×' + VH + ' viewport (top ' + Math.round(sheetTop) + ' px), no scrim to tap');
+    await page.keyboard.press('Escape'); await waitSheet(false);
+  }
   await page.click(reqSel); await waitSheet(true);
   check(await page.locator('.sheet .btn-check').count() === 2, 'unresolved sheet: both answers equal weight, none preselected');
   check((await text('.sheet .confidence')).includes('58%'), 'confidence readout 58%');
@@ -297,6 +315,17 @@ async function run(scheme) {
   await page.evaluate(() => window.scrollTo(0, 0));
   await shot('company-iso-alone');
 
+  // ?demo=fast: the simulated waits shrink (tender reading in about 300 ms) and nothing else changes
+  await page.goto(url('demo=reset,fast'));
+  await page.waitForSelector('.welcome');
+  check(page.url().includes('demo=fast') && !page.url().includes('reset'), '?demo=reset,fast resets and keeps demo=fast in the address');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await load('demo=fast', '#/t/hoh-security');
+  const t0 = Date.now();
+  await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  const readMs = Date.now() - t0;
+  check(readMs < 1200 && await page.locator('.vhead .ai').count() === 1, 'fast mode: the tender is read in ' + readMs + ' ms with the "Simulated AI" label in place');
+
   // Touch targets: interactive elements smaller than 44 px (pseudo-element hit areas are not measured here)
   const small = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, input, [role="switch"]'))
     .map((el) => { const r = el.getBoundingClientRect(); return { el: el.outerHTML.slice(0, 60), w: Math.round(r.width), h: Math.round(r.height) }; })
@@ -315,9 +344,9 @@ function watch(page, problems) {
 }
 
 async function reducedMotion() {
-  console.log('\n== reduced motion · ' + BASE);
-  const browser = await playwright.chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light', reducedMotion: 'reduce' });
+  console.log('\n== reduced motion · ' + BROWSER + ' · ' + BASE);
+  const browser = await playwright[BROWSER].launch();
+  const ctx = await browser.newContext(contextOptions({ colorScheme: 'light', reducedMotion: 'reduce' }));
   const problems = [];
   const page = await ctx.newPage();
   watch(page, problems);

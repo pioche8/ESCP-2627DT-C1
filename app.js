@@ -45,9 +45,10 @@
   function save() { dirty = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } }
   var S = load();
   if (THEMES.indexOf(themeParam) !== -1) { S.theme = themeParam; save(); }
-  if (params.get('demo') === 'reset') {
+  var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both
+  if (demoFlags.indexOf('reset') !== -1) {
     S = fresh(); if (THEMES.indexOf(themeParam) !== -1) S.theme = themeParam; save();
-    params.delete('demo');
+    if (demoFlags.indexOf('fast') !== -1) params.set('demo', 'fast'); else params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
   }
@@ -330,7 +331,8 @@
       status(st.v, st.label, kind) +
       '<span class="req-title">' + esc(q.label) + '</span>' +
       '<span class="' + (unresolved ? 'req-sure' : 'req-check') + '">' + esc(line) + '</span>' +
-      cite(cp.doc, cp.page, cp.section) + '</a>';
+      cite(cp.doc, cp.page, cp.section) +
+      (unresolved ? '<span class="req-cta">Check' + icon('arrow_forward', 's18') + '</span>' : '') + '</a>';
   }
 
   function asksHTML(t) {
@@ -626,9 +628,16 @@
     var rs = document.getElementById('rescore'); if (!rs) return;
     rs.innerHTML = rescoreCard(true);
     var card = rs.firstElementChild;
-    if (!card || !fromEl || reduceMotion || typeof card.animate !== 'function') return;
+    if (!card || !fromEl) return;
     var a = fromEl.getBoundingClientRect(), b = card.getBoundingClientRect();
-    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > window.innerHeight) return; // card off-screen: keep the pop
+    // Short screens (iPhone 13 / SE): the card can sit just above the fold when the switch is tapped. Bring it back in
+    // (an instant scroll, at most one screen) so the re-score is seen; further away, the hint next to the control tells.
+    if (b.bottom < 0 && b.top > -window.innerHeight * 0.6) {
+      window.scrollBy(0, b.top - 12);
+      a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
+    }
+    if (reduceMotion || typeof card.animate !== 'function') return;
+    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > window.innerHeight || a.bottom < 0 || a.top > window.innerHeight) return; // card or control off-screen: keep the pop
     card.classList.remove('enter'); card.classList.add('morph');
     var sx = a.width / b.width, sy = a.height / b.height;
     var r = parseFloat(getComputedStyle(fromEl).borderTopLeftRadius) || 8;
@@ -922,7 +931,10 @@
     a.style.viewTransitionName = 'card';
     var wrap = a.closest('.tcard-wrap'); if (wrap) wrap.style.viewTransitionName = 'card-ghost';
     try {
-      document.startViewTransition(function () { location.hash = href; render(); });
+      var vt = document.startViewTransition(function () { location.hash = href; render(); });
+      // A transition can abort (Safari and mobile browsers when the viewport changes mid-way); the navigation is already
+      // done by then, so the abort only means "no morph this time". Swallow the rejections so they never surface as errors.
+      ['ready', 'finished', 'updateCallbackDone'].forEach(function (k) { if (vt && vt[k] && vt[k].catch) vt[k].catch(function () {}); });
     } catch (err) { go(href); }
   }, true);
   function draft() {

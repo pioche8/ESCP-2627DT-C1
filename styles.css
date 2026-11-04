@@ -23,7 +23,7 @@
 
 /* ---------- base ---------- */
 *, *::before, *::after { box-sizing:border-box; }
-html { background:var(--c-bg); -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+html { background:var(--c-bg); -webkit-text-size-adjust:100%; text-size-adjust:100%; scroll-padding-bottom:calc(128px + var(--safe-bottom)); scroll-padding-top:8px; } /* scrollIntoView and focus keep content clear of the fixed tab bar / action bar (small iPhones) */
 body {
   margin:0; min-height:100vh; min-height:100dvh;
   background:var(--c-bg); color:var(--c-ink);
@@ -194,7 +194,7 @@ html.sheet-open { overflow:hidden; }
 .welcome .photo { width:auto; margin:4px 16px 0; }
 .welcome-copy { padding:24px 20px 0; }
 .welcome-sub { margin-top:10px; font:500 15px/22px var(--font-ui); color:var(--c-muted); text-wrap:pretty; }
-.welcome-form { margin-top:auto; padding:24px 16px calc(24px + var(--safe-bottom)); display:flex; flex-direction:column; gap:8px; }
+.welcome-form { margin-top:20px; padding:0 16px calc(24px + var(--safe-bottom)); display:flex; flex-direction:column; gap:8px; }
 .welcome-form .label-text { padding-left:4px; }
 .field { display:flex; align-items:center; height:52px; padding:0 16px; border-radius:var(--r); background:var(--c-surface); }
 .field input { flex:1; min-width:0; height:100%; border:0; background:transparent; outline:none; font:600 16px/1 var(--font-ui); color:var(--c-ink); }
@@ -293,6 +293,7 @@ html.sheet-open { overflow:hidden; }
 .req-check { display:block; margin-top:2px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
 .req-sure { display:block; margin-top:2px; font:600 14px/20px var(--font-ui); color:var(--c-check); }
 .cite { display:block; margin-top:8px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.req-cta { display:inline-flex; align-items:center; gap:4px; min-height:44px; margin-top:2px; font:700 15px/1 var(--font-ui); color:var(--c-brand); }
 
 /* Ask this tender (accordion) */
 .asks { display:flex; flex-direction:column; gap:8px; padding:0 16px; }
