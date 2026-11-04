@@ -5,8 +5,7 @@ Files are the Latin and Latin Extended subsets as served by Google Fonts (downlo
 
 | Files | Family | Licence |
 |---|---|---|
-| `HankenGrotesk-*.woff2` | Hanken Grotesk (variable 400–800, italic 400) | SIL Open Font License 1.1 |
-| `IBMPlexMono-*.woff2` | IBM Plex Mono 500, 600 | SIL Open Font License 1.1 |
+| `HankenGrotesk-*.woff2` | Hanken Grotesk (variable 400–800, upright only: the italic and the IBM Plex Mono files were removed on 4 Nov 2026) | SIL Open Font License 1.1 |
 | `MaterialSymbolsRounded-subset.woff2` | Material Symbols Rounded (variable wght 300–400, FILL 0–1), cut down to the 38 icons the app and the website use (re-cut 3 Nov 2026, shared with `site/src/fonts/`) | Apache License 2.0 |
 
 OFL text: https://openfontlicense.org · Apache 2.0 text: https://www.apache.org/licenses/LICENSE-2.0

@@ -32,12 +32,13 @@ for (const f of fs.readdirSync(app('fonts'))) if (/\.woff2$/.test(f)) fs.copyFil
 
 // 4. photos: 200 px Canva previews, upscaled 3× (Lanczos) to JPEG so next/image has something to serve at 2× DPR.
 //    Replace with the full-resolution exports under the same names (public/assets/**.jpg) and delete the upscaling.
-const sharp = (await import('sharp')).default;
+let sharp;
+try { sharp = (await import('sharp')).default; } catch { console.log('sync-shared: sharp is not installed, keeping the committed photos'); process.exit(0); }
 const jobs = [];
 const addDir = (dir, sub) => { for (const f of fs.readdirSync(dir)) if (/\.png$/.test(f)) jobs.push([path.join(dir, f), out('public/assets/' + sub + f.replace(/\.png$/, '.jpg'))]); };
 addDir(app('design/assets/sectors'), 'sectors/');
 addDir(app('assets/img'), '');
-for (const f of ['harbor-dusk', 'sky-clouds', 'sky-tokens', 'harbor-tokens']) jobs.push([app('design/assets/' + f + '.png'), out('public/assets/' + f + '.jpg')]);
+jobs.push([app('design/assets/harbor-dusk.png'), out('public/assets/harbor-dusk.jpg')]); // the film still
 fs.mkdirSync(out('public/assets/sectors'), { recursive: true });
 let made = 0;
 for (const [src, dst] of jobs) {

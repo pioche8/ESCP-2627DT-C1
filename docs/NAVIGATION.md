@@ -1,10 +1,12 @@
 # Navigation map and user flows
 
-Context of use: an owner on a phone, between jobs, often in a van or on site. **One hand, short sessions (1–3 min), patchy signal.** So: a floating dock within thumb reach, one primary action per screen in a bottom bar, every verdict readable in under 3 seconds (shape + label + colour), and no typing in the core loop.
+Context of use: an owner on a phone, between jobs, often in a van or on site. **One hand, short sessions (1–3 min), patchy signal.** So: a bottom tab bar within thumb reach, one primary action per screen in a bottom bar, every verdict readable in under 3 seconds (shape + label + colour), and no typing in the core loop.
 
 > Updated 2 Nov 2026 for the DESIGN.md "Bold" restyle, and 3 Nov 2026 for the design handoff v2 (`design/HANDOFF_V2.md`: Sky and Harbor palettes, photography, Welcome v2, entrances). Routes and deep links are unchanged; what changed is marked **(new)** or **(v2)**.
 >
 > 3 Nov 2026 (vibe pass): routes, deep links and back behaviour unchanged. The dock is now one element with a pill that slides between Feed, Bids and Company (the website's PhoneDemo dock); the app opens dark by default (About: System / Light / Dark, or `?theme=`); summary counts are a compact row on glass instead of three big tiles (tap still filters); the tender header is dark glass with the score in the verdict colour.
+>
+> 4 Nov 2026 (declutter): routes, deep links and back behaviour unchanged. The floating dock is a standard full-width bottom tab bar (icon + label; the active tab is brand-coloured with a filled icon and a bolder label). The Feed's summary counts live in the filter tabs ("All 6 · ● Go 1 · ▲ Maybe 2 · ■ No-go 3", underlined text, no tiles); the stage switcher on Bids and the appearance switch on About are the same text tabs. Cards show verdict (shape + word + score), title, buyer, value and days left only; the tender header is plain text on the ground with the photo in its own block beneath it; the detail's facts are value and deadline. Statuses, "Simulated AI" and citations ("Vergabeunterlagen, p. 12, §3.1") are plain text. Bid languages on Company are rows with switches; skip reasons are plain toggle buttons. There is one palette (About keeps System / Light / Dark); `?palette=` is ignored.
 
 ## Structure
 Three tabs, three questions the owner asks:
@@ -14,7 +16,7 @@ Three tabs, three questions the owner asks:
 | **Bids** | "What am I working on, what did I skip?" | `#/bids` |
 | **Company** | "What do you think we can do?" | `#/company` |
 
-The tabs live in a floating dock. **The dock is hidden during onboarding, on a tender detail and on About (new)**, so those screens keep their bottom action bar in the thumb zone. About (AI disclosure, appearance and demo reset) opens from the ⓘ in the Feed, Bids and Company headers and on Welcome.
+The tabs live in a full-width bottom tab bar. **The tab bar is hidden during onboarding, on a tender detail and on About**, so those screens keep their bottom action bar in the thumb zone. About (AI disclosure, appearance and demo reset) opens from the ⓘ in the Feed, Bids and Company headers and on Welcome.
 
 ```mermaid
 flowchart TD
@@ -39,7 +41,7 @@ flowchart TD
 ## Screen list
 | # | Route | Screen | Primary action | Notes |
 |---|---|---|---|---|
-| S1 | `#/welcome/1` | Welcome + website | Draft my profile | **(v2)** Photo header with the moving band of all 45 EU sectors (the firm's four in bold, frozen under reduced motion), the pill "All 45 EU sectors · 6 new tenders tonight", and a preview card of tonight's top verdict computed by the engine. Only typed input in the core flow is here |
+| S1 | `#/welcome/1` | Welcome + website | Draft my profile | Photo in its own block, headline, the line "All 45 EU sectors · 6 new tenders tonight" (derived from the data), the website field and the button. (The v2 sector band and preview card were removed in the 4 Nov declutter.) Only typed input in the core flow is here |
 | S2 | `#/welcome/2` | Reading (transient) | none | Step list and progress bar **(new)**; replaced in history, not a back target |
 | S3 | `#/welcome/3` | Check profile | Looks right | "Edit" goes to S6 |
 | S4 | `#/feed` | Feed | Open a tender | Summary tiles (tap = filter) and filter All/Go/Maybe/No-go with counts; skipped hidden; saved = bookmark on the card. **(v2)** Cards carry a 96 px photo band with the score tile overlapping it; tenders without a photo show a document placeholder. Tapping a card morphs it into the detail header where the browser supports view transitions |
@@ -48,7 +50,7 @@ flowchart TD
 | S5b | `#/t/:id/skip` | Skip sheet | Skip tender | Pick any number of reasons, or none **(new)**. Feeds tomorrow's ranking (future) |
 | S6 | `#/company` | Company profile | (live) | Re-score card "Landkreis Hohenau · No-go → Go" and unlock hints such as "Turn on → Gemeente Vlietdam becomes Maybe" **(new)**. **(v2)** Photo behind the top of the header |
 | S7 | `#/bids` | Bids pipeline | Change stage | Empty groups show "Nothing here yet". **Restore moves a skipped tender to Deciding (new)**. **(v2)** 48 px photo thumbnail on each bid card |
-| S8 | `#/about` | About / AI disclosure | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)** and Palette: Sky / Harbor **(v2)**, both persisted. `?demo=reset` does the same reset |
+| S8 | `#/about` | About / AI disclosure | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)**, persisted (the palette switch was removed on 4 Nov). `?demo=reset` does the same reset |
 | – | anything else | Not found | Open Feed | |
 
 **Later (not in prototype):** push notification each morning → deep link `#/t/:id`; consortium-partner finder; calendar export of deadlines and site visits; share a verdict to a colleague by WhatsApp; opening the tender PDF at the cited page (today the citation chip opens the requirement sheet).
@@ -90,5 +92,5 @@ Detail → Skip → pick reasons (optional) → Skip tender → back to the Feed
 - Storage blocked (private mode) → in-memory state, so the app still works for the session. State key `tenderscout.v2`.
 - Dark mode (follows the phone, or About → Appearance) and reduced motion (no animation, same results) respected. Tap targets ≥ 44 px.
 
-## Palettes (3 Nov 2026, website fusion)
-About → Appearance offers three palettes: **Brand** (default; the marketing website’s palette on the phone), **Sky** and **Harbor** (design/HANDOFF_V2.md). `?palette=brand|sky|harbor` is the demo deep link; the choice is persisted in `tenderscout.v2`. Routes, screens and back behaviour are unchanged.
+## Appearance (4 Nov 2026)
+About → Appearance offers System / Light / Dark (`?theme=` is the demo deep link; the choice is persisted in `tenderscout.v2`). The Sky and Harbor palettes of 3 Nov were removed in the declutter: both schemes now use the same nine colours, light and dark. Routes, screens and back behaviour are unchanged.

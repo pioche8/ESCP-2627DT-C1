@@ -8,18 +8,16 @@
   <meta name="description" content="TenderScout prototype: AI reads EU public tenders and tells small firms in one line whether they qualify.">
   <title>TenderScout</title>
   <script>
-  /* Theme and palette before the first paint (no flash). app.js keeps them in sync afterwards.
-     Dark first, like the website: "system" (follow the phone) and "light" are chosen on About or with ?theme=. */
+  /* Scheme before the first paint (no flash). app.js keeps it in sync afterwards.
+     Dark first: "system" (follow the phone) and "light" are chosen on About or with ?theme=. */
   (function () {
-    var d = document.documentElement, t = 'dark', p = 'brand';
+    var t = 'dark';
     try {
-      var s = JSON.parse(localStorage.getItem('tenderscout.v2') || '{}') || {}, u = new URLSearchParams(location.search);
-      var q = u.get('palette') || s.palette, m = u.get('theme') || s.theme;
-      if (q === 'sky' || q === 'harbor') p = q;
+      var s = JSON.parse(localStorage.getItem('tenderscout.v2') || '{}') || {}, m = new URLSearchParams(location.search).get('theme') || s.theme;
       if (m === 'light' || m === 'dark') t = m;
       else if (m === 'system') t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     } catch (e) { /* private mode: defaults */ }
-    d.setAttribute('data-v3', t); d.setAttribute('data-palette', p);
+    document.documentElement.setAttribute('data-scheme', t);
   })();
   </script>
   <link rel="stylesheet" href="shared/tokens.css">

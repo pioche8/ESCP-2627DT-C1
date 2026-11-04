@@ -1,13 +1,13 @@
-// site/scripts/shots.mjs — Playwright screenshots of every section at 1440 / 1024 / 768 / 390, plus the menu, with a
-// console-error and horizontal-scroll check. Optionally the same for the reference page (REF_URL) for side-by-side review.
-//   SITE_URL=http://localhost:3100 REF_URL=http://localhost:3200/TenderScout%20Website%20v3.dc.html LIBS=/path/with/react+babel node scripts/shots.cjs [outDir]
-// The reference page loads React and Babel from unpkg; LIBS points at local copies (react.production.min.js, react-dom.production.min.js, babel.min.js) that are served in their place.
+// site/scripts/shots.cjs — Playwright screenshots of every section at 1440 / 1024 / 768 / 390, plus the menu, with a
+// console-error and horizontal-scroll check, and the declutter scan (../../tests/declutter-scan.js) of the site's
+// stylesheets and of the rendered page at every width.
+//   SITE_URL=http://localhost:3100 node scripts/shots.cjs [outDir]
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright'); // pre-installed in the dev container; not a site dependency
+const scan = require('../../tests/declutter-scan.js');
 
 const SITE = process.env.SITE_URL || 'http://localhost:3100';
-const REF = process.env.REF_URL || '';
 const OUT = path.resolve(process.argv[2] || 'screenshots');
 const WIDTHS = (process.env.WIDTHS || '1440,1024,768,390').split(',').map(Number);
 const SECTIONS = ['top', 'statement', 'tonight', 'languages', 'how', 'who', 'app', 'sectors', 'where', 'film', 'faq', 'start', 'footer'];
@@ -16,7 +16,8 @@ let failures = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) failures++; };
 
 (async () => {
-const LIBS = process.env.LIBS || '';
+const cssFindings = ['site/src/styles/components.css', 'site/src/styles/tokens.css', 'site/src/app/globals.css'].flatMap(scan.scanCss);
+ok(cssFindings.length === 0, 'static CSS scan: no declutter pattern in the site stylesheets' + (cssFindings.length ? '\n       ' + cssFindings.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));
 const browser = await chromium.launch();
 for (const w of WIDTHS) {
   const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 844 : 900 }, deviceScaleFactor: 1 });
@@ -35,11 +36,16 @@ for (const w of WIDTHS) {
     await page.waitForTimeout(id === 'how' ? 900 : 350);
     await el.screenshot({ path: path.join(OUT, `site-${w}-${id}.png`), animations: 'disabled' }).catch((e) => ok(false, `${w}px · screenshot ${id}: ${e.message.split('\n')[0]}`));
   }
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(400);
+  const found = await scan.scanDom(page);
+  ok(found.length === 0, `${w}px · declutter scan: none of the 18 patterns in the rendered page` + (found.length ? '\n       ' + found.map((x) => x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : '')).join('\n       ') : ''));
   // the menu
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.click('.menu-pill');
+  await page.click('.menu-btn');
   await page.waitForTimeout(900);
   await page.screenshot({ path: path.join(OUT, `site-${w}-menu.png`) });
+  const menuFound = await scan.scanDom(page);
+  ok(menuFound.length === 0, `${w}px · declutter scan: menu clean` + (menuFound.length ? '\n       ' + menuFound.map((x) => x.pattern + ' · ' + x.el + ' · ' + (x.extra || '')).join('\n       ') : ''));
   const focused = await page.evaluate(() => document.activeElement?.className || '');
   ok(/menu-close/.test(focused), `${w}px · menu traps focus (active: ${focused || 'none'})`);
   await page.keyboard.press('Escape');
@@ -48,30 +54,6 @@ for (const w of WIDTHS) {
   await page.screenshot({ path: path.join(OUT, `site-${w}-full.png`), fullPage: true });
   ok(problems.length === 0, `${w}px · no console errors, page errors or failed requests` + (problems.length ? '\n       ' + problems.join('\n       ') : ''));
   await ctx.close();
-}
-if (REF) {
-  for (const w of WIDTHS) {
-    const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 844 : 900 }, deviceScaleFactor: 1 });
-    const page = await ctx.newPage();
-    if (LIBS) await page.route('https://unpkg.com/**', (route) => {
-      const f = route.request().url().split('/').pop();
-      const local = path.join(LIBS, f);
-      return fs.existsSync(local) ? route.fulfill({ path: local, contentType: 'application/javascript' }) : route.abort();
-    });
-    try {
-      await page.goto(REF, { waitUntil: 'networkidle', timeout: 60000 });
-      await page.waitForTimeout(1500);
-      for (const [i, label] of ['01 Hero', '02 Statement', '03 Tonight', '04 Languages', '05 How it works', '06 Built for', '07 In the app', '08 Sectors', '09 Where you bid', '10 Film', '11 Questions', '12 Start', '13 Footer'].entries()) {
-        const el = page.locator(`[data-screen-label="${label}"]`).first();
-        if (!(await el.count())) continue;
-        await el.scrollIntoViewIfNeeded(); await page.waitForTimeout(400);
-        await el.screenshot({ path: path.join(OUT, `ref-${w}-${SECTIONS[i]}.png`), animations: 'disabled' }).catch(() => {});
-      }
-      await page.screenshot({ path: path.join(OUT, `ref-${w}-full.png`), fullPage: true });
-      console.log(`  info reference captured at ${w}px`);
-    } catch (e) { console.log(`  info reference not captured at ${w}px: ${e.message.split('\n')[0]}`); }
-    await ctx.close();
-  }
 }
 await browser.close();
 console.log('\n' + (failures ? failures + ' check(s) failed' : 'Site screenshots passed') + ' · ' + OUT);

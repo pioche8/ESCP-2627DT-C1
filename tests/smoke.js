@@ -1,26 +1,27 @@
 /*
- * Playwright smoke test at 390×844 in six themes: Brand, Sky and Harbor, each light and dark (Brand = the website's palette, default, dark first).
+ * Playwright smoke test at 390×844, light and dark, plus prefers-reduced-motion.
  * Dev-only: the app itself has no dependencies.
  *
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
- *   SMOKE_ONLY=light-brand node tests/smoke.js    (one theme while developing)
+ *   SMOKE_ONLY=light node tests/smoke.js          (one scheme while developing)
  *
  * Path (CLAUDE.md §8.6 + the BRIEF.md 75-second demo):
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
  * "comparable qualification" sheet (Escape / scrim / Back close it) → "We meet it" →
  * Ask this tender → Company → ISO 27001 → re-score "Landkreis Hohenau: No-go → Go" →
  * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → About.
- * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link,
- * Welcome v2 (photo header, moving sector band, preview card), photo bands and thumbnails, the palette switch
- * on About (persisted), the website's chrome (ground glow + grain, mood per screen, glass count row, sliding dock pill, white
- * pill primary, word reveal, 777 count-up) and, under prefers-reduced-motion, the frozen band, the instant reveal and count-up.
- * Fails on any console error, page error or failed request.
+ * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link, the appearance
+ * switch on About (persisted), and under prefers-reduced-motion the instant reveal and count-up and no morph.
+ * Every screen is scanned (tests/declutter-scan.js) for the 18 declutter patterns: negative tracking, uppercase, italics,
+ * gradients, grain, monospace, borders, shadows, radius over 8 px, alpha colours, eyebrows, numbering, all-caps text,
+ * pills / chips / tags / badges and code names in visible text. Fails on any console error, page error or failed request.
  */
 const path = require('path');
 const fs = require('fs');
 let playwright;
 try { playwright = require('playwright'); } catch (e) { console.error('Playwright is not installed: npm i -D playwright && npx playwright install chromium'); process.exit(2); }
+const { scanCss, scanDom } = require('./declutter-scan');
 
 const ROOT = path.resolve(__dirname, '..');
 const BASE = process.env.SMOKE_URL || 'file://' + ROOT + '/index.html';
@@ -30,8 +31,8 @@ fs.mkdirSync(OUT, { recursive: true });
 let failures = 0;
 function check(cond, msg) { if (cond) console.log('  ok   ' + msg); else { failures++; console.log('  FAIL ' + msg); } }
 
-async function run(scheme, palette) {
-  console.log('\n== ' + scheme + ' · ' + palette + ' · ' + BASE);
+async function run(scheme) {
+  console.log('\n== ' + scheme + ' · ' + BASE);
   const browser = await playwright.chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true });
   const problems = [];
@@ -41,114 +42,105 @@ async function run(scheme, palette) {
   let n = 0;
   const shot = async (name, full) => {
     await page.waitForTimeout(450);
-    await page.screenshot({ path: path.join(OUT, `${scheme}-${palette}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
+    await page.screenshot({ path: path.join(OUT, `${scheme}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
   };
   const url = (q, hash) => BASE + (q ? '?' + q : '') + (hash || '');
   const load = async (q, hash) => { await page.goto('about:blank'); await page.goto(url(q, hash)); }; // a real page load, not a same-document hash change
   const text = (sel) => page.locator(sel).first().innerText();
   const sheetOpen = () => page.locator('#sheet-root.open [role="dialog"][aria-modal="true"]').count();
   const waitSheet = async (open) => { await page.waitForFunction((o) => !!document.querySelector('#sheet-root.open') === o, open); await page.waitForTimeout(360); };
+  const css = (sel, prop) => page.locator(sel).first().evaluate((el, p) => getComputedStyle(el)[p], prop);
+  const token = (name) => page.evaluate((k) => getComputedStyle(document.documentElement).getPropertyValue(k).trim(), name);
+  const rgb = (hex) => { const h = hex.replace('#', ''); return 'rgb(' + [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ') + ')'; };
+  const scanned = [];
+  const scan = async (name) => { const v = await scanDom(page); scanned.push(...v.map((x) => name + ': ' + x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : ''))); };
 
-  // 01–03 Onboarding (Welcome v2: HANDOFF_V2 §4–5)
-  await page.goto(url('demo=reset&palette=' + palette + '&theme=' + scheme));
-  await page.waitForSelector('.welcome-hero');
-  const attrs = await page.evaluate(() => [document.documentElement.getAttribute('data-v3'), document.documentElement.getAttribute('data-palette')]);
-  check(attrs[0] === scheme && attrs[1] === palette, 'html carries data-v3="' + scheme + '" data-palette="' + palette + '" (?theme= deep link)');
-  check(await page.locator('#app > .ground .glow').count() === 1 && await page.locator('#app > .ground .grain').count() === 1, 'the ground: one glow blob and the grain overlay behind every screen');
-  check(await page.evaluate(() => document.getElementById('app').getAttribute('data-mood')) === 'welcome', 'Welcome sets the ground mood');
-  check(await page.evaluate(() => getComputedStyle(document.querySelector('.ground')).pointerEvents) === 'none', 'the ground takes no pointer events');
-  check(await page.locator('.welcome-hero .mq-item').first().evaluate((el) => getComputedStyle(el).backgroundColor).then((c) => /rgba?\(/.test(c)), 'sector chips sit on glass');
-  check(await page.locator('.input-pill .btn-metal').count() === 1 && await page.locator('.input-pill input#web').count() === 1, 'the site’s Start input: one pill holding the field and the liquid-metal button');
-  check(!(await page.locator('.dock').count()), 'no dock during onboarding');
-  check(await page.locator('.welcome-hero img.hero-photo').count() === 1, 'welcome photo header');
-  check(await page.locator('.mq-row').count() === 2 && await page.locator('.mq-item').count() === 90, 'sector band: 2 chip rows (the site’s marquee), 45 EU divisions × 2 groups');
-  check(await page.locator('.mq-item.own').count() === 8, "the firm's 4 divisions are filled brand (32, 45, 51, 72)");
-  check(await page.locator('.btn-metal .metal-spin').count() === 1, 'Welcome CTA carries the liquid-metal ring (the site’s button)');
-  check(await page.locator('.wordmark').evaluate((el) => getComputedStyle(el, '::before').width) === '10px', 'wordmark has the 10 px dot (shared with the site)');
-  check((await text('.hero-pill')).includes('All 45 EU sectors · 6 new tenders tonight'), 'pill: "All 45 EU sectors · 6 new tenders tonight" (derived from data.js)');
-  const prev = await text('.preview-card');
-  check(prev.includes('Meets all 4 requirements') && prev.includes('100') && prev.includes('p. 23 · §4.2') && prev.includes('Stadt Ellerbach · 29 d'), 'preview card: Go 100 · Meets all 4 requirements · p. 23 · §4.2');
-  check((await text('.welcome-copy')).includes('Find public tenders you can actually win'), 'headline');
-  await shot('welcome');
+  // 01–03 Onboarding
+  await page.goto(url('demo=reset&theme=' + scheme));
+  await page.waitForSelector('.welcome');
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === scheme, 'html carries data-scheme="' + scheme + '" (?theme= deep link)');
+  check(!(await page.locator('.tabbar').count()), 'no tab bar during onboarding');
+  check(await page.locator('.welcome img.photo').count() === 1 && await page.locator('.welcome img.photo').evaluate((el) => el.closest('h1, p, .btn') === null), 'welcome photo sits in its own block, no text on it');
+  check((await text('.welcome-copy')).includes('Find public tenders you can actually win') && (await text('.welcome-copy')).includes('All 45 EU sectors · 6 new tenders tonight'), 'headline and the sector line (derived from the data)');
+  check((await text('.welcome')).includes('all companies and tenders are fictional'), 'fictional line on Welcome');
+  check(await css('.welcome .field', 'borderStyle') === 'none' && await css('.btn-primary', 'borderRadius') === '8px', 'input has no border; the primary button is a plain 8 px rectangle');
+  check(await css('.btn-primary', 'backgroundColor') === rgb(await token('--c-brand')), 'primary button is the brand colour');
+  await scan('welcome'); await shot('welcome');
   await page.click('button[data-act="draft"]');
   await page.waitForSelector('#rd-steps .step');
-  check(await page.locator('.ai-pill').count() > 0, 'reading screen shows the Simulated AI pill');
+  check(await page.locator('.ai').count() > 0, 'reading screen shows "Simulated AI"');
   await page.waitForSelector('#rd-steps .step.done:nth-child(2)');
-  await shot('reading');
+  await scan('reading'); await shot('reading');
   await page.waitForSelector('text=Check your profile', { timeout: 10000 });
   check((await text('.profile-card')).includes('(fictional)'), 'profile keeps "(fictional)" on the company name');
-  await shot('check-profile');
+  await scan('profile'); await shot('check-profile');
 
   // 04 Feed
   await page.click('button[data-act="finish"]');
-  await page.waitForSelector('.vtiles');
-  check((await text('.feed-head .eyebrow')).toUpperCase() === 'TONIGHT’S READ · THU 5 NOV', 'mono eyebrow "TONIGHT’S READ · THU 5 NOV"');
+  await page.waitForSelector('.feed-list');
   check((await text('.feed-head h1')) === '6 new tenders', 'feed title "6 new tenders"');
-  check(await page.locator('.feed-head h1 .w').count() === 3 && await page.locator('.feed-head h1 .w.accent').first().innerText() === '6', 'two-tone headline: three revealed words, the count in the accent');
-  check(await page.evaluate(() => document.getElementById('app').getAttribute('data-mood')) === 'feed', 'Feed mood on the ground');
-  const tiles = await page.locator('.vtile .count').allInnerTexts();
-  check(tiles.join(',') === '1,2,3', 'summary tiles 1 Go · 2 Maybe · 3 No-go');
-  const vtH = await page.locator('.vtile').first().evaluate((el) => el.offsetHeight); // offsetHeight: the entrance pop scales the row while it lands
-  check(vtH === 46 && await page.locator('.vtiles').evaluate((el) => getComputedStyle(el).backdropFilter !== 'none'), 'count row: 46 px tiles on dark glass (the site’s "Where you bid" panel), got ' + vtH);
-  await page.waitForFunction(() => document.querySelector('.pages-line').innerText.includes('Read 777 pages'), null, { timeout: 5000 });
-  check((await text('.pages-line')).includes('Read 777 pages in 4 languages'), 'pages line counts up to 777');
-  check(await page.evaluate(() => getComputedStyle(document.querySelector('.pages-line span')).animationName) === 'ts-shimmer', 'pages line carries the one-shot shimmer');
-  check((await text('.seg.filter')).replace(/\s+/g, ' ').includes('All 6 Go 1 Maybe 2 No-go 3'), 'filter labels with counts');
+  check(await page.locator('.feed-head h1 .w').count() === 3, 'word-by-word reveal on the headline (three words)');
+  check(!(await page.locator('.eyebrow, .ai-pill, .ground, .grain, .glow, .vtiles, .dock').count()), 'no eyebrow, pill, grain, glow, count tiles or floating dock');
+  await page.waitForFunction(() => document.querySelector('.pages-line').innerText.includes('777'), null, { timeout: 5000 });
+  check((await text('.pages-line')).includes('Thu 5 Nov · read 777 pages in 4 languages'), 'pages line: "Thu 5 Nov · read 777 pages in 4 languages"');
+  check((await text('.tabs.filter')).replace(/\s+/g, ' ').includes('All 6 Go 1 Maybe 2 No-go 3'), 'filter tabs with counts (plain text, the active one underlined)');
+  check(await css('.tabs.filter [aria-checked="true"]', 'textDecorationLine') === 'underline' && await css('.tabs.filter [aria-checked="true"]', 'color') === rgb(await token('--c-brand')), 'active filter tab is underlined in brand');
   check(!(await text('.feed-list')).includes('(fictional)'), 'bare buyer names on cards');
-  check((await text('.screen')).includes('All buyers and tenders are fictional'), 'fictional line on Feed');
-  check(await page.locator('.dock a[aria-current="page"] .dock-label').innerText() === 'Feed', 'dock shows Feed active');
-  const dockBox = await page.locator('.dock').boundingBox(), pillBox = await page.locator('.dock-pill').boundingBox();
-  check(dockBox && Math.round(dockBox.width) === 276 && Math.round(dockBox.height) === 62 && pillBox && Math.round(pillBox.width) === 132, 'the dock is the site’s PhoneDemo dock: 276 × 62 with the 132 px active pill');
-  const primaryBg = await page.locator('.seg.filter [aria-checked="true"]').evaluate((el) => getComputedStyle(el).backgroundColor);
-  check(scheme === 'dark' ? primaryBg === 'rgb(255, 255, 255)' : primaryBg !== 'rgb(255, 255, 255)', 'the primary pill is white on dark (ink on light): ' + primaryBg);
-  check(await page.locator('img.tcard-photo').count() === 4 && await page.locator('.tcard-photo.photo-ph').count() === 2, 'feed cards: 4 photo bands + 2 document placeholders');
-  const tileBox = await page.locator('.tcard .score-tile').first().boundingBox();
-  check(tileBox && Math.round(tileBox.width) === 56 && Math.round(tileBox.height) === 56, 'score tile is 56 × 56 over the photo band');
-  await shot('feed');
+  check((await text('.screen')).includes('All companies and tenders are fictional'), 'fictional line on Feed');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Feed', 'tab bar shows Feed active');
+  const bar = await page.locator('.tabbar').boundingBox();
+  check(bar && Math.round(bar.width) === 390 && Math.round(bar.height) === 60 && Math.round(bar.y + bar.height) === 844, 'the tab bar is a full-width 60 px bar at the bottom');
+  check(await css('.tabbar a[aria-current="page"]', 'color') === rgb(await token('--c-brand')) && await css('.tabbar a[aria-current="page"]', 'fontWeight') === '700' && (await css('.tabbar a[aria-current="page"] .ms', 'fontVariationSettings')).includes('"FILL" 1'), 'active tab = brand colour + filled icon + bolder label');
+  check(await page.locator('.tcard img').count() === 0 && await page.locator('.tcard .flag, .tcard .orig, .tcard .why').count() === 0, 'cards carry no photo, flag, original title or reason');
+  const card0 = (await text('.tcard')).replace(/\s+/g, ' ');
+  check(/^100 Go Structured cabling and Wi-Fi for 12 primary schools Stadt Ellerbach · €480k · 29 d$/.test(card0), 'card = verdict (shape + word + score), title, buyer, value, days left: "' + card0 + '"');
+  const tileBox = await page.locator('.tcard .score').first().boundingBox();
+  check(tileBox && Math.round(tileBox.width) === 48 && Math.round(tileBox.height) === 48 && await css('.tcard .score', 'borderRadius') === '8px', 'score tile is 48 × 48 with the 8 px radius');
+  check(await css('.tcard', 'boxShadow') === 'none' && await css('.tcard', 'borderStyle') === 'none', 'cards are flat: no shadow, no border');
+  await scan('feed'); await shot('feed');
 
   // Filter
-  await page.click('.seg.filter [data-filter="maybe"]');
+  await page.click('.tabs.filter [data-filter="maybe"]');
   check(await page.locator('.feed-list .tcard').count() === 2, 'Maybe filter shows 2 cards');
-  await page.click('.seg.filter [data-filter="all"]');
+  await page.click('.tabs.filter [data-filter="all"]');
 
   // 05 Go tender + requirement sheet (BRIEF step 3)
   await page.click('a.tcard[href="#/t/ell-schools"]');
-  await page.waitForSelector('.vblock.loading');
-  check((await text('.vblock.loading')).includes('Reading 146 pages (German)'), 'loading state "Reading 146 pages (German)…"');
-  await shot('detail-loading');
-  await page.waitForSelector('.vblock.v-go', { timeout: 8000 });
-  check(!(await page.locator('.dock').count()), 'no dock on detail');
-  check((await text('.vblock')).includes('You meet all 4 requirements'), 'Go header reason');
-  await shot('detail-go');
+  await page.waitForSelector('.vhead.loading');
+  check((await text('.vhead.loading')).includes('Reading 146 pages (German)'), 'loading state "Reading 146 pages (German)…"');
+  await scan('detail-loading'); await shot('detail-loading');
+  await page.waitForSelector('.vhead.v-go', { timeout: 8000 });
+  check(!(await page.locator('.tabbar').count()), 'no tab bar on detail');
+  check((await text('.vhead')).includes('You meet all 4 requirements'), 'Go header reason');
+  check((await text('.facts')).replace(/\s+/g, ' ') === 'Value €480k Deadline 4 Dec · 29 days left', 'facts keep value and deadline only');
+  check(await page.locator('.detail-photo').count() === 1 && await page.locator('.detail-photo').evaluate((el) => el.previousElementSibling.classList.contains('vhead')), 'the photo is its own block under the verdict header');
+  await scan('detail-go'); await shot('detail-go');
   await page.click('a.req[href="#/t/ell-schools/req/r1"]');
   await waitSheet(true);
   check(await sheetOpen() === 1, 'requirement sheet is a modal dialog');
-  check((await text('.sheet')).includes('ORIGINAL · GERMAN') || (await text('.sheet .quote-tag')).toUpperCase().includes('ORIGINAL · GERMAN'), 'quote card tag "ORIGINAL · GERMAN"');
-  check(await page.locator('.sheet blockquote[lang="de"] mark').count() === 1, 'quote has lang="de" and a highlighted phrase');
-  await shot('sheet-go');
+  check((await text('.sheet .quote-head')).includes('Original (German) · Vergabeunterlagen, p. 23, §4.2'), 'quote caption "Original (German) · Vergabeunterlagen, p. 23, §4.2" in regular text');
+  check(await page.locator('.sheet blockquote[lang="de"] mark').count() === 1 && await css('.sheet blockquote mark', 'backgroundColor') === 'rgba(0, 0, 0, 0)', 'quote has lang="de" and an underlined phrase (no tinted mark)');
+  check(await css('.sheet', 'borderTopLeftRadius') === '8px' && await css('.sheet', 'boxShadow') === 'none', 'sheet: 8 px top corners, no shadow');
+  await scan('sheet-go'); await shot('sheet-go');
   await page.goBack(); // system Back closes the sheet to its parent
   await waitSheet(false);
   check(page.url().endsWith('#/t/ell-schools'), 'Back closes the sheet to the detail');
   await page.click('button[data-act="back"]');
-  await page.waitForSelector('.vtiles');
+  await page.waitForSelector('.feed-list');
   check(page.url().endsWith('#/feed'), 'detail ‹ returns to the Feed');
 
   // 06 Hohenau: open check, Escape and scrim close the sheet, then "We meet it" (BRIEF step 4)
   await page.click('a.tcard[href="#/t/hoh-security"]');
-  await page.waitForSelector('.vblock.v-nogo', { timeout: 8000 });
-  check((await text('.vblock')).includes('1 knock-out requirement: you don’t hold ISO 27001. One more needs your answer.'), 'No-go header reason');
-  check(await page.locator('.vblock.has-photo img.vphoto').count() === 1, 'detail header has the faded photo behind the nav');
-  check(await page.evaluate(() => document.getElementById('app').getAttribute('data-mood')) === 'nogo', 'the ground glow takes the verdict colour');
-  const numColor = await page.locator('.vblock-score .num').evaluate((el) => getComputedStyle(el).color);
-  const headBg = await page.locator('.vblock').evaluate((el) => getComputedStyle(el).backgroundColor);
-  check(/rgba\(/.test(headBg) && numColor !== 'rgb(255, 255, 255)', 'glass header (translucent) with the score in the verdict colour: ' + numColor);
+  await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  check((await text('.vhead')).includes('1 knock-out requirement: you don’t hold ISO 27001. One more needs your answer.'), 'No-go header reason');
+  check(await css('.vhead-score .num', 'color') === rgb(await token('--c-nogo')) && await css('.vhead-score .num', 'letterSpacing') === 'normal', 'score in the verdict colour with no negative tracking');
+  check(await css('.vhead', 'backgroundColor') === 'rgba(0, 0, 0, 0)', 'the verdict header is plain text on the ground (no block, no glass)');
   check(await page.locator('.in-short.reveal .w').count() > 10, 'In short is a word-by-word reveal');
-  check((await text('.sec-h h2:has(.accent)')).replace(/\s+/g, ' ') === 'Can you qualify?', 'two-tone "Can you qualify?"');
-  check((await text('.sec-h .aside')).toLowerCase() === '1 of 3 met', '"1 of 3 met"');
-  const order = await page.locator('a.req .status-line b').allInnerTexts();
+  check((await text('.sec-h h2')).length > 0 && (await page.locator('.sec-h').nth(1).innerText()).replace(/\s+/g, ' ') === 'Can you qualify? 1 of 3 met', '"Can you qualify?" with "1 of 3 met"');
+  const order = await page.locator('a.req .status b').allInnerTexts();
   check(order.join(' > ') === 'Fails > Needs your check > Meets', 'requirement order fail → check → met');
-  await shot('detail-nogo');
-  await shot('detail-nogo-full', true);
+  check((await page.locator('a.req .cite').first().innerText()) === 'Vergabeunterlagen, p. 12, §3.1', 'citation as regular text "Vergabeunterlagen, p. 12, §3.1"');
+  await scan('detail-nogo'); await shot('detail-nogo'); await shot('detail-nogo-full', true);
   const reqSel = 'a.req[href="#/t/hoh-security/req/r3"]';
   await page.click(reqSel); await waitSheet(true);
   await page.keyboard.press('Escape'); await waitSheet(false);
@@ -157,64 +149,67 @@ async function run(scheme, palette) {
   await page.mouse.click(195, 30); await waitSheet(false); // scrim, above the sheet
   check(page.url().endsWith('#/t/hoh-security'), 'scrim tap closes the sheet');
   await page.click(reqSel); await waitSheet(true);
-  check(await page.locator('.sheet .btn-check').count() === 2, 'unresolved sheet: both buttons outlined in check, none preselected');
+  check(await page.locator('.sheet .btn-check').count() === 2, 'unresolved sheet: both answers equal weight, none preselected');
   check((await text('.sheet .confidence')).includes('58%'), 'confidence readout 58%');
-  await shot('sheet-check');
+  check((await text('.sheet .sheet-top')).includes('Needs your check') && (await text('.sheet .sheet-top')).includes('Simulated AI'), 'status and "Simulated AI" as plain text in the sheet');
+  await scan('sheet-check'); await shot('sheet-check');
   await page.click('.sheet button[data-confirm="pass"]');
   await waitSheet(false);
   check(page.url().endsWith('#/t/hoh-security'), '"We meet it" closes the sheet');
   check((await text('#toast-root')).includes('Answer saved · now No-go'), 'toast: answer saved, still No-go');
-  check((await text('.vblock')).includes('1 knock-out requirement: you don’t hold ISO 27001.'), 'still No-go until ISO 27001');
+  check((await text('.vhead')).includes('1 knock-out requirement: you don’t hold ISO 27001.'), 'still No-go until ISO 27001');
 
   // Ask this tender (BRIEF step 6)
   await page.click('button[data-ask="0"]');
-  await page.waitForSelector('#ans-0 .cite-chip', { timeout: 5000 });
-  check((await text('#ans-0')).includes('Vergabeunterlagen p. 12'), 'answer has a citation chip with the page');
-  await shot('ask');
+  await page.waitForSelector('#ans-0 .cite', { timeout: 5000 });
+  check((await text('#ans-0 .cite')) === 'Vergabeunterlagen, p. 12', 'answer cites the page in regular text');
+  await scan('ask'); await shot('ask');
 
   // 09 Company: ISO 27001 → Hohenau No-go → Go (BRIEF step 5, the hero moment)
   await page.click('button[data-act="back"]');
-  await page.waitForSelector('.vtiles');
-  await page.click('.dock a[href="#/company"]');
+  await page.waitForSelector('.feed-list');
+  await page.evaluate(() => window.scrollTo(0, 300)); await page.waitForTimeout(100); // leave the Feed scrolled, to check it is remembered
+  await page.click('.tabbar a[href="#/company"]');
   await page.waitForSelector('.co-head');
-  check(await page.locator('.co-head img.co-photo').count() === 1, 'company header photo');
+  check(await page.locator('.co-head img').count() === 0, 'no photo behind the Company title');
+  check((await text('#co-tiles')).replace(/\s+/g, ' ') === '1 Go 2 Maybe 3 No-go', 'counts as plain text "1 Go 2 Maybe 3 No-go"');
   const hint = await page.locator('[data-hint="cert:ISO 27001"]').innerText();
   check(hint.includes('Turn on → Landkreis Hohenau becomes Go'), 'impact hint before toggling: ' + hint);
   check((await page.locator('[data-hint="cert:VCA"]').innerText()).includes('Gemeente Vlietdam becomes Maybe'), 'VCA hint: Vlietdam becomes Maybe');
-  await shot('company');
+  check(await page.locator('[role="switch"][data-lang]').count() === 5, 'bid languages are rows with switches');
+  await scan('company'); await shot('company');
   await page.click('button[data-cert="ISO 27001"]');
-  check(await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false), 'a dashed ghost is left on the toggle while the re-score card grows out of it');
+  check(await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false), 'a dashed ghost is left on the switch while the re-score card grows out of it');
   await page.waitForSelector('.rescore[data-rescore]');
   await page.waitForTimeout(700);
   const sr = await page.locator('#rescore .sr-only').innerText();
   check(sr.startsWith('Landkreis Hohenau: No-go → Go'), 're-score card: "' + sr + '"');
-  check((await page.locator('#rescore .change-row').innerText()).replace(/\s+/g, ' ').includes('No-go → Go'), 'visible chips No-go → Go');
+  check((await page.locator('#rescore .change-row').innerText()).replace(/\s+/g, ' ').includes('No-go → Go'), 'visible "No-go → Go" (shape + word, plain text)');
   check(await page.locator('button[data-cert="ISO 27001"][aria-checked="true"]').count() === 1, 'switch is on (role=switch, aria-checked)');
-  check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company tiles re-flex to 2 : 2 : 2');
+  check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company counts move to 2 : 2 : 2');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
-  check(await page.locator('.co-head .co-photo-tint').count() === 1 && await page.locator('.co-head').evaluate((el) => getComputedStyle(el).backgroundColor) === 'rgba(0, 0, 0, 0)', 'Company header: the photo with the soft-light tint, no solid block');
   await page.evaluate(() => window.scrollTo(0, 0)); // show the re-score card
-  await shot('company-rescore');
+  await scan('company-rescore'); await shot('company-rescore');
 
   // Feed after the change
-  await page.click('.dock a[href="#/feed"]');
-  await page.waitForSelector('.vtiles');
-  check((await page.locator('.vtile .count').allInnerTexts()).join(',') === '2,2,2', 'feed tiles 2 · 2 · 2');
+  await page.click('.tabbar a[href="#/feed"]');
+  await page.waitForSelector('.feed-list');
+  check((await text('.tabs.filter')).replace(/\s+/g, ' ').includes('All 6 Go 2 Maybe 2 No-go 2'), 'feed filter counts 2 · 2 · 2');
   check(await page.locator('a.tcard[href="#/t/hoh-security"].v-go').count() === 1, 'Hohenau card is now Go');
   check(await page.evaluate(() => window.scrollY) > 0, 'the Feed tab remembers its scroll position');
-  await page.evaluate(() => window.scrollTo(0, 0)); // show the tiles in the screenshot
+  await page.evaluate(() => window.scrollTo(0, 0));
   await shot('feed-after');
 
   // 07 Skip the Dutch libraries tender with a reason (BRIEF step 7)
   await page.click('a.tcard[href="#/t/vli-libraries"]');
-  await page.waitForSelector('.vblock.v-nogo', { timeout: 8000 });
+  await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
   await page.click('button[data-go="#/t/vli-libraries/skip"]');
   await waitSheet(true);
-  await page.click('.chip[data-skip="Missing a certificate"]');
-  check(await page.locator('.chip[data-skip="Missing a certificate"][aria-pressed="true"]').count() === 1, 'skip reason chip selected');
-  await shot('skip-sheet');
+  await page.click('.opt[data-skip="Missing a certificate"]'); await page.waitForTimeout(250);
+  check(await page.locator('.opt[data-skip="Missing a certificate"][aria-pressed="true"]').count() === 1 && await css('.opt[aria-pressed="true"]', 'backgroundColor') === rgb(await token('--c-brand')), 'skip reason selected (plain rectangle, brand when on)');
+  await scan('skip-sheet'); await shot('skip-sheet');
   await page.click('button[data-act="skip-confirm"]');
-  await page.waitForSelector('.vtiles');
+  await page.waitForSelector('.feed-list');
   await page.waitForTimeout(400);
   check(page.url().endsWith('#/feed'), 'skip returns to the Feed');
   check(await page.locator('a.tcard[href="#/t/vli-libraries"]').count() === 0, 'skipped card is gone');
@@ -223,82 +218,83 @@ async function run(scheme, palette) {
 
   // Save a tender, then Bids
   await page.click('a.tcard[href="#/t/ell-schools"]');
-  await page.waitForSelector('.vblock.v-go', { timeout: 8000 });
+  await page.waitForSelector('.vhead.v-go', { timeout: 8000 });
   await page.click('button[data-act="save"]');
-  await page.waitForSelector('.btn-tonal');
-  check((await text('.btn-tonal')).includes('In Bids · Deciding'), 'Save becomes "In Bids · Deciding"');
+  await page.waitForSelector('button[data-go="#/bids"]');
+  check((await text('.action-bar button[data-go="#/bids"]')).includes('In Bids · Deciding'), 'Save becomes "In Bids · Deciding"');
   check((await text('#toast-root')).includes('Saved to Bids'), 'toast "Saved to Bids"');
   await shot('saved');
   await page.click('button[data-act="back"]');
-  await page.waitForSelector('.dock');
-  check((await page.locator('.dock a[href="#/bids"] .dock-badge').innerText()) === '1', 'dock shows the amber-red count badge on Bids (the site’s dock)');
-  const pillBefore = await page.locator('.dock-pill').boundingBox();
-  await page.click('.dock a[href="#/bids"]');
+  await page.waitForSelector('.tabbar');
+  check((await text('.feed-list')).includes('Saved'), 'the saved card carries a plain "Saved" marker');
+  await page.click('.tabbar a[href="#/bids"]');
   await page.waitForSelector('.bids-head');
-  await page.waitForTimeout(600);
-  const pillAfter = await page.locator('.dock-pill').boundingBox();
-  check(pillBefore && pillAfter && pillAfter.x > pillBefore.x + 40 && await page.locator('.dock a[aria-current="page"] .dock-label').innerText() === 'Bids', 'the dock pill slid to Bids (one dock, moved in place)');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Bids' && !(await page.locator('.tabbar .dock-badge, .tabbar .badge').count()), 'tab bar shows Bids active, no badge');
   check((await text('.bids-head .sub')).includes('1 saved · next deadline in 29 days'), 'Bids sub line');
-  check(await page.locator('.bid-card img.bid-thumb').count() === 1, 'bid card has a 48 px thumbnail');
+  check(await page.locator('.bid-card img').count() === 0 && await page.locator('.bid-card .tabs.stage [role="radio"]').count() === 3, 'bid card: no thumbnail, stages as text tabs');
   check((await text('.skipped')).includes('Missing a certificate'), 'skipped row shows the reason');
   await page.click('button[data-stage="Bidding"][data-id="ell-schools"]');
   check(await page.locator('button[data-stage="Bidding"][data-id="ell-schools"][aria-checked="true"]').count() === 1, 'stage switch to Bidding');
-  check((await text('.screen')).includes('All buyers and tenders are fictional'), 'fictional line on Bids');
-  await shot('bids');
+  check((await text('.screen')).includes('All companies and tenders are fictional'), 'fictional line on Bids');
+  await scan('bids'); await shot('bids');
 
   // 10 About
   await page.click('.nav button[data-go="#/about"]');
   await page.waitForSelector('.about-row');
-  check((await text('.screen')).includes('AI output is simulated') && (await text('.screen')).includes('All data is fictional') && (await text('.screen')).includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
-  await shot('about');
-  // Palette switch (persisted)
-  const other = { brand: 'sky', sky: 'harbor', harbor: 'brand' }[palette];
-  await page.click('[data-act="palette"][data-value="' + other + '"]');
-  check(await page.evaluate(() => document.documentElement.getAttribute('data-palette')) === other, 'palette switch applies data-palette=' + other);
+  const about = await text('.screen');
+  check(about.includes('AI output is simulated') && about.includes('real code') && about.includes('All data is fictional') && about.includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
+  check(!/engine\.js|ai\.js|data\.js|README|\?demo=/.test(about), 'About names no files or dev notes');
+  check(!(await page.locator('[data-act="palette"]').count()), 'no palette switch (Brand only)');
+  await scan('about'); await shot('about');
+  // Appearance switch (persisted)
+  const other = scheme === 'dark' ? 'light' : 'dark';
+  await page.click('[data-act="theme"][data-value="' + other + '"]');
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === other, 'appearance switch applies data-scheme=' + other);
   await load('', '#/about');
   await page.waitForSelector('.about-row');
-  check(await page.evaluate(() => document.documentElement.getAttribute('data-palette')) === other && await page.locator('[data-act="palette"][data-value="' + other + '"][aria-checked="true"]').count() === 1, 'palette persists across a reload');
+  check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === other && await page.locator('[data-act="theme"][data-value="' + other + '"][aria-checked="true"]').count() === 1, 'appearance persists across a reload');
   await shot('about-' + other);
-  await page.click('[data-act="palette"][data-value="' + palette + '"]');
+  await page.click('[data-act="theme"][data-value="' + scheme + '"]');
 
   // Deep link after onboarding
   await load('', '#/t/kal-fibre');
-  await page.waitForSelector('.vblock.v-maybe', { timeout: 8000 });
-  check((await text('.vblock')).includes('No knock-outs, but 2 risks: short by 1 reference, mandatory site visit.'), 'deep link #/t/kal-fibre works (Maybe, dark text on amber)');
-  await shot('detail-maybe');
+  await page.waitForSelector('.vhead.v-maybe', { timeout: 8000 });
+  check((await text('.vhead')).includes('No knock-outs, but 2 risks: short by 1 reference, mandatory site visit.'), 'deep link #/t/kal-fibre works (Maybe)');
+  await scan('detail-maybe'); await shot('detail-maybe');
 
   // Closed state (test-only ?today=)
   await page.goto(url('today=2026-12-23', '#/t/ell-schools'));
-  await page.waitForSelector('.vblock.v-closed', { timeout: 8000 });
-  check((await text('.vblock')).includes('The deadline passed on 4 Dec.'), 'closed header');
-  check(await page.locator('.action-bar button[disabled]').count() === 1 && (await text('.action-bar')).includes('Closed tenders can’t be saved'), 'Save disabled with lock line');
-  await shot('detail-closed');
+  await page.waitForSelector('.vhead.v-closed', { timeout: 8000 });
+  check((await text('.vhead')).includes('The deadline passed on 4 Dec.'), 'closed header');
+  check(await page.locator('.action-bar button[disabled]').count() === 1 && (await text('.action-bar')).includes('Closed tenders can’t be saved'), 'Save disabled with the lock line');
+  await scan('detail-closed'); await shot('detail-closed');
   await page.goto(url('today=2026-12-23', '#/feed'));
   await page.waitForSelector('.tcard.is-closed');
-  await shot('feed-closed');
+  check(await css('.tcard.is-closed .score', 'opacity') === '1', 'closed cards use solid tokens, not opacity');
+  await scan('feed-closed'); await shot('feed-closed');
 
-  // Offline banner and not found
+  // Offline note and not found
   await page.goto(url('offline=1', '#/feed'));
   await page.waitForSelector('.banner');
-  await shot('feed-offline');
+  await scan('feed-offline'); await shot('feed-offline');
   await load('', '#/nope');
   await page.waitForSelector('text=Page not found');
-  await shot('not-found');
+  await scan('not-found'); await shot('not-found');
 
   // Empty Bids and the honest "ISO 27001 alone" case, from a reset
   await page.goto(url('demo=reset'));
-  await page.waitForSelector('.welcome-hero');
+  await page.waitForSelector('.welcome');
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
   await load('', '#/bids');
   await page.waitForSelector('text=No bids yet');
-  await shot('bids-empty');
+  await scan('bids-empty'); await shot('bids-empty');
   await load('', '#/company');
   await page.waitForSelector('.co-head');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Landkreis Hohenau becomes Maybe'), 'without the answer the hint says Maybe');
   await page.click('button[data-cert="ISO 27001"]');
   await page.waitForSelector('.rescore[data-rescore]');
   check((await page.locator('#rescore .sr-only').innerText()).startsWith('Landkreis Hohenau: No-go → Maybe'), 'ISO 27001 alone: re-score card says No-go → Maybe');
-  await page.evaluate(() => window.scrollTo(0, 0)); // show the re-score card
+  await page.evaluate(() => window.scrollTo(0, 0));
   await shot('company-iso-alone');
 
   // Touch targets: interactive elements smaller than 44 px (pseudo-element hit areas are not measured here)
@@ -307,6 +303,7 @@ async function run(scheme, palette) {
     .filter((x) => x.w && x.h && (x.w < 44 || x.h < 44)));
   console.log('  info elements under 44 px on Company (box only): ' + JSON.stringify(small));
 
+  check(scanned.length === 0, 'declutter scan: none of the 18 patterns on any screen' + (scanned.length ? ':\n       ' + scanned.join('\n       ') : ''));
   check(problems.length === 0, 'no console errors, page errors or failed requests' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
   await browser.close();
 }
@@ -321,15 +318,11 @@ async function reducedMotion() {
   console.log('\n== reduced motion · ' + BASE);
   const browser = await playwright.chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light', reducedMotion: 'reduce' });
+  const problems = [];
   const page = await ctx.newPage();
+  watch(page, problems);
   await page.goto(BASE + '?demo=reset&theme=light');
-  await page.waitForSelector('.mq-track');
-  check(await page.evaluate(() => getComputedStyle(document.querySelector('.ground .glow')).animationName) === 'none', 'the ground glow does not drift under reduced motion');
-  const r = await page.evaluate(() => new Promise((resolve) => {
-    const el = document.querySelector('.mq-track'), cs = getComputedStyle(el), a = el.getBoundingClientRect().left;
-    setTimeout(() => resolve({ name: cs.animationName, moved: Math.abs(el.getBoundingClientRect().left - a) }), 600);
-  }));
-  check(r.name === 'none' && r.moved < 0.5, 'sector band is frozen under prefers-reduced-motion (' + r.name + ', moved ' + r.moved + 'px)');
+  await page.waitForSelector('.welcome');
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
   await page.goto('about:blank'); await page.goto(BASE + '#/company');
   await page.waitForSelector('.co-head');
@@ -339,19 +332,20 @@ async function reducedMotion() {
   const live = await page.evaluate(() => document.getAnimations().filter((a) => (a.effect.getComputedTiming().duration || 0) > 0).length);
   check(await page.locator('.morph-ghost').count() === 0 && live === 0, 're-score card appears without morph, ghost or any non-zero-duration animation under reduced motion (' + live + ' live)');
   await page.goto('about:blank'); await page.goto(BASE + '#/feed');
-  await page.waitForSelector('.pages-line span');
-  check(await page.evaluate(() => getComputedStyle(document.querySelector('.pages-line span')).animationDuration) === '0s', 'shimmer has zero duration under reduced motion');
+  await page.waitForSelector('.pages-line');
   check(await page.locator('.pages-line b').innerText() === '777', 'the 777 count-up is instant under reduced motion');
   check(await page.evaluate(() => Array.from(document.querySelectorAll('.feed-head h1 .w')).every((w) => getComputedStyle(w).animationDuration === '0s')), 'the word reveal is instant under reduced motion');
-  await page.mouse.move(195, 700); await page.mouse.down(); await page.waitForTimeout(80);
-  check(await page.locator('.glowable.touched').count() === 0, 'no touch glow under reduced motion');
-  await page.mouse.up();
+  check(await page.evaluate(() => document.getAnimations().filter((a) => (a.effect.getComputedTiming().duration || 0) > 0).length) === 0, 'no running animation on the Feed under reduced motion');
+  check(problems.length === 0, 'no console errors under reduced motion' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
   await browser.close();
 }
 
 (async () => {
-  const themes = [['light', 'brand'], ['dark', 'brand'], ['light', 'sky'], ['dark', 'sky'], ['light', 'harbor'], ['dark', 'harbor']].filter((t) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === t[0] + '-' + t[1]);
-  try { for (const t of themes) await run(t[0], t[1]); await reducedMotion(); }
+  const appCss = ['styles.css', 'shared/tokens.css'].flatMap(scanCss);
+  console.log('== static CSS scan (styles.css, shared/tokens.css)');
+  check(appCss.length === 0, 'no declutter pattern in the app stylesheets' + (appCss.length ? ':\n       ' + appCss.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));
+  const schemes = ['dark', 'light'].filter((s) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === s);
+  try { for (const s of schemes) await run(s); await reducedMotion(); }
   catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);
   process.exitCode = failures ? 1 : 0;
