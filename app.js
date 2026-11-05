@@ -347,9 +347,49 @@
       '<div class="sec-h"><h2>In short</h2>' + ai() + '</div><p class="in-short reveal">' + words(t.ai.summary) + '</p>' +
       '<div class="sec-h"><h2>Can you qualify?</h2><span class="aside">' + r.count.pass + ' of ' + r.checks.length + ' met</span></div>' +
       '<div class="cards">' + checks.map(function (c) { return reqCard(t, c); }).join('') + '</div>' +
+      competitionHTML(t, r) +
       (qa.length ? '<div class="sec-h"><h2>Ask this tender</h2>' + ai() + '</div><div class="asks" id="asks">' + asksHTML(t) + '</div>' : '') +
       fiction() + '</div>' +
       '<div class="action-bar">' + (closed ? '<p class="bar-note">Closed tenders can’t be saved</p>' : '') + actions + '</div>';
+  }
+  // Competition: who bid on similar contracts and who is likely to bid now (simulated AI reading of past award notices,
+  // fictional data in data.js), plus a rough chance to win from plain rules. Display only: the score and verdict
+  // come from engine.js and are not touched.
+  function chanceToWin(t, r) {
+    var c = D.COMPETITION && D.COMPETITION[t.id]; if (!c) return null;
+    if (r.verdict === 'nogo') return { level: 'Qualify first', odds: '', why: ['You miss a knock-out above, so a bid would be excluded before price or quality count.'] };
+    var counts = c.past.map(function (a) { return a.bidders; });
+    var avg = counts.reduce(function (a, b) { return a + b; }, 0) / counts.length, p = 1 / avg;
+    var lo = Math.min.apply(null, counts), hi = Math.max.apply(null, counts);
+    var why = ['Similar contracts drew ' + (lo === hi ? lo : lo + ' to ' + hi) + ' bidders.'];
+    var wins = {}; c.past.forEach(function (a) { wins[a.winner] = (wins[a.winner] || 0) + 1; });
+    var top = c.rivals.slice().sort(function (a, b) { return (wins[b.id] || 0) - (wins[a.id] || 0); })[0];
+    if ((wins[top.id] || 0) >= 2) { p *= 0.7; why.push(bare(top.name) + ' won ' + wins[top.id] + ' of the last ' + c.past.length + '.'); }
+    var strongest = c.rivals.slice().sort(function (a, b) { return b.refs - a.refs; })[0], mine = S.profile.references;
+    if (mine > strongest.refs) { p *= 1.2; why.push('You have more comparable references (' + mine + ') than any rival.'); }
+    else if (mine < strongest.refs) { p *= 0.8; why.push(bare(strongest.name) + ' has more references (' + strongest.refs + ' vs your ' + mine + ').'); }
+    else why.push('Your references (' + mine + ') match the strongest rival.');
+    if (r.verdict === 'maybe') why.push('Only once you clear the open points above.');
+    return { level: p >= 0.25 ? 'Good chance' : p >= 0.15 ? 'Fair chance' : 'Low chance', odds: 'About 1 in ' + Math.max(2, Math.round(1 / p)), why: why };
+  }
+  function competitionHTML(t, r) {
+    var c = D.COMPETITION && D.COMPETITION[t.id]; if (!c || r.verdict === 'closed') return '';
+    var ch = chanceToWin(t, r);
+    var wins = {}; c.past.forEach(function (a) { wins[a.winner] = (wins[a.winner] || 0) + 1; });
+    var name = function (id) { var x = c.rivals.filter(function (v) { return v.id === id; })[0]; return x ? bare(x.name) : id; };
+    var row = function (title, meta) { return '<div class="row"><div class="txt"><p class="row-label">' + esc(title) + '</p><p class="meta-text">' + esc(meta) + '</p></div></div>'; };
+    return '<div class="sec-h"><h2>Competition</h2>' + ai() + '</div>' +
+      '<div class="group comp-chance">' +
+        '<p class="comp-level">' + esc(ch.level) + (ch.odds ? '<span class="comp-odds"> · ' + esc(ch.odds) + '</span>' : '') + '</p>' +
+        '<ul class="comp-why">' + ch.why.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' +
+        '<p class="meta-text">Rough estimate from past awards with plain rules, not AI. It does not change the score.</p>' +
+      '</div>' +
+      '<p class="label-text comp-h">Likely bidders</p><div class="group">' +
+        c.rivals.map(function (v) { return row(bare(v.name), 'Won ' + (wins[v.id] || 0) + ' of the last ' + c.past.length + ' · ' + plural(v.refs, 'reference')); }).join('') +
+      '</div>' +
+      '<p class="label-text comp-h">Similar past awards</p><div class="group">' +
+        c.past.map(function (a) { return row(a.title, a.buyer + ', ' + a.year + ' · won by ' + name(a.winner) + ' · ' + plural(a.bidders, 'bidder') + ' · ' + money(a.value)); }).join('') +
+      '</div>';
   }
   function fact(k, v, soon) { return '<div class="fact"><p class="k">' + k + '</p><p class="v' + (soon ? ' soon' : '') + '">' + esc(v) + '</p></div>'; }
 

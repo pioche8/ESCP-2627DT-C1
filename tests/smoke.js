@@ -309,6 +309,7 @@ async function run(scheme) {
   await load('', '#/t/kal-fibre');
   await page.waitForSelector('.vhead.v-maybe', { timeout: 8000 });
   check((await text('.vhead')).includes('No knock-outs, but 2 risks: short by 1 reference, mandatory site visit.'), 'deep link #/t/kal-fibre works (Maybe)');
+  check((await text('.comp-level')).startsWith('Fair chance') && (await text('.screen')).includes('Likely bidders') && (await text('.screen')).includes('Similar past awards'), 'Competition section: chance to win, likely bidders, similar past awards');
   await scan('detail-maybe'); await shot('detail-maybe');
 
   // Closed state (test-only ?today=)

@@ -418,6 +418,12 @@ html.sheet-open { overflow:hidden; }
 .group { margin:0 16px; padding:4px 16px; border-radius:var(--r); background:var(--c-surface); }
 .row { display:flex; align-items:center; gap:12px; min-height:60px; padding:10px 0; }
 .row .txt { flex:1; min-width:0; }
+/* Competition on the tender detail: the chance line, its reasons, then two lists */
+.comp-chance { padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+.comp-level { font:700 18px/24px var(--font-ui); }
+.comp-odds { font-weight:600; color:var(--c-muted); }
+.comp-why { margin:0; padding:0; list-style:none; font:500 14px/20px var(--font-ui); display:flex; flex-direction:column; gap:4px; }
+.comp-h { margin:16px 20px 8px; }
 .row-label { font:700 16px/21px var(--font-ui); }
 .row-sub { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
 .hint { margin-top:2px; font:600 13px/18px var(--font-ui); color:var(--c-brand); }

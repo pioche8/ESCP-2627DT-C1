@@ -171,6 +171,76 @@
   // the two-digit prefix of tender.cpv with PROFILE.cpv. Codes and short names follow the EU Common Procurement Vocabulary.
   var SECTORS = [['03', 'Agriculture & forestry'], ['09', 'Fuel & energy'], ['14', 'Mining & metals'], ['15', 'Food & drink'], ['16', 'Farm machinery'], ['18', 'Clothing & footwear'], ['19', 'Textiles & plastics'], ['22', 'Printing'], ['24', 'Chemicals'], ['30', 'Office & computing'], ['31', 'Electrical & lighting'], ['32', 'Telecom equipment'], ['33', 'Medical & pharma'], ['34', 'Vehicles & transport'], ['35', 'Security & defence'], ['37', 'Sport & games'], ['38', 'Lab & precision'], ['39', 'Furniture'], ['41', 'Water supply'], ['42', 'Industrial machinery'], ['43', 'Construction machinery'], ['44', 'Building materials'], ['45', 'Construction work'], ['48', 'Software'], ['50', 'Repair & maintenance'], ['51', 'Installation'], ['55', 'Hotels & catering'], ['60', 'Transport services'], ['63', 'Logistics & travel'], ['64', 'Postal & telecom'], ['65', 'Utilities'], ['66', 'Finance & insurance'], ['70', 'Real estate'], ['71', 'Architecture & engineering'], ['72', 'IT services'], ['73', 'Research & development'], ['75', 'Public administration'], ['76', 'Oil & gas services'], ['77', 'Landscaping'], ['79', 'Business services'], ['80', 'Education & training'], ['85', 'Health & social care'], ['90', 'Cleaning & environment'], ['92', 'Culture & sport'], ['98', 'Community services']];
 
-  root.DEMO = { DEMO_TODAY: DEMO_TODAY, PROFILE: PROFILE, TENDERS: TENDERS, CERT_OPTIONS: CERT_OPTIONS, SECTORS: SECTORS };
+  // Competition per tender (display only; the engine never reads it, so no score or verdict changes). In the product
+  // the AI would read past award notices for similar contracts; here every rival, award and number is invented.
+  // past: similar earlier awards (winner = a rival's id). rivals: who is likely to bid, with their comparable references.
+  var COMPETITION = {
+    'ell-schools': {
+      past: [
+        { title: 'Wi-Fi for 8 secondary schools', buyer: 'Stadt Ellerbach', year: 2024, winner: 'velte', bidders: 4, value: 310000 },
+        { title: 'Network cabling, town hall annex', buyer: 'Stadt Ellerbach', year: 2023, winner: 'saalekom', bidders: 3, value: 140000 },
+        { title: 'School network upgrade', buyer: 'Gemeinde Rothfeld', year: 2025, winner: 'ostmark', bidders: 4, value: 520000 }
+      ],
+      rivals: [
+        { id: 'velte', name: 'Velte Netztechnik (fictional)', refs: 4 },
+        { id: 'saalekom', name: 'Saalekom Systeme (fictional)', refs: 3 },
+        { id: 'ostmark', name: 'Ostmark Datennetz (fictional)', refs: 2 }
+      ]
+    },
+    'hoh-security': {
+      past: [
+        { title: 'Security audit, county IT', buyer: 'Landkreis Hohenau', year: 2024, winner: 'pruefwerk', bidders: 7, value: 80000 },
+        { title: 'Penetration test, district offices', buyer: 'Landkreis Altmühlen', year: 2025, winner: 'pruefwerk', bidders: 6, value: 65000 },
+        { title: 'ISMS set-up and audit', buyer: 'Stadt Weißbach', year: 2025, winner: 'kernschutz', bidders: 6, value: 110000 }
+      ],
+      rivals: [
+        { id: 'pruefwerk', name: 'Prüfwerk IT-Sicherheit (fictional)', refs: 12 },
+        { id: 'kernschutz', name: 'Kernschutz Consulting (fictional)', refs: 6 }
+      ]
+    },
+    'val-dc': {
+      past: [
+        { title: 'Data centre cabling, lot 1', buyer: 'Universidad de Valdemora', year: 2024, winner: 'cableval', bidders: 5, value: 290000 },
+        { title: 'Server room re-cabling', buyer: 'Hospital de Sorbanes', year: 2025, winner: 'redesmeseta', bidders: 4, value: 180000 }
+      ],
+      rivals: [
+        { id: 'cableval', name: 'Cableval Instalaciones (fictional)', refs: 6 },
+        { id: 'redesmeseta', name: 'Redes Meseta (fictional)', refs: 5 }
+      ]
+    },
+    'kal-fibre': {
+      past: [
+        { title: 'Fibre rollout, phase 1', buyer: 'Stadtwerke Kaltbrunn', year: 2024, winner: 'alpenfaser', bidders: 3, value: 950000 },
+        { title: 'FTTB for business park', buyer: 'Gemeinde Lindau am See', year: 2025, winner: 'alpenfaser', bidders: 2, value: 600000 },
+        { title: 'Fibre backbone, water plant', buyer: 'Stadtwerke Kaltbrunn', year: 2023, winner: 'donaunetz', bidders: 3, value: 420000 }
+      ],
+      rivals: [
+        { id: 'alpenfaser', name: 'Alpenfaser Bau (fictional)', refs: 15 },
+        { id: 'donaunetz', name: 'Donaunetz Technik (fictional)', refs: 7 }
+      ]
+    },
+    'vli-libraries': {
+      past: [
+        { title: 'Wi-Fi for town hall and museum', buyer: 'Gemeente Vlietdam', year: 2024, winner: 'polderlink', bidders: 5, value: 160000 },
+        { title: 'Public Wi-Fi, 6 libraries', buyer: 'Gemeente Ruysdorp', year: 2025, winner: 'netwerkhuis', bidders: 6, value: 175000 }
+      ],
+      rivals: [
+        { id: 'polderlink', name: 'Polderlink Netwerken (fictional)', refs: 8 },
+        { id: 'netwerkhuis', name: 'Het Netwerkhuis (fictional)', refs: 5 }
+      ]
+    },
+    'mor-support': {
+      past: [
+        { title: 'IT support framework (3 years)', buyer: 'Centre Hospitalier de Morlanne', year: 2022, winner: 'infogestion', bidders: 4, value: 1800000 },
+        { title: 'Helpdesk and field support', buyer: 'CHU de Varennes', year: 2024, winner: 'infogestion', bidders: 5, value: 2100000 }
+      ],
+      rivals: [
+        { id: 'infogestion', name: 'Infogestion Santé (fictional)', refs: 20 },
+        { id: 'servinord', name: 'Servinord Informatique (fictional)', refs: 9 }
+      ]
+    }
+  };
+
+  root.DEMO = { DEMO_TODAY: DEMO_TODAY, PROFILE: PROFILE, TENDERS: TENDERS, CERT_OPTIONS: CERT_OPTIONS, SECTORS: SECTORS, COMPETITION: COMPETITION };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.DEMO;
 })(this);
