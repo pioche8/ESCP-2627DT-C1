@@ -256,7 +256,7 @@ Workstream B (the website's "how it works"; the deployed app bytes do not change
 (not merged yet: see the pull request from `overnight/b`)
 
 Workstream C1 (error fallback; the deployed app bytes change):
-(not merged yet: see the pull request from `overnight/c-1-error-fallback`)
+98. **One plain screen for any uncaught error or unhandled rejection, one action.** `app.js` gained a `crash()` that logs the error to the console, closes the sheet, clears the tab bar and the toast, and renders "Something went wrong · Your profile, answers and saved tenders are kept." with a Restart button (the existing `emptyState()` and `.btn-primary`, so no new style); a `crashed` flag makes `render()` a no-op until Restart, so a later hash change cannot paint over it. Restart = `location.replace()` to the home route (`#/feed`, or `#/welcome/1` before onboarding) followed by `location.reload()`: a fresh start on the same stored `tenderscout.v2`, nothing wiped. Listeners are `window.addEventListener('error' | 'unhandledrejection')` rather than assigning `window.onerror`, so nothing else that hooks errors (a browser extension, Playwright) is displaced. The smoke test injects both kinds in their own browser context, checks the screen (the only action, 44 px, no tab bar, the declutter scan clean, the error in the console, the screen surviving a hash change) and the recovery (back on the Feed, still onboarded, the saved tender still saved). About 30 lines in `app.js`; no other app file changed.
 
 Workstream C2 (off-script monkey test; the deployed app bytes change only if it found something):
 (not merged yet: see the pull request from `overnight/c-2-monkey`)

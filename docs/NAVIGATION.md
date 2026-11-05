@@ -8,6 +8,8 @@ Context of use: an owner on a phone, between jobs, often in a van or on site. **
 >
 > 4 Nov 2026 (declutter): routes, deep links and back behaviour unchanged. The floating dock is a standard full-width bottom tab bar (icon + label; the active tab is brand-coloured with a filled icon and a bolder label). The Feed's summary counts live in the filter tabs ("All 6 · ● Go 1 · ▲ Maybe 2 · ■ No-go 3", underlined text, no tiles); the stage switcher on Bids and the appearance switch on About are the same text tabs. Cards show verdict (shape + word + score), title, buyer, value and days left only; the tender header is plain text on the ground with the photo in its own block beneath it; the detail's facts are value and deadline. Statuses, "Simulated AI" and citations ("Vergabeunterlagen, p. 12, §3.1") are plain text. Bid languages on Company are rows with switches; skip reasons are plain toggle buttons. There is one palette (About keeps System / Light / Dark); `?palette=` is ignored.
 
+> 5 Nov 2026 (error fallback): an uncaught error or an unhandled rejection replaces the screen with "Something went wrong · Your profile, answers and saved tenders are kept." and one Restart button; Restart reloads the app on the Feed (or Welcome before onboarding). The stored state `tenderscout.v2` is not touched; the error is logged to the console.
+
 ## Structure
 Three tabs, three questions the owner asks:
 | Tab | Question | Route |
