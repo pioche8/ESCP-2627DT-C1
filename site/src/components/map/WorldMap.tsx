@@ -22,11 +22,12 @@ function mainland(f: Country): Country {
   const polys = f.geometry.coordinates.filter((p) => p[0].some(([lon, lat]) => lon > -20 && lon < 45 && lat > 34)); // Europe only (no overseas territories)
   return { ...f, geometry: { type: 'MultiPolygon', coordinates: polys } };
 }
-/** The country's largest polygon, so a label sits on the mainland (not between France and Corsica). */
+/** The country's largest polygon, so a label sits on the mainland (not between France and Corsica). No variable here is
+ *  called `ring`: Tailwind reads that word in any source file as its box-shadow class and adds it to the site's CSS. */
 function largest(f: Country): Feature<Polygon> {
   const g = f.geometry;
-  const rings = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
-  const polys = rings.map((coordinates): Feature<Polygon> => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates } }));
+  const parts = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+  const polys = parts.map((coordinates): Feature<Polygon> => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates } }));
   return polys.reduce((a, b) => (geoArea(b) > geoArea(a) ? b : a));
 }
 const topo = world as unknown as Topology<{ countries: GeometryCollection }>;
@@ -38,8 +39,8 @@ const LABEL_AT = FOCUS.map((f) => ({ cc: CODE_BY_ID.get(String(f.id))!, poly: la
 const LABEL_W = 28; // two capitals at 13 px bold plus 4 px each side
 function spanAt(proj: GeoProjection, poly: Feature<Polygon>, x: number, y: number): [number, number] {
   let left = -Infinity, right = Infinity;
-  for (const ring of poly.geometry.coordinates) {
-    const pts = ring.map((p) => proj(p as [number, number]) ?? [x, y]);
+  for (const loop of poly.geometry.coordinates) {
+    const pts = loop.map((p) => proj(p as [number, number]) ?? [x, y]);
     for (let i = 1; i < pts.length; i++) {
       const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
       if ((ay <= y) === (by <= y)) continue;
