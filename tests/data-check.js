@@ -162,6 +162,28 @@ const ids = new Set();
 });
 if (D.TENDERS && !D.TENDERS.some((t) => t.id === 'hoh-security')) fail('TENDERS', 'hoh-security', 'the demo tender (BRIEF.md step 4–5) is gone; tests/demo-golden.test.js pins its numbers');
 
+/* ---------- PAST_BIDS (insights.js summary() + app.js insightsScreen(), 5 Nov 2026) ---------- */
+const I = require('../insights.js');
+req('DEMO', D, 'PAST_BIDS', (v) => Array.isArray(v) && v.length > 0, 'a non-empty array of past bids (the Win/loss screen)');
+const bidIds = new Set();
+(D.PAST_BIDS || []).forEach((b, i) => {
+  const W = 'PAST_BIDS[' + (b && b.id ? b.id : i) + ']';
+  if (!b || typeof b !== 'object') { fail(W, '', 'expected an object'); return; }
+  if (req(W, b, 'id', isStr, 'a non-empty string') && bidIds.has(b.id)) fail(W, 'id', 'duplicate id'); bidIds.add(b.id);
+  req(W, b, 'title', isStr, 'a non-empty string');
+  req(W, b, 'buyer', (v) => isStr(v) && /\(fictional\)$/.test(v), 'a buyer name ending in "(fictional)"');
+  req(W, b, 'country', (v) => typeof v === 'string' && /^[A-Z]{2}$/.test(v), 'a two-letter country code');
+  req(W, b, 'cpv', (v) => SECTOR_CODES.indexOf(v) !== -1, 'one of the 45 CPV division codes in SECTORS (the area name comes from there)');
+  req(W, b, 'submitted', (v) => isISO(v) && v <= D.DEMO_TODAY, 'an ISO date on or before DEMO_TODAY');
+  req(W, b, 'ourPrice', (v) => isInt(v) && v > 0, 'a positive whole number of euros');
+  req(W, b, 'outcome', (v) => v === 'won' || v === 'lost', '"won" or "lost"');
+  if (b.outcome === 'lost') {
+    req(W, b, 'reason', (v) => I.REASONS.indexOf(v) !== -1, 'one of ' + I.REASONS.join(' | '));
+    req(W, b, 'winnerPrice', (v) => v === null || (isInt(v) && v > 0), 'null or a positive whole number of euros');
+  }
+  strings(W, b);
+});
+
 /* ---------- engine thresholds (constants the data relies on) ---------- */
 if (!(isNum(E.REVIEW_THRESHOLD) && E.REVIEW_THRESHOLD > 0 && E.REVIEW_THRESHOLD < 1)) fail('engine.js', 'REVIEW_THRESHOLD', 'must be between 0 and 1, got ' + E.REVIEW_THRESHOLD);
 if (!(isInt(E.KNOCKOUT_CAP) && E.KNOCKOUT_CAP >= 0 && E.KNOCKOUT_CAP <= 100)) fail('engine.js', 'KNOCKOUT_CAP', 'must be within 0–100, got ' + E.KNOCKOUT_CAP);

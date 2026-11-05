@@ -10,6 +10,8 @@ Context of use: an owner on a phone, between jobs, often in a van or on site. **
 
 > 5 Nov 2026 (Settings tab): About became **Settings**, a fourth tab (`#/settings`, icon `tune`). It holds Appearance (System / Light / Dark), Demo (Reset demo) and "About this prototype" (the four honesty statements, unchanged). `#/about` still works and opens the same tab; the ⓘ in the headers now opens Settings. Everything else is unchanged.
 
+> 5 Nov 2026 (Win/loss insights): Bids gained a **Win/loss insights** page (`#/insights`), opened from the row at the top of Bids. It shows the win rate, the value won, the win rate by area and why bids were lost (for example "6.8% above the winner" on price), computed from the company's past bids (fictional). The tab bar stays, with Bids active; ‹ Back returns to Bids, also after a deep link.
+
 ## Structure
 Four tabs: three questions the owner asks, plus Settings:
 | Tab | Question | Route |
@@ -29,6 +31,7 @@ flowchart TD
   subgraph Tabs
     F["#/feed<br/>Feed: Go / Maybe / No-go"]
     B["#/bids<br/>Deciding / Bidding / Submitted + Skipped"]
+    WL["#/insights<br/>Win/loss insights (a page of Bids)"]
     C["#/company<br/>Profile levers + re-score card"]
     ST["#/settings<br/>Appearance, Reset demo, About this prototype"]
   end
@@ -38,6 +41,7 @@ flowchart TD
   D -- "Save to Bids" --> B
   SK -- "Skip tender" --> F
   B --> D
+  B --> WL
   B -- "Restore → Deciding" --> B
   ANY["ⓘ or #/about"] --> ST
 ```
@@ -54,6 +58,7 @@ flowchart TD
 | S5b | `#/t/:id/skip` | Skip sheet | Skip tender | Pick any number of reasons, or none **(new)**. Feeds tomorrow's ranking (future) |
 | S6 | `#/company` | Company profile | (live) | Re-score card "Landkreis Hohenau · No-go → Go" and unlock hints such as "Turn on → Gemeente Vlietdam becomes Maybe" **(new)**. **(v2)** Photo behind the top of the header |
 | S7 | `#/bids` | Bids pipeline | Change stage | Empty groups show "Nothing here yet". **Restore moves a skipped tender to Deciding (new)**. **(v2)** 48 px photo thumbnail on each bid card |
+| S7b | `#/insights` | Win/loss insights (a page of Bids, 5 Nov) | (read only) | Opened from the "Win/loss insights" row at the top of Bids (also on an empty Bids). Four figures (win rate, value won, bids lost, % above the winner when lost on price), win rate by area (CPV division, best first) and why bids were lost, from the fictional past bids; plain arithmetic, not AI. Tab bar stays with Bids active; ‹ Back → Bids |
 | S8 | `#/settings` (and `#/about`) | Settings: appearance, demo reset, AI disclosure (4th tab since 5 Nov) | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)**, persisted (the palette switch was removed on 4 Nov). `?demo=reset` does the same reset |
 | – | anything else | Not found | Open Feed | |
 

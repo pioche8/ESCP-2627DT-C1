@@ -4,16 +4,18 @@
 <style>body{font:15px/1.5 system-ui,sans-serif;padding:16px;max-width:640px;margin:auto}.ok{color:#0E5C3C}.fail{color:#B23720}</style></head>
 <body>
 <h1>Engine tests (browser)</h1>
-<p>Same checks as <code>node tests/engine.test.js</code> and <code>node tests/demo-golden.test.js</code>, run in this browser.</p>
+<p>Same checks as <code>node tests/engine.test.js</code> and <code>node tests/demo-golden.test.js</code> and <code>node tests/insights.test.js</code>, run in this browser.</p>
 <ul id="out"></ul>
 <script src="engine.js"></script>
 <script src="data.js"></script>
+<script src="insights.js"></script>
 <script>
   // Minimal shims so the node test file runs unchanged in the browser
   var module = undefined;
   function require(p) {
     if (p === 'assert') return assertShim;
     if (p.indexOf('engine') !== -1) return window.Engine;
+    if (p.indexOf('insights') !== -1) return window.Insights;
     return window.DEMO;
   }
   function assertShim(v, m) { if (!v) throw new Error(m || 'assertion failed'); }
@@ -28,5 +30,6 @@
 </script>
 <script src="tests/engine.test.js"></script>
 <script src="tests/demo-golden.test.js"></script>
+<script src="tests/insights.test.js"></script>
 </body>
 </html>

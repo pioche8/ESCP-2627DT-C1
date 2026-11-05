@@ -126,7 +126,7 @@ sets "Status", "Score tile" and "Button" to `VerdictShape` + label, `VerdictTile
 
 | | App (root) | Website (`site/`) |
 |---|---|---|
-| UI | Vanilla ES5 in four classic scripts: `engine.js` (decision logic, UMD) → `data.js` → `ai.js` (simulated AI) → `app.js` (hash router, render functions, event delegation, `localStorage` key `tenderscout.v2`) | Next.js 16 (App Router), React 19, TypeScript, Framer Motion |
+| UI | Vanilla ES5 in five classic scripts: `engine.js` (decision logic, UMD) → `data.js` → `ai.js` (simulated AI) → `insights.js` (win/loss arithmetic, UMD) → `app.js` (hash router, render functions, event delegation, `localStorage` key `tenderscout.v2`) | Next.js 16 (App Router), React 19, TypeScript, Framer Motion |
 | Styling | Plain global CSS: `shared/tokens.css` + `styles.css` | Tailwind v4 with the generated `@theme` + `site/src/styles/components.css` |
 | Build | None. Runs from `file://` and GitHub Pages (`main` / root) | `next build` (Vercel root = `site`; `STATIC_EXPORT=1` for a static preview); `prebuild` syncs the shared engine, data, tokens and fonts |
 | Tests | `npm test`, `npm run preflight`, `node tests/smoke.js` (Playwright, ad hoc install), `node tests/declutter-scan.js`, `node shared/check-contrast.js` | `npm run check`, `npm run audit` |
