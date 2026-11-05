@@ -5,13 +5,18 @@
   "scripts": {
     "sync": "node scripts/sync-shared.mjs",
     "tokens": "node ../shared/build-tokens.js",
-    "prebuild": "node scripts/sync-shared.mjs",
+    "how": "node ../shared/how-it-decides.js",
+    "images": "node scripts/brand-images.cjs",
+    "prebuild": "node scripts/sync-shared.mjs && node scripts/seo-files.cjs",
     "dev": "next dev",
     "build": "next build",
+    "export": "npm run prebuild && STATIC_EXPORT=1 next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "audit": "npm run export && node scripts/how-check.cjs && node scripts/audit.cjs",
+    "seo": "node scripts/seo-files.cjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.2",
@@ -30,8 +35,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/topojson-client": "^3.1.5",
+    "axe-core": "^4.14.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
+    "lighthouse": "^13.6.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
