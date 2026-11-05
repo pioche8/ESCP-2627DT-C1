@@ -5,7 +5,7 @@ Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 
 > **Integrity rules.** Every entry below comes from a real interview held by the named team member. No AI-generated or "illustrative" interviews. Names and companies are anonymised. Figures are only those the interviewee gave; anything else is marked ASSUMPTION. Demo data in the prototype is fictional and is **not** evidence.
 >
-> **Real or fictional, for every figure in the repo:** [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional). Today the only real user data is the one survey answer in §1b; there are no interviews yet.
+> Real or fictional, figure by figure: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 ## 0. Hypotheses and kill gate (written BEFORE interview #1, tagged `v0-shell`)
 TODO: Tag `v0-shell` only if no interview happened before this commit.
@@ -36,7 +36,7 @@ Gate result (fill in Tue 18:00, signed by: ______): **GO / RESHAPE / KILL / prov
 | 6 | | | | | | | | | | |
 
 ## 1b. Survey responses (screening form, not interviews)
-**Real data, self-reported.** Form: "How small firms decide whether to bid on public tenders (about 3 min)", Google Forms, opened 5 Nov 2026. The row below is a real respondent's answers, copied from the form's export without the contact field. Survey answers are self-reported and **do not count toward the gate** in §0. A respondent who agrees to a call becomes an interview and is logged in §1 and §2 like any other. Contact details stay with the team and off this public repo.
+Form: "How small firms decide whether to bid on public tenders (about 3 min)", Google Forms, opened 5 Nov 2026. The row below is a real respondent's answers, copied from the form's export without the contact field. Survey answers are self-reported and **do not count toward the gate** in §0. A respondent who agrees to a call becomes an interview and is logged in §1 and §2 like any other. Contact details stay with the team and off this public repo.
 
 | # | Date | Role | Firm size | Tenders read in 12 months | Time deciding on the last tender | Took longest | Tools | Did the tools say if you qualify? | Skipped a foreign tender? | Call |
 |---|---|---|---|---|---|---|---|---|---|---|
