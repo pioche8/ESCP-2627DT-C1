@@ -12,6 +12,7 @@ Team: <!-- TEAM NAMES -->[names] · Lecturer: `@drdml`
 | Stakeholder evidence | [`evidence.md`](evidence.md) |
 | Interview kit | [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md) |
 | Navigation map and flows | [`docs/NAVIGATION.md`](docs/NAVIGATION.md) |
+| UX planes (Garrett: strategy, scope, structure, skeleton, surface → the files that cover each), user stories, content requirements | [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md) · [`docs/design/USER_STORIES.md`](docs/design/USER_STORIES.md) · [`docs/design/CONTENT_REQUIREMENTS.md`](docs/design/CONTENT_REQUIREMENTS.md) |
 | Architecture (one page + diagram: data → engine → screens, tokens, state, URL parameters, gates, deploy, rollback) | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | How it decides (generated from the engine; the website's `/how` page renders the same model) | [`docs/HOW_IT_DECIDES.md`](docs/HOW_IT_DECIDES.md) |
 | Overnight report, 5 Nov 2026 (the pull requests in merge order, gates, caveats, rollback) | [`docs/reports/2026-11-05-overnight.md`](docs/reports/2026-11-05-overnight.md) |
