@@ -32,6 +32,9 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 | `docs/design/` | [`UX_PLANES.md`](design/UX_PLANES.md): Garrett's five planes (strategy, scope, structure, skeleton, surface) mapped to the files that cover each, with a status; `USER_STORIES.md` (from the brief, not from interviews yet); `CONTENT_REQUIREMENTS.md` (every piece of content, its source of truth and who produces it). T9 and T10 add `PERSONA.md` and `JOURNEY.md` here. | You log interviews (add their links to the stories and update the planes' status), or you finish T9 or T10. |
 | `BRIEF.md`, `evidence.md` | The pitch and the 75-second demo script; the interview evidence and the gate. | After every interview. |
 | `README.md`, `CLAUDE.md`, `DESIGN.md`, `design/` | Project overview and AI-use disclosure; the build handoff with the rules and the decision log; the visual spec and the designer's handoffs. | Read before you build. |
+| `PRODUCT.md` | What the product is and is not: the job, the user, what each screen gives the owner, the verdict words, scope (real / simulated / later / not the product), what is known and what is assumed. | You explain the product, or you wonder whether a feature belongs in it. |
+| `SKELETON.md` | Where things sit on each screen: the shared frame (header, tab bar, action bar, sheets), one text wireframe per screen, the navigation elements, the ordering rules and the controls. | You add or move something on a screen (update its wireframe in the same commit). |
+| `UI_DESIGN.md`, `docs/ui/` | How it looks: the 7-frame demo storyboard, a screenshot of every screen and state in dark and light, the nine colours, type, shape, icons, motion and the look of each component. | You change how a screen looks (replace its screenshot in the same commit; §6 of the file says which smoke-test image it is). |
 | `ARCHITECTURE.md`, `docs/HOW_IT_DECIDES.md` | One page with a diagram on how the pieces fit (data → engine → screens, tokens, state, URL parameters, gates, deploy and rollback) and, in §9, what is real and what is fictional; the decision model generated from the engine (`node shared/how-it-decides.js`, also the website's `/how` page). | You need the big picture, or you explain a verdict to someone. |
 
 ## 3. The rules (read, don't restate)
@@ -39,7 +42,7 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 - Product, engine, routes, state, honesty and accessibility rules: [`CLAUDE.md` §2–§7](../CLAUDE.md). The non-negotiables in §7 (the "Simulated AI" label, fictional data, no API keys, 44 px tap targets, WCAG AA, dark mode and reduced motion) apply to every commit.
 - Every decision already taken, and why: [`CLAUDE.md` §11](../CLAUDE.md#11-decisions-log-session-of-2-nov-2026-agreed-with-the-team-before-building). Check it before re-deciding something.
 - Visual design: [`DESIGN.md`](../DESIGN.md), then [`design/HANDOFF_V2.md`](../design/HANDOFF_V2.md) and [`design/MOTION.md`](../design/MOTION.md) where they differ, then the 4 Nov declutter decisions (`CLAUDE.md` §11 items 53–68). The engine and the data win over all three.
-- Navigation and states: [`docs/NAVIGATION.md`](NAVIGATION.md). The big picture: [`ARCHITECTURE.md`](../ARCHITECTURE.md). The rules as the code applies them: [`docs/HOW_IT_DECIDES.md`](HOW_IT_DECIDES.md).
+- Navigation and states: [`docs/NAVIGATION.md`](NAVIGATION.md). What the product is and is not: [`PRODUCT.md`](../PRODUCT.md). How it is built: [`ARCHITECTURE.md`](../ARCHITECTURE.md). The rules as the code applies them: [`docs/HOW_IT_DECIDES.md`](HOW_IT_DECIDES.md).
 
 ## 4. Verify before you commit
 
