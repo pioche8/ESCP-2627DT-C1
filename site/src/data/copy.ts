@@ -8,6 +8,7 @@ export const SIMULATED = 'Simulated AI';
 export const menuItems = [
   { label: 'Tonight’s read', href: '#tonight' },
   { label: 'How it works', href: '#how' },
+  { label: 'How it decides', href: '/how' },
   { label: 'In the app', href: '#app' },
   { label: 'Sectors', href: '#sectors' },
   { label: 'Where you bid', href: '#where' },
@@ -44,6 +45,6 @@ export const languagesTile = { bid: 'Bid.', lines: 'We read every tender in Germ
 
 export const footer = {
   blurb: 'University prototype, ESCP Digital Product Design. AI output is simulated and all companies and tenders are fictional.',
-  product: [['How it works', '#how'], ['Sectors', '#sectors'], ['Countries', '#where']] as const,
+  product: [['How it works', '#how'], ['How it decides', '/how'], ['Sectors', '#sectors'], ['Countries', '#where']] as const,
   project: [['Questions', '#faq'], ['Launch film', FILM_URL], ['Source on GitHub', REPO_URL], ['Try the prototype', APP_URL]] as const,
 };

@@ -45,7 +45,7 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 One command runs every gate in order and prints one line per gate with pass / fail and the command to rerun it alone:
 
 ```
-npm run preflight                # all gates (about 8 minutes with the three phone profiles and the site build)
+npm run preflight                # all gates (about 15 minutes with the three phone profiles, the site build and the site audit)
 npm run preflight -- --quick     # the node-only gates CI's "check" job runs (two seconds)
 ```
 
@@ -70,7 +70,7 @@ node tests/browser-tests.js                       # tests.html in Chromium, over
 
 CI runs the 390 × 844 smoke test too (the "smoke" job, on pull requests and on pushes to `main`); the iPhone 13 / SE profiles and the site build stay local, in `npm run preflight`.
 
-If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first).
+If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first, including the generated "How it decides" page and `docs/HOW_IT_DECIDES.md`). `npm run audit` adds the static export, the page check and Lighthouse + axe.
 
 Then open the result on a phone or at 390 px, in dark and light, and click the thing you built.
 
