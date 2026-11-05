@@ -1,0 +1,14 @@
+{
+  "$comment": "Repository ruleset for main (5 Nov 2026). Apply once from a laptop with an admin token: gh api -X POST repos/pioche8/ESCP-2627DT-C1/rulesets --input .github/ruleset-main.json . It requires a pull request (0 approvals) and the two CI jobs \"check\" and \"smoke\" (strict: the branch must be up to date with main), and blocks force pushes and deletion. The Repository admin role bypasses it in \"always\" mode, so the rollback `git push --force-with-lease origin release/v1-workshop:main` still works for an admin. Remove it under Settings → Rules → Rulesets → this ruleset → Delete, or: gh api -X DELETE repos/pioche8/ESCP-2627DT-C1/rulesets/<id> (ids: gh api repos/pioche8/ESCP-2627DT-C1/rulesets). The build container's proxy refuses write access to this API path, so the session of 5 Nov could not apply it (CLAUDE.md §11 item 92).",
+  "name": "main: pull request + check + smoke, no force push",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },
+  "rules": [
+    { "type": "pull_request", "parameters": { "required_approving_review_count": 0, "dismiss_stale_reviews_on_push": false, "require_code_owner_review": false, "require_last_push_approval": false, "required_review_thread_resolution": false, "allowed_merge_methods": ["merge", "squash", "rebase"] } },
+    { "type": "required_status_checks", "parameters": { "strict_required_status_checks_policy": true, "do_not_enforce_on_create": false, "required_status_checks": [ { "context": "check" }, { "context": "smoke" } ] } },
+    { "type": "non_fast_forward" },
+    { "type": "deletion" }
+  ],
+  "bypass_actors": [ { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" } ]
+}
