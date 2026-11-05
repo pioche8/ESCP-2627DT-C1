@@ -35,7 +35,7 @@ const GATES = [
   { name: 'Smoke 390×844 (dark + light + reduced motion, declutter scan on every screen)', cmd: 'node tests/smoke.js', browser: true },
   { name: 'Smoke iPhone 13', cmd: 'SMOKE_DEVICE="iPhone 13" node tests/smoke.js', browser: true },
   { name: 'Smoke iPhone SE', cmd: 'SMOKE_DEVICE="iPhone SE" node tests/smoke.js', browser: true },
-  { name: 'Website: lint, typecheck, build', cmd: 'cd site && npm run check', site: true },
+  { name: 'Website: lint, typecheck, build', cmd: 'cd site && rm -rf .next && npm run check', site: true }, // a .next left by a build of another branch would fail the typecheck
   { name: 'Website: static export, the "How it decides" page check, Lighthouse ≥ 95 (median of 3) and axe', cmd: 'cd site && npm run audit', site: true, browser: true }
 ];
 
