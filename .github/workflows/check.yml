@@ -1,6 +1,9 @@
-# Runs on every push and pull request: the engine's unit tests, the static declutter scan of the five stylesheets,
-# the WCAG AA audit and a check that the generated token files match shared/tokens.json. Node only, no browsers,
-# under a minute. The Playwright smoke test and the site build stay local (docs/START_HERE.md §4).
+# Runs on every push and pull request. Two jobs, both required on main (repository ruleset, 5 Nov 2026):
+#   check  node only, under a minute: engine tests, data check, demo pins, engine invariants, static declutter scan,
+#          WCAG AA audit, generated token files in sync.
+#   smoke  the Playwright click-through in Chromium at 390×844, dark + light + reduced motion, with the declutter scan on
+#          every screen; on pull requests and on pushes to main, browser cached, about three minutes.
+# The iPhone 13 / iPhone SE profiles and the site build stay local: `npm run preflight` (docs/START_HERE.md §4).
 name: check
 
 on:
@@ -18,6 +21,12 @@ jobs:
           node-version: 22
       - name: Engine tests (24)
         run: node tests/engine.test.js
+      - name: Data check (data.js against what engine.js and app.js read)
+        run: node tests/data-check.js
+      - name: Demo pins (Hohenau 25 → 90 → 100, storage key, reset)
+        run: node tests/demo-golden.test.js
+      - name: Engine invariants (seeded property test)
+        run: node tests/engine-invariants.test.js
       - name: Declutter scan (static, five stylesheets)
         run: node tests/declutter-scan.js
       - name: WCAG AA audit of shared/tokens.json
@@ -26,3 +35,39 @@ jobs:
         run: |
           node shared/build-tokens.js
           git diff --exit-code -- shared/tokens.css site/src/styles/tokens.css site/src/generated/tokens.ts
+
+  smoke:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PLAYWRIGHT_VERSION: 1.63.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright (no package-lock, nothing saved)
+        run: npm i --no-save --no-audit --no-fund playwright@${PLAYWRIGHT_VERSION}
+      - name: Cache the Chromium build
+        id: browser-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
+      - name: Download Chromium (cache miss only)
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+      - name: Chromium system libraries
+        run: npx playwright install-deps chromium
+      - name: Smoke test at 390×844 (dark + light + reduced motion)
+        run: node tests/smoke.js screenshots
+      - name: tests.html in Chromium (file:// and HTTP)
+        run: node tests/browser-tests.js
+      - name: Screenshots (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: screenshots/
+          retention-days: 7

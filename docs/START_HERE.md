@@ -41,10 +41,20 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 
 ## 4. Verify before you commit
 
-Run from the repository root. The first three take a second and run in CI on every push.
+One command runs every gate in order and prints one line per gate with pass / fail and the command to rerun it alone:
+
+```
+npm run preflight                # all gates (about 8 minutes with the three phone profiles and the site build)
+npm run preflight -- --quick     # the node-only gates CI's "check" job runs (two seconds)
+```
+
+The node-only gates, if you want them one by one (they run in CI on every push):
 
 ```
 node tests/engine.test.js        # 24 tests (plus yours) must pass
+node tests/data-check.js         # data.js has every field engine.js and app.js read, ids unique, dates ISO, citations inside the document
+node tests/demo-golden.test.js   # the live demo's numbers (Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go, 777 pages); see §5.4 before you move them
+node tests/engine-invariants.test.js  # seeded property test of the engine rules
 node tests/declutter-scan.js     # 0 findings in the five stylesheets
 node shared/check-contrast.js    # 0 failures (after node shared/build-tokens.js, if you touched shared/tokens.json)
 ```
@@ -54,7 +64,10 @@ If you changed `app.js`, `styles.css`, `data.js` or `index.html`, run the click-
 ```
 node tests/smoke.js                               # 390 × 844, dark + light + reduced motion, screenshots in screenshots/
 SMOKE_DEVICE="iPhone SE" node tests/smoke.js      # the smallest phone in the room
+node tests/browser-tests.js                       # tests.html in Chromium, over file:// and HTTP
 ```
+
+CI runs the 390 × 844 smoke test too (the "smoke" job, on pull requests and on pushes to `main`); the iPhone 13 / SE profiles and the site build stay local, in `npm run preflight`.
 
 If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first).
 
@@ -64,8 +77,8 @@ Then open the result on a phone or at 390 px, in dark and light, and click the t
 
 1. **Branch per task**, from `main`: `git checkout -b task/<short-name> origin/main`. Never commit on `main` or `release/v1-workshop`.
 2. **Small commits** with a message that says what changed and why, in the imperative, first line under 72 characters: `Add a Polish cleaning tender with a sector knock-out`, not `update data.js`.
-3. **Pull request to `main`** with the template filled in (it is the checklist of §4 plus the rules). CI must be green. One teammate reads it and merges (merge commit, not rebase). Delete the branch afterwards.
-4. **The demo path is pinned.** `tests/smoke.js` and `BRIEF.md` carry the numbers the demo shows (6 tenders, 1 Go · 2 Maybe · 3 No-go, 777 pages, 4 languages, Hohenau No-go → Go). If your change moves a number, update the test and the brief in the same commit, and say so in the PR.
+3. **Pull request to `main`** with the template filled in (it is the checklist of §4 plus the rules). CI must be green: `main` is protected by a repository ruleset (a pull request and the "check" and "smoke" status checks are required, force pushes and deletion are blocked; only a repository admin can bypass it, for the rollback). One teammate reads it and merges (merge commit, not rebase). Delete the branch afterwards.
+4. **The demo path is pinned.** `tests/demo-golden.test.js`, `tests/smoke.js` and `BRIEF.md` carry the numbers the demo shows (6 tenders, 1 Go · 2 Maybe · 3 No-go, 777 pages, 4 languages, Hohenau No-go 25 → Maybe 90 → Go 100). If your change moves a number, update the two tests and the brief in the same commit, and say so in the PR; the golden test's failure message repeats this.
 5. **Honesty.** Fictional names stay marked, the "Simulated AI" label stays wherever AI output shows, no real customer names, no API keys, no invented figures in `evidence.md`.
 6. **AI use.** If Claude, Codex or ChatGPT helped, add one line to `README.md` → "AI use" (course policy). Decisions you take alone that touch design or engine rules go into `CLAUDE.md` §11.
 7. **Rollback.** If `main` breaks before the demo: `git push --force-with-lease origin release/v1-workshop:main` restores the frozen version in one command.

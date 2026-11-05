@@ -38,14 +38,24 @@ app.js         screens + hash router (#/feed, #/t/:id, #/bids, #/company, #/abou
 engine.js      REAL CODE: qualification check, score, Go/Maybe/No-go verdict (unit-tested)
 ai.js          SIMULATED AI: tender reading, Q&A, profile drafting (pre-written output)
 data.js        FICTIONAL demo company and 6 fictional tenders (DE, AT, ES, NL, FR)
-tests/         node tests/engine.test.js   (24 tests: the original 14 + 10 for the restyle)
+tests/         npm run preflight           (every gate below in order, one line each with pass/fail and the command to rerun it; --quick = node only)
+               node tests/engine.test.js   (24 tests: the original 14 + 10 for the restyle)
+               node tests/data-check.js    (data.js against what engine.js and app.js read: fields and types, unique ids, ISO dates, citations inside
+                                            their documents, thresholds in range, no placeholder text, the honesty labels still rendered)
+               node tests/demo-golden.test.js (the live demo's numbers through engine.js only: Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go,
+                                            777 pages in 4 languages; the storage key tenderscout.v2 and the ?demo=reset behaviour)
+               node tests/engine-invariants.test.js (seeded property test: a fail is always No-go, score within 0–100, meeting one more
+                                            requirement never lowers the score, verdict consistent with the score; SEED= and CASES=)
                node tests/smoke.js         (optional Playwright smoke test, 390×844, light + dark + reduced motion; scans every screen for the 18 declutter patterns)
+               node tests/browser-tests.js (tests.html in Chromium over file:// and HTTP, 0 page errors)
                node tests/declutter-scan.js (static scan of the app's and the site's stylesheets for the same patterns)
                node tests/demo-record.js   (records the BRIEF.md demo path into docs/demo/: MP4 + one PNG per step; Playwright + ffmpeg)
                node tests/live-check.js    (compares the files GitHub Pages serves with this checkout, byte for byte; no dependencies)
-tests.html     same engine tests in the browser
-.github/       CI on every push and PR: engine tests, static declutter scan, AA audit, generated tokens in sync (node only, under a minute);
-               the pull-request template carries the verification checklist
+tests.html     the engine tests and the demo pins in the browser
+package.json   scripts only (preflight, test, smoke, tokens); the app itself has no dependencies
+.github/       CI on every push and PR: "check" (engine tests, data check, demo pins, engine invariants, static declutter scan, AA audit,
+               generated tokens in sync; node only, under a minute) and "smoke" (the Playwright click-through in Chromium at 390×844, on
+               pull requests and pushes to main). Both are required on main; the pull-request template carries the verification checklist
 ```
 
 **Run locally:** open `index.html`, or `python3 -m http.server` and go to `http://localhost:8000`.
