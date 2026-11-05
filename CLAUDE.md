@@ -15,6 +15,7 @@
   4. Nothing to push by hand: the session's push of `.github/` was accepted (the token had the `workflow` scope), so CI runs on every push and pull request from now on.
   5. Interviews → `evidence.md` → the gate verdict (`evidence.md` §0). The `v0-shell` tag decision (item 14) is still open.
   6. Vercel import of `site/` (README → Website) and the six full-resolution photos (README → Photos): unchanged from 3 Nov.
+- **Overnight 5 Nov 2026 (01:30–07:00):** four workstreams opened as pull requests for the team to merge in the morning, in this order: `overnight/a` (tests + CI, no app bytes), `overnight/b` (the website's "How it decides", no app bytes), `overnight/c-1-error-fallback`, `overnight/c-2-monkey`, `overnight/c-3-install` (app changes, each independently mergeable, re-rehearse on the phone after the Pages deploy if merged), `overnight/d` (this documentation). The report with gates, caveats and the merge order: `docs/reports/2026-11-05-overnight.md`. Decisions: §11 items 87 onward. The `main` ruleset still has to be applied from a laptop (`.github/ruleset-main.json`, item 92).
 - **Rollback in one command** (restores the app and the site to the frozen version; this pass included): `git push --force-with-lease origin release/v1-workshop:main`. Do not move `release/v1-workshop`.
 
 ## 1. Context
@@ -269,4 +270,4 @@ Workstream C3 (home-screen install; the deployed app bytes change):
 (not merged yet: see the pull request from `overnight/c-3-install`)
 
 Workstream D (documentation; the deployed app bytes do not change):
-(not merged yet: see the pull request from `overnight/d`)
+102. **`ARCHITECTURE.md` is prose plus one Mermaid diagram, no new facts:** every statement is something a gate checks or a file states (routes from `docs/NAVIGATION.md`, the state shape from `app.js`, the gates from `tests/preflight.js`, deploy and rollback from `CLAUDE.md` §0), so it cannot drift silently from the code without a test also failing. `docs/HOW_IT_DECIDES.md` is not written by hand: it is the second output of `shared/how-it-decides.js` (item 93), so B's script fulfils D2 and CI keeps it in sync. The report `docs/reports/2026-11-05-overnight.md` follows the pass format (what changed with the deployed-bytes answer per PR, a gate table, decisions, caveats, rollback) and starts with the rollback command; `README.md` → "AI use" carries one entry for the whole night, written in D so the shared paragraph is edited by one branch only (A–C append their decisions to §11 in separate, pre-placed blocks for the same reason).
