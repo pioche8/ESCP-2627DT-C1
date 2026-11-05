@@ -308,6 +308,7 @@
   .strips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .faq-a p { padding-right: 0; }
   .phone { width: min(var(--site-phone-w), 100%); }
+  .map-frame { height: auto; min-height: 0; aspect-ratio: 1; } /* the five countries are about as tall as wide: no empty sea above and below on a phone */
 }
 @media (max-width: 480px) {
   .site-input { flex-wrap: wrap; }
