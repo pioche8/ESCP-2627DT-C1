@@ -11,9 +11,9 @@
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
  * "comparable qualification" sheet (Escape / scrim / Back close it) → "We meet it" →
  * Ask this tender → Company → ISO 27001 → re-score "Landkreis Hohenau: No-go → Go" →
- * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → About.
+ * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → Settings.
  * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link, the appearance
- * switch on About (persisted), and under prefers-reduced-motion the instant reveal and count-up and no morph.
+ * switch on Settings (persisted), and under prefers-reduced-motion the instant reveal and count-up and no morph.
  * Every screen is scanned (tests/declutter-scan.js) for the 18 declutter patterns: negative tracking, uppercase, italics,
  * gradients, grain, monospace, borders, shadows, radius over 8 px, alpha colours, eyebrows, numbering, all-caps text,
  * pills / chips / tags / badges and code names in visible text. Fails on any console error, page error or failed request.
@@ -107,7 +107,7 @@ async function run(scheme) {
   check(bar && Math.round(bar.width) === VW && Math.round(bar.height) >= 60 && Math.round(bar.y + bar.height) === VH, 'the tab bar is a full-width 60 px bar at the bottom of the ' + VW + '×' + VH + ' viewport');
   check(await css('.tabbar a[aria-current="page"]', 'color') === rgb(await token('--c-brand')) && await css('.tabbar a[aria-current="page"]', 'fontWeight') === '700' && (await css('.tabbar a[aria-current="page"] .ms', 'fontVariationSettings')).includes('"FILL" 1'), 'active tab = brand colour + filled icon + bolder label');
   check(await page.locator('.tcard img').count() === 0 && await page.locator('.tcard .flag, .tcard .orig, .tcard .why').count() === 0, 'cards carry no photo, flag, original title or reason');
-  // Header appearance toggle: one tap flips the scheme, the next tap flips it back; About keeps System / Light / Dark
+  // Header appearance toggle: one tap flips the scheme, the next tap flips it back; Settings keeps System / Light / Dark
   const otherScheme = scheme === 'dark' ? 'light' : 'dark';
   const tgl = page.locator('.nav [data-act="theme-toggle"]');
   const tglBox = await tgl.boundingBox();
@@ -275,22 +275,27 @@ async function run(scheme) {
   check((await text('.screen')).includes('All companies and tenders are fictional'), 'fictional line on Bids');
   await scan('bids'); await shot('bids');
 
-  // 10 About
-  await page.click('.nav button[data-go="#/about"]');
+  // 10 Settings (the 4th tab; was About): the header ⓘ and the old #/about link both open it
+  check(await page.locator('.tabbar a').count() === 4 && (await text('.tabbar')).replace(/\s+/g, ' ').includes('Feed Bids Company Settings'), 'four tabs: Feed, Bids, Company, Settings');
+  check(await page.locator('.nav button[data-go="#/settings"]').count() === 1, 'the header ⓘ opens Settings');
+  await page.click('.tabbar a[href="#/settings"]');
   await page.waitForSelector('.about-row');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Settings' && !(await page.locator('.screen [data-act="back"]').count()), 'Settings is a tab: active in the tab bar, no Back button');
   const about = await text('.screen');
+  check(about.includes('Appearance') && about.includes('Reset demo') && about.includes('About this prototype'), 'Settings has Appearance, Demo and About this prototype');
   check(about.includes('AI output is simulated') && about.includes('real code') && about.includes('All data is fictional') && about.includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
   check(!/engine\.js|ai\.js|data\.js|README|\?demo=/.test(about), 'About names no files or dev notes');
   check(!(await page.locator('[data-act="palette"]').count()), 'no palette switch (Brand only)');
-  await scan('about'); await shot('about');
+  await scan('settings'); await shot('settings');
   // Appearance switch (persisted)
   const other = scheme === 'dark' ? 'light' : 'dark';
   await page.click('[data-act="theme"][data-value="' + other + '"]');
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === other, 'appearance switch applies data-scheme=' + other);
   await load('', '#/about');
   await page.waitForSelector('.about-row');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Settings', 'the old #/about deep link opens the Settings tab');
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === other && await page.locator('[data-act="theme"][data-value="' + other + '"][aria-checked="true"]').count() === 1, 'appearance persists across a reload');
-  await shot('about-' + other);
+  await shot('settings-' + other);
   await page.click('[data-act="theme"][data-value="' + scheme + '"]');
 
   // Deep link after onboarding

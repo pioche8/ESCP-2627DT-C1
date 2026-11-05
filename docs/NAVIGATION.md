@@ -8,15 +8,18 @@ Context of use: an owner on a phone, between jobs, often in a van or on site. **
 >
 > 4 Nov 2026 (declutter): routes, deep links and back behaviour unchanged. The floating dock is a standard full-width bottom tab bar (icon + label; the active tab is brand-coloured with a filled icon and a bolder label). The Feed's summary counts live in the filter tabs ("All 6 · ● Go 1 · ▲ Maybe 2 · ■ No-go 3", underlined text, no tiles); the stage switcher on Bids and the appearance switch on About are the same text tabs. Cards show verdict (shape + word + score), title, buyer, value and days left only; the tender header is plain text on the ground with the photo in its own block beneath it; the detail's facts are value and deadline. Statuses, "Simulated AI" and citations ("Vergabeunterlagen, p. 12, §3.1") are plain text. Bid languages on Company are rows with switches; skip reasons are plain toggle buttons. There is one palette (About keeps System / Light / Dark); `?palette=` is ignored.
 
+> 5 Nov 2026 (Settings tab): About became **Settings**, a fourth tab (`#/settings`, icon `tune`). It holds Appearance (System / Light / Dark), Demo (Reset demo) and "About this prototype" (the four honesty statements, unchanged). `#/about` still works and opens the same tab; the ⓘ in the headers now opens Settings. Everything else is unchanged.
+
 ## Structure
-Three tabs, three questions the owner asks:
+Four tabs: three questions the owner asks, plus Settings:
 | Tab | Question | Route |
 |---|---|---|
 | **Feed** | "Anything worth bidding on today?" | `#/feed` |
 | **Bids** | "What am I working on, what did I skip?" | `#/bids` |
 | **Company** | "What do you think we can do?" | `#/company` |
+| **Settings** | "How does it look, and what is real here?" | `#/settings` (`#/about` opens the same screen) |
 
-The tabs live in a full-width bottom tab bar. **The tab bar is hidden during onboarding, on a tender detail and on About**, so those screens keep their bottom action bar in the thumb zone. About (AI disclosure, appearance and demo reset) opens from the ⓘ in the Feed, Bids and Company headers and on Welcome.
+The tabs live in a full-width bottom tab bar. **The tab bar is hidden during onboarding and on a tender detail**, so those screens keep their bottom action bar in the thumb zone. Settings (appearance, demo reset and the AI disclosure) is the fourth tab; the ⓘ in the Welcome, Feed, Bids and Company headers also opens it. Before onboarding it has no tab bar and shows ‹ Back instead.
 
 ```mermaid
 flowchart TD
@@ -27,6 +30,7 @@ flowchart TD
     F["#/feed<br/>Feed: Go / Maybe / No-go"]
     B["#/bids<br/>Deciding / Bidding / Submitted + Skipped"]
     C["#/company<br/>Profile levers + re-score card"]
+    ST["#/settings<br/>Appearance, Reset demo, About this prototype"]
   end
   F --> D["#/t/:id<br/>Tender detail: verdict, summary, qualification check, Ask"]
   D --> RS(["#/t/:id/req/:rid<br/>Sheet: original + translation + page + confirm"])
@@ -35,7 +39,7 @@ flowchart TD
   SK -- "Skip tender" --> F
   B --> D
   B -- "Restore → Deciding" --> B
-  ANY["ⓘ"] --> A["#/about"]
+  ANY["ⓘ or #/about"] --> ST
 ```
 
 ## Screen list
@@ -50,7 +54,7 @@ flowchart TD
 | S5b | `#/t/:id/skip` | Skip sheet | Skip tender | Pick any number of reasons, or none **(new)**. Feeds tomorrow's ranking (future) |
 | S6 | `#/company` | Company profile | (live) | Re-score card "Landkreis Hohenau · No-go → Go" and unlock hints such as "Turn on → Gemeente Vlietdam becomes Maybe" **(new)**. **(v2)** Photo behind the top of the header |
 | S7 | `#/bids` | Bids pipeline | Change stage | Empty groups show "Nothing here yet". **Restore moves a skipped tender to Deciding (new)**. **(v2)** 48 px photo thumbnail on each bid card |
-| S8 | `#/about` | About / AI disclosure | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)**, persisted (the palette switch was removed on 4 Nov). `?demo=reset` does the same reset |
+| S8 | `#/settings` (and `#/about`) | Settings: appearance, demo reset, AI disclosure (4th tab since 5 Nov) | Reset demo | Reset asks to confirm **(new)**. Appearance: System / Light / Dark **(new)**, persisted (the palette switch was removed on 4 Nov). `?demo=reset` does the same reset |
 | – | anything else | Not found | Open Feed | |
 
 **Later (not in prototype):** push notification each morning → deep link `#/t/:id`; consortium-partner finder; calendar export of deadlines and site visits; share a verdict to a colleague by WhatsApp; opening the tender PDF at the cited page (today the citation chip opens the requirement sheet).
@@ -72,7 +76,7 @@ Detail → Skip → pick reasons (optional) → Skip tender → back to the Feed
 - Hash routes (`#/…`), because GitHub Pages has no server rewrites. Every screen is linkable.
 - Sheets are their own history entries: system Back, Escape, a tap on the scrim, Cancel, or answering all close the sheet to its parent. Closing goes back in history rather than adding a new entry, so Back never reopens a closed sheet.
 - ‹ on a detail goes back to the Feed or Bids if you came from there; otherwise (deep link) it opens the Feed.
-- Unknown route → "Not found" with a link to the Feed. Before onboarding, any deep link except Welcome, Company and About redirects to Welcome.
+- Unknown route → "Not found" with a link to the Feed. Before onboarding, any deep link except Welcome, Company and Settings (or `#/about`) redirects to Welcome.
 - After a screen change, focus moves to the screen title (for screen readers); after a sheet closes, focus returns to what opened it.
 
 ## States (DESIGN.md §6)
@@ -90,7 +94,7 @@ Detail → Skip → pick reasons (optional) → Skip tender → back to the Feed
 - AI confidence under 70% → shown as ◆ "Needs your check" with the confidence, never counted as a pass, and blocks a Go until you answer it.
 - Deadline day or later → "Closed", score 0, Save disabled.
 - Storage blocked (private mode) → in-memory state, so the app still works for the session. State key `tenderscout.v2`.
-- Dark mode (follows the phone, or About → Appearance) and reduced motion (no animation, same results) respected. Tap targets ≥ 44 px.
+- Dark mode (follows the phone, or Settings → Appearance) and reduced motion (no animation, same results) respected. Tap targets ≥ 44 px.
 
 ## Appearance (4 Nov 2026)
 About → Appearance offers System / Light / Dark (`?theme=` is the demo deep link; the choice is persisted in `tenderscout.v2`). The Sky and Harbor palettes of 3 Nov were removed in the declutter: both schemes now use the same nine colours, light and dark. Routes, screens and back behaviour are unchanged.

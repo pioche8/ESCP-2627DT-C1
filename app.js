@@ -132,15 +132,15 @@
   function navRow(right) {
     return '<div class="nav"><span class="wordmark">TenderScout</span>' + (right || '') + '</div>';
   }
-  function infoBtn() { return '<button class="icon-btn" data-go="#/about" aria-label="About this prototype">' + icon('info', 's22') + '</button>'; }
-  // Light / dark in one tap from the header (About → Appearance keeps the three-way choice incl. System).
+  function infoBtn() { return '<button class="icon-btn" data-go="#/settings" aria-label="Settings and about this prototype">' + icon('info', 's22') + '</button>'; }
+  // Light / dark in one tap from the header (Settings → Appearance keeps the three-way choice incl. System).
   function themeBtn() {
     var next = effectiveScheme() === 'dark' ? 'light' : 'dark';
     return '<button class="icon-btn" data-act="theme-toggle" aria-label="Switch to ' + next + ' mode" title="Switch to ' + next + ' mode">' + icon('contrast', 's22') + '</button>';
   }
   function backBtn() { return '<button class="icon-btn" data-act="back" aria-label="Back">' + icon('chevron_left', 's22') + '</button>'; }
   // The bottom tab bar: full width, icon + label; the active tab is brand-coloured with a filled icon and a bolder label.
-  var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company']];
+  var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company'], ['settings', '#/settings', 'tune', 'Settings']];
   function setTabs(active) {
     if (!active) { $tabs.innerHTML = ''; return; }
     if (!$tabs.querySelector('.tabbar')) {
@@ -679,26 +679,29 @@
     })(t0);
   }
 
-  // ---------- 10 About ----------
-  function about() {
+  // ---------- 10 Settings (the 4th tab; was About, reachable from the header ⓘ and #/about) ----------
+  function settings() {
     var seg = function (k, label) { return '<button role="radio" aria-checked="' + (S.theme === k) + '" data-act="theme" data-value="' + k + '">' + label + '</button>'; };
     var row = function (title, text, extra) {
       return '<div class="about-row"><h3>' + title + (extra || '') + '</h3><p>' + text + '</p></div>';
     };
-    return '<div class="screen">' +
-      '<div class="nav back-nav">' + backBtn() + '</div>' +
-      '<div class="about-intro"><h1 class="screen-title" tabindex="-1">About TenderScout</h1>' +
-      '<p>A university prototype (ESCP Digital Product Design, 2026). TenderScout is a working name.</p></div>' +
-      '<div class="group" style="margin-top:20px">' +
+    // Before onboarding there is no tab bar, so the screen keeps its Back button; after it, it is a tab like the others.
+    return '<div class="screen' + (S.onboarded ? ' has-tabs' : '') + '">' +
+      (S.onboarded ? navRow() : '<div class="nav back-nav">' + backBtn() + '</div>') +
+      '<div class="about-intro"><h1 class="screen-title" tabindex="-1">Settings</h1></div>' +
+      '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
+        '<p class="label-text" id="lbl-theme">Light or dark</p><div class="tabs" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
+      '<div class="sec-h"><h2>Demo</h2></div>' +
+      '<div class="about-actions settings-demo"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
+      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
+      '<div class="sec-h"><h2>About this prototype</h2></div>' +
+      '<div class="about-intro"><p>A university prototype (ESCP Digital Product Design, 2026). TenderScout is a working name.</p></div>' +
+      '<div class="group" style="margin-top:12px">' +
         row('AI output is simulated', 'Reading tenders, translating, answering questions and drafting your profile are played back from pre-written output. No model is called, there are no keys, and no data leaves your phone.', ai()) +
         row('The decision logic is real code', 'The qualification check, score and Go / Maybe / No-go verdict run live in tested rules, not in the AI.') +
         row('All data is fictional', 'Every company, buyer, tender, page number and quote is invented. None of it is interview evidence.') +
         row('Built with AI assistance', 'Claude (Anthropic) helped build the prototype. The team ran the interviews and made the product decisions.') +
       '</div>' +
-      '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
-        '<p class="label-text" id="lbl-theme">Light or dark</p><div class="tabs" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
-      '<div class="about-actions"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
-      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
       '</div>';
   }
   function notFound() {
@@ -718,7 +721,8 @@
       if (h.length === 2) return { name: 'detail', id: h[1] };
       return { name: 'notfound' };
     }
-    if (h.length === 1 && ['feed', 'bids', 'company', 'about'].indexOf(h[0]) !== -1) return { name: h[0] };
+    if (h.length === 1 && (h[0] === 'about' || h[0] === 'settings')) return { name: 'settings' }; // #/about stays a working deep link
+    if (h.length === 1 && ['feed', 'bids', 'company'].indexOf(h[0]) !== -1) return { name: h[0] };
     return { name: 'notfound' };
   }
   // History bookkeeping, so in-app Back, sheet close and Skip go *back* instead of stacking new entries.
@@ -752,7 +756,7 @@
   var curKey = null, scrollPos = {}, firstRender = true;
   function render(force) {
     var r = parse();
-    if (!S.onboarded && ['onb', 'company', 'about'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
+    if (!S.onboarded && ['onb', 'company', 'settings'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
     var key = r.name === 'detail' ? 'detail:' + r.id : r.name + (r.step ? ':' + r.step : '');
     var isNew = key !== curKey;
     if (force || dirty || isNew) {
@@ -764,7 +768,7 @@
         case 'detail': html = detail(r.id); break;
         case 'bids': html = bids(); break;
         case 'company': html = company(); break;
-        case 'about': html = about(); break;
+        case 'settings': html = settings(); break;
         default: html = notFound();
       }
       var top = wasPop && scrollPos[key] ? scrollPos[key] : 0;
@@ -773,7 +777,7 @@
       $screen.classList.toggle('entering', isNew && top === 0);
       $screen.innerHTML = html;
       dirty = false; curKey = key;
-      var tabbed = S.onboarded && ['feed', 'bids', 'company'].indexOf(r.name) !== -1;
+      var tabbed = S.onboarded && ['feed', 'bids', 'company', 'settings'].indexOf(r.name) !== -1;
       setTabs(tabbed ? r.name : null);
       $toast.style.setProperty('--toast-offset', (tabbed ? 76 : $screen.querySelector('.action-bar') ? 96 : 24) + 'px');
       if (isNew) {

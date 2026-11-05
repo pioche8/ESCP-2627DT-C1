@@ -9,9 +9,9 @@ The skeleton plane of Garrett's *Elements of User Experience*: where things sit 
 ## 1. The frame every screen shares
 
 - **Width:** designed at 390 px; content stops at 480 px on wider screens.
-- **Top:** a 56 px header row. On Welcome, Feed, Bids and Company it holds the wordmark on the left and two 44 px buttons on the right: ◐ (light / dark) and ⓘ (About). On Check your profile, a tender, About and Not found it holds ‹ (Back), followed by "Simulated AI" where the screen shows AI output; the Reading screen shows only "Simulated AI".
+- **Top:** a 56 px header row. On Welcome, Feed, Bids and Company it holds the wordmark on the left and two 44 px buttons on the right: ◐ (light / dark) and ⓘ (opens Settings). On Settings it holds the wordmark only (◐ and ⓘ would point at the screen itself); before onboarding Settings holds ‹ (Back). On Check your profile, a tender and Not found it holds ‹ (Back), followed by "Simulated AI" where the screen shows AI output; the Reading screen shows only "Simulated AI".
 - **Bottom, one of two bars, both fixed and above the iPhone home bar:**
-  - the **tab bar** (60 px, full width, Feed · Bids · Company, icon + label, the active tab in brand colour) on Feed, Bids and Company only;
+  - the **tab bar** (60 px, full width, Feed · Bids · Company · Settings, icon + label, the active tab in brand colour) on those four screens only, after onboarding;
   - the **action bar** (52 px buttons; one primary action, on the right and twice as wide as the secondary one) on Check your profile, the tender, and Company before onboarding.
 - **Sheets** rise from the bottom over a scrim; their buttons sit in the sheet's own footer, in the same thumb zone.
 - **Toast:** a 52 px strip at the bottom with one 44 px action (Undo or View).
@@ -73,7 +73,7 @@ No tab bar. The only typing in the core flow.
 [card]      … one per open tender, ranked Go → Maybe → No-go
 [note]      (after a skip) 1 tender skipped · see in Bids
 [caption]   All companies and tenders are fictional
-[tab bar]   Feed* | Bids | Company
+[tab bar]   Feed* | Bids | Company | Settings
 ```
 The whole card is the link. Empty states replace the cards: "Nothing new tonight" with "Widen your profile", or "No Go tenders tonight." with "Show all".
 
@@ -149,7 +149,7 @@ First open per session: the verdict block is replaced by "Reading 64 pages (Germ
 [row]       Public Wi-Fi for 9 libraries
             Gemeente Vlietdam · Missing a certificate        | Restore |
 [caption]   All companies and tenders are fictional
-[tab bar]   Feed | Bids* | Company
+[tab bar]   Feed | Bids* | Company | Settings
 ```
 With nothing saved or skipped: "No bids yet" and "Open Feed".
 
@@ -175,21 +175,25 @@ With nothing saved or skipped: "No bids yet" and "Open Feed".
 [section]   Where you bid
 [row]       Bid outside Germany and Austria ..................... (on)
 [caption]   Re-scoring is plain rules, not AI. All companies and tenders are fictional.
-[tab bar]   Feed | Bids | Company*        (before onboarding: | Save and see my feed |)
+[tab bar]   Feed | Bids | Company* | Settings        (before onboarding: | Save and see my feed |)
 ```
 
-### About · `#/about`
+### Settings · `#/settings` (also `#/about`)
 ```
-[header]    ‹
-[title]     About TenderScout
+[header]    TenderScout                                      (before onboarding: ‹)
+[title]     Settings
+[section]   Appearance
+            Light or dark: System | Light | Dark             text tabs
+[section]   Demo
+[action]    Reset demo                                       full width, red text, asks to confirm
+[caption]   Clears your profile, answers, saved and skipped tenders.
+[section]   About this prototype
 [intro]     A university prototype (ESCP Digital Product Design, 2026).
 [rows]      AI output is simulated (Simulated AI)
             The decision logic is real code
             All data is fictional
             Built with AI assistance
-[section]   Appearance: System | Light | Dark               text tabs
-[action]    Reset demo                                       full width, red text, asks to confirm
-[caption]   Clears your profile, answers, saved and skipped tenders.
+[tab bar]   Feed | Bids | Company | Settings*            (before onboarding: none)
 ```
 Not found (any other route): ‹, "Page not found", one sentence, "Open Feed".
 
@@ -197,10 +201,10 @@ Not found (any other route): ‹, "Page not found", one sentence, "Open Feed".
 
 | Element | Where | Goes to |
 |---|---|---|
-| Tab bar: Feed · Bids · Company | Feed, Bids, Company | the three top-level screens (hidden during onboarding, on a tender, on About) |
-| ⓘ | header of Welcome, Feed, Bids, Company | About |
+| Tab bar: Feed · Bids · Company · Settings | Feed, Bids, Company, Settings | the four top-level screens (hidden during onboarding and on a tender) |
+| ⓘ | header of Welcome, Feed, Bids, Company | Settings |
 | ◐ | same headers | switches light ↔ dark in place |
-| ‹ Back | Check your profile, tender, About, Not found | the screen you came from (the Feed after a deep link) |
+| ‹ Back | Check your profile, tender, Settings before onboarding, Not found | the screen you came from (the Feed after a deep link) |
 | A tender card | Feed, Bids | the tender |
 | A requirement line, "Check →" | tender | the requirement sheet |
 | Skip | tender's action bar | the skip sheet |

@@ -35,7 +35,7 @@ This user is a hypothesis until the interviews say otherwise (§7).
 | asks the tender a question | a plain answer with the page it comes from ("Can we subcontract?") | Tender → Ask this tender | simulated AI |
 | saves or skips | a pipeline of Deciding / Bidding / Submitted; skipping with optional reasons, and Restore | Bids (`#/bids`), Skip sheet (`#/t/:id/skip`) | stored on the phone |
 | changes the profile (turnover, references, four certificates, five bid languages, bidding abroad) | every tender re-scored at once, the one that flipped named ("Landkreis Hohenau · No-go → Go"), and hints saying what a lever would unlock | Company (`#/company`) | the rules |
-| wants to know what is real | what is simulated, what is real code, that all data is fictional, that the build was AI-assisted; light or dark; reset | About (`#/about`) | — |
+| wants to know what is real | what is simulated, what is real code, that all data is fictional, that the build was AI-assisted; light or dark; reset | Settings tab (`#/settings`, also `#/about`) | — |
 
 The same product appears on two more surfaces: the marketing website in `site/` (not deployed; its phone demo, map and "How it decides" page run the app's own rules on the app's own data) and the launch film in `marketing/`.
 
@@ -74,7 +74,7 @@ The score adds sector fit (40), size fit (20), requirements (30) and time to the
 1. **The AI reads, the rules decide.** Verdicts come from plain, tested code, so every one can be explained line by line.
 2. **It never guesses a pass.** An unsure line goes to the owner, and a verdict never rests on it.
 3. **Proof on every line:** the page, the original sentence and its translation.
-4. **Honest labels:** "Simulated AI" next to every piece of AI output, "All companies and tenders are fictional" on the screens that show them, and the About screen's four statements.
+4. **Honest labels:** "Simulated AI" next to every piece of AI output, "All companies and tenders are fictional" on the screens that show them, and the four statements under "About this prototype" on Settings.
 5. **One hand:** tap targets of 44 px or more, actions in the thumb zone, readable in sunlight and in greyscale (shape + word), WCAG AA contrast, dark by default, reduced motion respected.
 6. **Nothing leaves the phone:** no API keys, no CDNs, no accounts.
 

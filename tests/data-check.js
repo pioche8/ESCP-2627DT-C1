@@ -179,8 +179,8 @@ const need = [
   ['function ai()', '>Simulated AI<', 'the ai() helper must still render the literal "Simulated AI"'],
   ['function fiction()', 'All companies and tenders are fictional', 'the fiction() helper must still render the Feed / Detail / Bids line'],
   ['welcome()', 'all companies and tenders are fictional', 'the Welcome caption'],
-  ['about()', 'AI output is simulated', 'the About row'],
-  ['about()', 'All data is fictional', 'the About row']
+  ['settings()', 'AI output is simulated', 'the About row on Settings'],
+  ['settings()', 'All data is fictional', 'the About row on Settings']
 ];
 need.forEach(([where, text, why]) => { if (appSrc.indexOf(text) === -1) fail('app.js', where, 'missing literal ' + JSON.stringify(text) + ' (' + why + ')'); });
 [['feed', 'function feed()'], ['detail', 'function detail('], ['bids', 'function bids()'], ['loadingDetail', 'function loadingDetail('], ['reqSheet', 'function reqSheet('], ['readingScreen', 'function readingScreen()'], ['checkProfile', 'function checkProfile()']].forEach(([name, sig]) => {
