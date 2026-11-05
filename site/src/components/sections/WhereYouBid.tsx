@@ -1,4 +1,4 @@
-import { WorldMap } from '@/components/map/WorldMap';
+import { MapLazy } from '@/components/map/MapLazy';
 
 export function WhereYouBid() {
   return (
@@ -10,7 +10,7 @@ export function WhereYouBid() {
           </div>
           <p className="body sec-aside">Germany and Austria by default. Switch on cross-border bidding and the verdicts update.</p>
         </div>
-        <WorldMap />
+        <MapLazy />
       </div>
     </section>
   );

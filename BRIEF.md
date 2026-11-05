@@ -28,6 +28,24 @@ ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skip
 4. **Ask the tender:** plain-language questions ("Can we subcontract?", "What's the penalty clause?"), answered with page citations.
 5. **Profile as a lever:** add ISO 27001 or a consortium partner, and every verdict updates instantly. This shows which certificate is worth getting.
 
+## Product objectives and success metric
+> Every target in this section is an **ASSUMPTION (untested)**. They are the numbers we would test against, not results. The evidence in [`evidence.md`](evidence.md) sets the real thresholds once interviews are logged.
+
+**North-star metric: qualification checks completed per firm per week.** A check counts as completed when the owner records a decision on a tender they opened: saved it to Bids, or skipped it (with or without a reason). This tracks the value TenderScout promises, a decision on "can we even bid on this?" backed by the page that proves it. It does not track attention. Opening the app, scrolling the Feed or reading a summary without deciding gives the firm nothing. More completed checks per week means screening got cheaper (H1) and the answer was good enough to act on (H2).
+Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The only survey answer so far (S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews), n = 1, not gate evidence) read 3–5 tenders in a whole year. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
+
+**Supporting metrics**, each tied to something the prototype already does:
+
+| Metric | What it tells us | Where it happens today | Target (ASSUMPTION, untested) |
+|---|---|---|---|
+| Time from opening the app to a verdict on a Go tender | Whether the 60-second promise holds | Feed → Go card → qualification check → Save to Bids ([`docs/NAVIGATION.md`](docs/NAVIGATION.md#core-flows), flow 1) | Under 60 s (flow 1's own target; never timed with a real user) |
+| Share of "Needs your check" lines the owner resolves | Whether owners answer the honest "AI is unsure" line instead of giving up on the tender | Requirement sheet → We meet it / We don't meet it (flow 2) | At least half of the lines shown on tenders the owner opened |
+| Share of Go verdicts saved to Bids | Whether owners trust a Go enough to act on it | Tender detail → Save to Bids → Bids → Deciding | At least half |
+
+**How it would be measured.** The prototype records no analytics, and nothing leaves the phone (About says so). In a moderated test, the decisions can be read from the phone's own saved state (tenderscout.v2: saved tenders and their stage, skipped tenders and their reasons, answers per tender), and the time with a stopwatch. A real version would need consented, per-firm event logging. That is not built.
+
+**Business objective.** Paying firms that keep their subscription, on the plans in [Business model](#business-model-assumption-not-tested). The north star is the leading indicator for it: a firm that completes checks every week gets the value it pays for, and a firm that stops deciding in the app is the one that cancels. ASSUMPTION: no price has been tested with anyone yet.
+
 ## Why AI is necessary (removal test)
 Take the language model out and the product is a keyword alert. Those already exist (TED, DTAD and other tender portals, mostly free). The model does three jobs nothing else can do at this cost:
 - **Reads unstructured tender packs** (PDF/Word, 50–200 pages) and extracts requirements with page citations and confidence scores.

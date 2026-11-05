@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import { SITE_URL } from '@/lib/site';
 
 // The same vendored files as the app (copied by scripts/sync-shared.mjs), so the site and the app render type identically.
 const hanken = localFont({
@@ -16,16 +17,21 @@ const symbols = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'TenderScout · Public tenders you can actually win',
   description:
     'TenderScout reads every new EU public tender overnight, in any language, and tells a small firm whether it can bid: Go, Maybe or No-go, with the page that proves it. University prototype (ESCP); all companies and tenders are fictional.',
   applicationName: 'TenderScout',
+  alternates: { canonical: '/' },
   openGraph: {
     title: 'TenderScout · Public tenders you can actually win, read for you overnight',
     description: 'Go / Maybe / No-go for every new EU tender, with the sentence that proves it. University prototype with fictional data.',
     type: 'website',
     locale: 'en_GB',
+    siteName: 'TenderScout',
+    url: '/',
   },
+  twitter: { card: 'summary_large_image', title: 'TenderScout · Public tenders you can actually win', description: 'Go / Maybe / No-go for every new EU tender, with the page that proves it. University prototype, fictional data.' },
   robots: { index: true, follow: true },
 };
 
