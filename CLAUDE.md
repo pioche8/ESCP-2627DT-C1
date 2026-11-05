@@ -56,7 +56,7 @@ docs/START_HERE.md  teammate onboarding: run it, where things live, verification
 docs/demo/          the backup demo: demo-path-390x844.mp4 and step-1 … step-7 PNGs (linked from BRIEF.md)
 BRIEF.md, evidence.md, docs/INTERVIEW_KIT.md, docs/NAVIGATION.md   project docs (don't restyle, keep content)
 docs/FIGMA.md       rules for Figma work (MCP): token ↔ variable mapping, components, icons, the Figma file map and plan limits, design → code and code → Figma
-design/figma/       the code → Figma pipeline: capture.js (all 30 app states at iPhone size) → make-batches.js → ready-to-run use_figma scripts (dev-only, Playwright)
+design/figma/       the code → Figma pipeline: capture.js (all 30 app states at iPhone size) → make-batches.js → ready-to-run use_figma scripts → dry-run.js checks them offline (dev-only, Playwright)
 ```
 **Before any Figma work, read `docs/FIGMA.md`.** Figma mirrors `DESIGN.md` and `shared/tokens.json`; it never overrides them.
 No build step and no dependencies. Keep it that way unless `DESIGN.md` truly needs something. If it does, use CDN-free, vendored assets only, and it must still run from GitHub Pages and `file://`.

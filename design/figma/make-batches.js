@@ -35,7 +35,7 @@ function load(scheme) {
 }
 const round = (s) => JSON.stringify(s, (k, v) => (typeof v === 'number' ? Math.round(v) : v));
 const raws = (s) => [...new Set((JSON.stringify(s).match(/"#[0-9A-F]{6}"/g) || []))];
-function pack(screens, fixed, budget) {
+function pack(screens, fixedFor, budget) {
   const batches = []; let cur = [], size = 0;
   for (const s of screens) {
     const j = JSON.stringify(s);
@@ -44,7 +44,7 @@ function pack(screens, fixed, budget) {
     cur.push(j); size += j.length + 2;
   }
   if (cur.length) batches.push(cur);
-  return batches.map((b) => fixed + 'const S = [\n' + b.join(',\n') + '\n];\n');
+  return batches.map((b, i) => fixedFor(i) + 'const S = [\n' + b.join(',\n') + '\n];\n');
 }
 async function encodePhotos(names) {
   const { chromium } = require('playwright');
@@ -72,13 +72,14 @@ async function encodePhotos(names) {
   console.log(light ? 'light capture: ' + (differs.length ? differs.length + ' screen(s) differ from dark beyond the colours, built from the light capture: ' + differs.join(', ') : 'identical structure, the light page is a recoloured copy') : 'no light capture: the light page is a recoloured copy of every dark screen');
   const REPLACE = [...new Set(cfg.legacyFrames.concat(names))];
   const builder = tpl('builder.figma.js');
-  const fixedDark = consts({ PAGE: cfg.pages.dark, PAGE_NAME: cfg.pageNames.dark, COLL: cfg.collections.dark, SB: cfg.components.statusBar, HI: cfg.components.homeIndicator, REPLACE });
-  const budget = cfg.maxScript - builder.length - fixedDark.length - 400;
+  // the first dark batch also removes the first-attempt frames; later batches replace only their own frames
+  const fixedDark = (i) => consts({ PAGE: cfg.pages.dark, PAGE_NAME: cfg.pageNames.dark, COLL: cfg.collections.dark, SB: cfg.components.statusBar, HI: cfg.components.homeIndicator, REPLACE: i === 0 ? cfg.legacyFrames : [] });
+  const budget = cfg.maxScript - builder.length - fixedDark(0).length - 400;
   const scripts = [];
   pack(dark, fixedDark, budget).forEach((b, i, all) => scripts.push(['screens-dark-' + (i + 1), 'Build iPhone screens (dark) batch ' + (i + 1) + ' of ' + all.length + ': ' + (b.match(/"name":"[^"]+"/g) || []).map((m) => m.slice(8, -1)).join(', '), b + builder]));
   scripts.push(['light-copy', 'Copy the dark iPhone frames onto the light page and rebind every colour to the light variables', consts({ DARK_PAGE: cfg.pages.dark, LIGHT_PAGE: cfg.pages.light, LIGHT_PAGE_NAME: cfg.pageNames.light, DARK_COLL: cfg.collections.dark, LIGHT_COLL: cfg.collections.light, NAMES: names.filter((n) => differs.indexOf(n) === -1), REPLACE }) + tpl('light.figma.js')]);
   if (differs.length) {
-    const fixedLight = consts({ PAGE: cfg.pages.light, PAGE_NAME: cfg.pageNames.light, COLL: cfg.collections.light, SB: cfg.components.statusBar, HI: cfg.components.homeIndicator, REPLACE });
+    const fixedLight = () => consts({ PAGE: cfg.pages.light, PAGE_NAME: cfg.pageNames.light, COLL: cfg.collections.light, SB: cfg.components.statusBar, HI: cfg.components.homeIndicator, REPLACE: [] });
     pack(light.filter((s) => differs.indexOf(s.name) !== -1), fixedLight, budget).forEach((b, i) => scripts.push(['screens-light-' + (i + 1), 'Build the light screens that differ from dark beyond colour (status bar and home indicator rebound to light ink afterwards by light-copy if re-run)', b + builder.replace("return { screens: out", "for (const f of out) { const fr = await figma.getNodeByIdAsync(f.id); for (const inst of fr.findAllWithCriteria({ types: ['INSTANCE'] })) for (const n of inst.findAll(() => true)) { if (n.type !== 'FRAME' && 'fills' in n && Array.isArray(n.fills) && n.fills.length) n.fills = n.fills.map((p) => p.type === 'SOLID' ? figma.variables.setBoundVariableForPaint(p, 'color', V.ink) : p); if (n.type !== 'FRAME' && 'strokes' in n && Array.isArray(n.strokes) && n.strokes.length) n.strokes = n.strokes.map((p) => p.type === 'SOLID' ? figma.variables.setBoundVariableForPaint(p, 'color', V.ink) : p); } }\nreturn { screens: out")]));
   }
   const photoNames = [...new Set(JSON.stringify(dark).match(/"img":"[^"]+"/g).map((m) => m.slice(7, -1)))];

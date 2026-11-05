@@ -2,9 +2,10 @@
 // make-batches.js prepends the constants below and writes ready-to-run scripts to design/figma/out/figma/.
 //   PAGE     page id to build on                COLL  variable collection id (dark or light TenderScout colours)
 //   SB, HI   'iOS / Status bar' and 'iOS / Home indicator' component ids
-//   S        screens: { name, H, bg, ch } from capture.js     REPLACE  frame names this script may replace on PAGE
+//   S        screens: { name, H, bg, ch } from capture.js     REPLACE  other frame names to remove first (first batch: the first-attempt frames)
 // Every colour is bound to a variable; nothing is a raw hex unless capture.js found a colour outside the tokens.
-// Only frames whose names are in REPLACE are removed, so the script is safe to re-run and never touches other layers.
+// Only this batch's frames and the names in REPLACE are removed, so the script is safe to re-run and never touches other
+// layers or the other batches' frames.
 const page = await figma.getNodeByIdAsync(PAGE);
 await figma.setCurrentPageAsync(page);
 if (PAGE_NAME) page.name = PAGE_NAME;
@@ -72,8 +73,10 @@ function build(n, parent, ox, oy, inF, fixed) {
   } catch (e) { errors.push((n.n || n.k) + ': ' + String(e.message || e).slice(0, 140)); }
 }
 const out = [];
+// replace this batch's own frames (and, in the first batch only, the first-attempt frames listed in REPLACE) once, up front
+const mine = S.map((s) => s.name);
+for (const old of page.children.filter((c) => c.type === 'FRAME' && (mine.indexOf(c.name) !== -1 || REPLACE.indexOf(c.name) !== -1))) old.remove();
 for (const s of S) {
-  for (const old of page.children.filter((c) => c.type === 'FRAME' && (c.name === s.name || REPLACE.indexOf(c.name) !== -1))) old.remove();
   const idx = parseInt(s.name, 10);
   const fr = figma.createFrame(); fr.name = s.name; fr.resize(390, 844);
   fr.x = ((idx - 1) % 10) * 470; fr.y = Math.floor((idx - 1) / 10) * 1000;

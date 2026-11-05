@@ -256,7 +256,11 @@ The prototype (`prototype.figma.js`) follows the `BRIEF.md` demo path:
 ```
 node design/figma/capture.js          # renders all 30 states in dark and light → design/figma/out/{dark,light}/*.json + reference PNGs
 node design/figma/make-batches.js     # packs them into design/figma/out/figma/NN-*.js (each ≤ 46 kB) + RUN.md
+node design/figma/dry-run.js          # runs all of them in order against an in-memory model of the file: script errors, missing prototype targets, photo checksums
 ```
+
+Always dry-run before spending real calls. On its first run it caught a bug that would have wasted every screen call:
+each batch's replace list held all 30 names, so every batch deleted the frames the previous one had built.
 
 Then run each `out/figma/NN-*.js`, in order, as the whole `code` argument of `use_figma` on the file (after one
 `create_session`). The current split is 10 calls:
