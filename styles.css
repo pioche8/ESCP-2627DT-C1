@@ -7,7 +7,7 @@
    TenderScout · styles.css · components only. Every colour is one of the nine custom properties from shared/tokens.css
    (generated from shared/tokens.json and loaded by index.html before this file): --c-bg, --c-surface, --c-ink, --c-muted,
    --c-brand and --c-go / --c-maybe / --c-nogo / --c-check. Scheme: <html data-scheme="light|dark">, set before the first
-   paint by index.html and kept in sync by app.js (About → Appearance).
+   paint by index.html and kept in sync by app.js (Settings → Appearance).
    4 Nov 2026 (declutter): flat surfaces, no borders, dividers, shadows, gradients, grain, glass, pills, tags or badges;
    one 8 px radius; one typeface with tabular figures; no uppercase, italics or negative tracking; a full-width bottom
    tab bar; underlined text tabs for filters and stages. Verdicts are always shape + word. The only translucent element is
@@ -444,7 +444,7 @@ html.sheet-open { overflow:hidden; }
 .switch[aria-checked="true"] { background:var(--c-brand); }
 .switch[aria-checked="true"]::before { transform:translateX(20px); background:var(--c-bg); }
 
-/* ---------- About ---------- */
+/* ---------- Settings (About rows, appearance, demo reset) ---------- */
 .about-intro { padding:6px 20px 0; }
 .about-intro p { margin-top:10px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
 .about-row { padding:14px 0; }
@@ -453,6 +453,7 @@ html.sheet-open { overflow:hidden; }
 .notify-row { padding:14px 16px 16px; }
 .notify-row p { font:500 14px/20px var(--font-ui); color:var(--c-muted); margin-bottom:12px; }
 .about-actions { padding:24px 16px 0; display:flex; flex-direction:column; gap:12px; }
+.settings-demo { padding-top:0; }
 .theme-row { padding:12px 16px 12px; }
 .theme-row .label-text { display:block; margin-bottom:4px; }
 

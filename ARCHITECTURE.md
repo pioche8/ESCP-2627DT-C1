@@ -13,7 +13,7 @@ flowchart LR
     data["data.js<br/>fictional company + 6 tenders<br/>(DEMO_TODAY, PROFILE, TENDERS, CERT_OPTIONS, SECTORS)"]
     engine["engine.js<br/>REAL rules: checkRequirement → evaluate → rank<br/>reasonLine, headline, verdicts, diff, whatIf"]
     ai["ai.js<br/>SIMULATED AI: readTender, ask, draftProfile<br/>pre-written output after a delay"]
-    appjs["app.js<br/>hash router + screens + event delegation<br/>Welcome · Feed · Tender · Sheets · Bids · Company · About"]
+    appjs["app.js<br/>hash router + screens + event delegation<br/>Welcome · Feed · Tender · Sheets · Bids · Company · Settings"]
     store[("localStorage<br/>tenderscout.v2")]
     data --> engine --> appjs
     data --> ai --> appjs
@@ -56,7 +56,7 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 
 ## 2. Routing: from a hash to a screen
 
-`parse()` turns `location.hash` into `{ name, id, sub }`; `render()` guards onboarding, picks the screen function, writes it into `#screen` and shows the tab bar only on Feed, Bids and Company; `syncSheet()` opens or closes the one sheet layer. Routes, the screens they show and the flows between them are specified in [`docs/NAVIGATION.md`](docs/NAVIGATION.md); this table is where each lives in the code.
+`parse()` turns `location.hash` into `{ name, id, sub }`; `render()` guards onboarding, picks the screen function, writes it into `#screen` and shows the tab bar only on Feed, Bids, Company and Settings; `syncSheet()` opens or closes the one sheet layer. Routes, the screens they show and the flows between them are specified in [`docs/NAVIGATION.md`](docs/NAVIGATION.md); this table is where each lives in the code.
 
 | Route | `parse()` → | Rendered by (`app.js`) | Calls |
 |---|---|---|---|
@@ -67,10 +67,10 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 | `#/t/:id/skip` | `detail` + `sub: skip` | `skipSheet()` | `skipConfirm()` → `skipped`, back to the Feed |
 | `#/bids` | `bids` | `bids()`, `bidCard()` | `Engine.evaluate` |
 | `#/company` | `company` | `company()`, `rescoreCard()`, `hints()` | every lever → `applyLever()` → `Engine.verdicts` + `Engine.diff`; hints → `Engine.whatIf` |
-| `#/about` | `about` | `about()` | Reset writes a fresh state |
+| `#/settings`, `#/about` | `settings` | `settings()` | Reset writes a fresh state |
 | anything else | `notfound` | `notFound()` | |
 
-- **Onboarding guard:** until `onboarded` is true, every route except Welcome, Company and About is replaced by `#/welcome/1`.
+- **Onboarding guard:** until `onboarded` is true, every route except Welcome, Company and Settings (or `#/about`) is replaced by `#/welcome/1`.
 - **Sheets are history entries.** In-app Back, closing a sheet and Skip go *back* through a small stack (`backTo()`) instead of stacking new entries; Escape and the scrim close a sheet to its parent tender; while a sheet is open the screen and the tab bar are `inert`.
 - **Re-renders are cheap and local:** a lever on Company re-scores all six tenders in the engine and re-renders the screen; same-screen re-renders do not replay entrances. The card → tender morph uses the View Transitions API when the browser has it and a plain hash change otherwise.
 
