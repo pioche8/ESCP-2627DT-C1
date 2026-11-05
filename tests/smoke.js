@@ -358,6 +358,21 @@ async function run(scheme) {
   const backRow = await inset.locator('.vhead-nav').first().boundingBox();
   check(feedNav && Math.round(feedNav.y) === 47 && backRow && Math.round(backRow.y) === 53 && insetBar && Math.round(insetBar.height) === 94, 'with iPhone insets the Feed header starts at 47 px, the tender back row at ' + (backRow ? Math.round(backRow.y) : '?') + ' px (47 + 6, inset applied once) and the tab bar is 60 + 34 px');
   await inset.close();
+  // Morning notification (simulated lock screen, once a day; CLAUDE.md §11 item 120)
+  await load('', '#/feed'); await page.waitForSelector('.feed-list');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: not shown again on the day a fresh state was written');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.notifiedOn = '2026-11-04'; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await load('', '#/feed'); await page.waitForSelector('.lockscreen');
+  check(await page.locator('.lockscreen[role="dialog"][aria-modal="true"]').count() === 1 && (await text('.lockscreen')).includes('Simulated notification') && (await text('.lockscreen')).includes('Thursday 5 November'), 'morning notification: first Feed open of a new day shows the simulated lock screen (dialog, "Simulated notification", the date)');
+  check((await page.locator('.notif').innerText()).replace(/\s+/g, ' ').includes('TenderScout now 1 Go 2 Maybe 3 No-go') && await page.locator('.notif .shape').count() === 3, 'morning notification: "1 Go · 2 Maybe · 3 No-go" from the engine, each with its shape');
+  await scan('morning-notification'); await shot('morning-notification');
+  await page.click('.notif'); await page.waitForTimeout(100);
+  check(!(await page.locator('.lockscreen').count()) && page.url().endsWith('#/feed'), 'morning notification: tapping it opens the Feed');
+  await load('', '#/feed'); await page.waitForSelector('.feed-list');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: once a day (a reload the same day does not show it again)');
+  await load('', '#/about'); await page.click('[data-act="morning"]'); await page.waitForSelector('.lockscreen');
+  await page.keyboard.press('Escape');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: About replays it and Escape closes it');
 
   // Touch targets: interactive elements smaller than 44 px (pseudo-element hit areas are not measured here)
   const small = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, input, [role="switch"]'))

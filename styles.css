@@ -328,6 +328,37 @@ html.sheet-open { overflow:hidden; }
 .sheet-foot .row-btns { display:flex; gap:12px; }
 .sheet-foot .row-btns > * { flex:1 1 0; min-width:0; }
 .sheet-foot .row-btns > .grow-2 { flex-grow:2; }
+
+/* ---------- morning notification (simulated lock screen, once a day; app.js morningHTML) ----------
+   The phone's lock screen in the app's own colours: the ground, the clock in ink, the notification as a flat surface
+   card with the app icon (brand fill, ground glyph) and the three counts as verdict shape + number + word. */
+.notify-root[hidden] { display:none; }
+.lockscreen {
+  position:fixed; z-index:70; inset:0; max-width:var(--app-max-width); margin:0 auto; background:var(--c-bg); color:var(--c-ink);
+  display:flex; flex-direction:column; align-items:stretch; gap:0;
+  padding:calc(12px + var(--safe-top)) 12px calc(24px + var(--safe-bottom)); overflow-y:auto; touch-action:pan-y;
+}
+.ls-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-left:8px; }
+.ls-sim { font:600 13px/18px var(--font-ui); color:var(--c-muted); }
+.ls-clock { text-align:center; margin:36px 0 40px; }
+.ls-date { font:600 19px/24px var(--font-ui); color:var(--c-muted); }
+.ls-time { font:400 92px/1 var(--font-ui); color:var(--c-ink); font-variant-numeric:tabular-nums; margin-top:8px; outline:none; }
+.notif {
+  display:flex; align-items:flex-start; gap:12px; width:100%; min-height:76px; padding:14px; text-align:left;
+  border-radius:var(--r); background:var(--c-surface); color:var(--c-ink); transition:transform 120ms var(--ease-out);
+}
+.notif:active { transform:scale(.98); }
+.notif-icon { width:40px; height:40px; flex:none; border-radius:var(--r); background:var(--c-brand); color:var(--c-bg); display:grid; place-items:center; }
+.notif-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.notif-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; font:700 16px/20px var(--font-ui); }
+.notif-when { font:500 14px/18px var(--font-ui); color:var(--c-muted); }
+.notif-counts { display:flex; flex-wrap:wrap; gap:6px 16px; }
+.n-count { display:inline-flex; align-items:center; gap:6px; font:700 15px/20px var(--font-ui); color:var(--v); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.ls-foot { margin-top:auto; padding-top:24px; }
+.notify-root.open .lockscreen { animation:ts-fade var(--dur-sheet) var(--ease-out) both; }
+.notify-root.open .notif { animation:ts-drop var(--dur-pop) var(--ease-back) .25s both; }
+@keyframes ts-fade { from { opacity:0; } }
+@keyframes ts-drop { from { opacity:0; transform:translateY(-16px); } }
 .sheet-foot .row-btns .btn { padding:0 12px; }
 .sheet-top { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .sheet-top .status { font-size:15px; }
@@ -419,6 +450,8 @@ html.sheet-open { overflow:hidden; }
 .about-row { padding:14px 0; }
 .about-row h3 { font:700 16px/21px var(--font-ui); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .about-row p { margin-top:4px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.notify-row { padding:14px 16px 16px; }
+.notify-row p { font:500 14px/20px var(--font-ui); color:var(--c-muted); margin-bottom:12px; }
 .about-actions { padding:24px 16px 0; display:flex; flex-direction:column; gap:12px; }
 .theme-row { padding:12px 16px 12px; }
 .theme-row .label-text { display:block; margin-bottom:4px; }
