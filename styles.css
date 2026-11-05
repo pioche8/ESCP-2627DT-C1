@@ -84,7 +84,7 @@ a { color:inherit; text-decoration:none; }
 .caption { font:500 13px/18px var(--font-ui); color:var(--c-muted); text-align:center; }
 .gutter { padding-left:20px; padding-right:20px; }
 .cards { display:flex; flex-direction:column; gap:8px; padding:0 16px; }
-.link { color:var(--c-brand); font-weight:700; text-decoration:underline; text-underline-offset:2px; }
+.link { color:var(--c-brand); font-weight:700; text-decoration:underline; text-underline-offset:2px; display:inline-block; padding:13px 4px; margin:-13px -4px; } /* a 44 px hit area around an inline link without moving the text (monkey, seed 20261105: "see in Bids" was 17 px tall) */
 .fiction { margin:20px 20px 0; }
 /* "Simulated AI": plain text, on every screen that shows AI output */
 .ai { font:600 12px/16px var(--font-ui); color:var(--c-muted); white-space:nowrap; flex:none; }
