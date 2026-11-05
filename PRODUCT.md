@@ -4,7 +4,7 @@ What TenderScout is, who it is for, what the prototype does and does not do, and
 
 | This file covers | Not in this file (look here instead) |
 |---|---|
-| The job, the user, what the owner gets on each screen, the verdict vocabulary, what is in and out of scope, the product rules, what is known and what is assumed, the open questions | How it is built: [`ARCHITECTURE.md`](ARCHITECTURE.md) · the rules in full: [`docs/HOW_IT_DECIDES.md`](docs/HOW_IT_DECIDES.md) · routes, flows and states: [`docs/NAVIGATION.md`](docs/NAVIGATION.md) · market, competition, pitch, business model and the demo script: [`BRIEF.md`](BRIEF.md) · interviews and the gate: [`evidence.md`](evidence.md) · visuals: [`DESIGN.md`](DESIGN.md) · build rules and every decision: [`CLAUDE.md`](CLAUDE.md) |
+| The job, the user, what the owner gets on each screen, the verdict vocabulary, what is in and out of scope, the product rules, what is known and what is assumed, the open questions | How it is built: [`ARCHITECTURE.md`](ARCHITECTURE.md) · the rules in full: [`docs/HOW_IT_DECIDES.md`](docs/HOW_IT_DECIDES.md) · routes, flows and states: [`docs/NAVIGATION.md`](docs/NAVIGATION.md) · market, competition, pitch, business model and the demo script: [`BRIEF.md`](BRIEF.md) · interviews and the gate: [`evidence.md`](evidence.md) · visuals: [`DESIGN.md`](DESIGN.md) · what is real and what is fictional: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional) · user stories, content requirements and the UX planes: [`docs/design/`](docs/design/UX_PLANES.md) · build rules and every decision: [`CLAUDE.md`](CLAUDE.md) |
 
 ## 1. The job
 
@@ -12,7 +12,7 @@ Every morning TenderScout reads new EU public tenders in any language and tells 
 
 The promise: **"Can we even bid on this?" answered in under 60 seconds, with proof.** ([`CLAUDE.md`](CLAUDE.md) §2, [`DESIGN.md`](DESIGN.md) §1.)
 
-Why it matters, in one line: EU public buyers spend about €2 trillion a year, and in 2021 42% of contracts drew a single bid (European Court of Auditors, Special Report 28/2023; sources in [`evidence.md`](evidence.md) §5). For a firm of 5–50 people the cost sits before the bid: someone has to read a 50–200 page pack, often in another language, to find the one line that rules them out ([`BRIEF.md`](BRIEF.md) → Problem).
+Why it matters, in one line: competition for EU public contracts has collapsed (the figures and their sources: [`BRIEF.md`](BRIEF.md) → Problem, [`evidence.md`](evidence.md) §5), and for a firm of 5–50 people the cost sits before the bid: someone has to read a 50–200 page pack, often in another language, to find the one line that rules them out.
 
 ## 2. Who it is for
 
@@ -63,7 +63,7 @@ The score adds sector fit (40), size fit (20), requirements (30) and time to the
 
 **Simulated, and labelled "Simulated AI" wherever it shows:** reading tender packs, extracting requirements with page and confidence, translating, summarising, answering questions, drafting the profile. Pre-written output is played back after a short delay; no model is called and there are no keys.
 
-**Fictional, and labelled so:** every company, buyer, tender, page number and quote. The demo date is fixed at Thu 5 Nov 2026 so verdicts and days left never drift.
+**Which data is real and which is fictional:** [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional). The demo date is fixed at Thu 5 Nov 2026 so verdicts and days left never drift.
 
 **Later, not built:** real tender ingestion (TED API), live AI, accounts and login, push notifications (a morning deep link to a tender), payments, a consortium-partner finder, calendar export, sharing a verdict, opening the source PDF at the cited page ([`CLAUDE.md`](CLAUDE.md) §10, [`docs/NAVIGATION.md`](docs/NAVIGATION.md) → Later). Teammate tasks T2–T7 in [`docs/START_HERE.md`](docs/START_HERE.md) §6 are the next candidates.
 
@@ -82,28 +82,17 @@ The full list, with the accessibility and layout rules: [`CLAUDE.md`](CLAUDE.md)
 
 ## 7. What is known and what is assumed
 
-**Known (desk research, sourced in [`evidence.md`](evidence.md) §5):** the size of EU procurement and the fall in competition; that funded tools exist for bid management and for bid/no-bid.
-
-**Not known yet:** whether the pain is real for this user. At this commit [`evidence.md`](evidence.md) logs no interviews and the gate result in §0 is blank, so the four hypotheses are open:
-
-| | Hypothesis | Confirmed if (evidence.md §0) |
-|---|---|---|
-| H1 | Pain: deciding whether they can bid costs real time or money | ≥ 1 h screening per tender, a bid lost to a missed knock-out, or tenders skipped unread |
-| H2 | Wedge: today's tools do not answer "can we qualify?" | only alerts, a database or nothing; eligibility checked by hand |
-| H3 | Cross-border: language stops them | foreign-language tenders skipped unread |
-| H4 | Willingness: it is worth money | a named cost of a wasted bid, or a tool or consultant paid for today |
-
-**Assumed, and labelled ASSUMPTION in [`BRIEF.md`](BRIEF.md):** screening takes 1–3 hours per tender; a bid costs €3–10k of effort; the price is €49 or €149 a month. None of these may appear as a finding until an interviewee says it.
+Not known yet: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell); no interview is logged and the gate result is blank. The one survey answer so far is read as signals only ([`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 ## 8. The demo
 
-The 75-second path is in [`BRIEF.md`](BRIEF.md) (open `?demo=reset,fast`). The numbers the presenter says are the engine's and are pinned by `tests/demo-golden.test.js`: the Feed reads 1 Go · 2 Maybe · 3 No-go from 777 pages in 4 languages; Landkreis Hohenau goes No-go 25 → Maybe 90 (ISO 27001 on Company) → Go 100 ("We meet it" on the unclear line). Moving any of them is a decision to state, never a side effect.
+The 75-second path and the numbers the presenter says are in [`BRIEF.md`](BRIEF.md) (open `?demo=reset,fast`). They are the engine's and are pinned by `tests/demo-golden.test.js`; moving one is a decision to state, never a side effect.
 
 ## 9. Open questions
 
 - **The gate verdict** (GO / RESHAPE / KILL / provisional n = X, [`evidence.md`](evidence.md) §0). RESHAPE points the pitch at cross-border reading (H3) or at the buyer side; KILL moves the focus to bid writing, said openly. Either would rewrite §2, §5 and §7 of this file.
 - **The `v0-shell` tag** ([`CLAUDE.md`](CLAUDE.md) §11 item 14).
-- **Persona, journey map and evidence-to-feature traceability** are teammate tasks T9, T10 and T8 ([`docs/START_HERE.md`](docs/START_HERE.md) §6), to live in `docs/design/PERSONA.md`, `docs/design/JOURNEY.md` and `docs/TRACEABILITY.md`. Link them here when they exist; they are built from interviews, so this file does not pre-empt them.
+- **Persona, "How might we", journey map and traceability** (T8–T10): pending until interviews exist; their status is kept in [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md).
 
 ## 10. Words used in the product
 
