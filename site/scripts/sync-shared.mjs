@@ -18,6 +18,10 @@ if (!fs.existsSync(app('shared/tokens.json')) || !fs.existsSync(app('engine.js')
 
 // 1. tokens → shared/tokens.css, src/styles/tokens.css, src/generated/tokens.ts
 execFileSync(process.execPath, [app('shared/build-tokens.js')], { stdio: 'inherit' });
+// 1b. the decision model → src/generated/how-it-decides.json and ../docs/HOW_IT_DECIDES.md (probed from engine.js + data.js)
+execFileSync(process.execPath, [app('shared/how-it-decides.js')], { stdio: 'inherit' });
+// 1c. Open Graph image and icons from the tokens (needs Playwright; keeps the committed files otherwise)
+execFileSync(process.execPath, [path.join(site, 'scripts/brand-images.cjs')], { stdio: 'inherit' });
 
 // 2. the real decision engine and the fictional demo data, verbatim, as CommonJS modules
 fs.mkdirSync(out('src/generated'), { recursive: true });

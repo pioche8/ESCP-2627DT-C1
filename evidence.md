@@ -33,6 +33,23 @@ Gate result (fill in Tue 18:00, signed by: ______): **GO / RESHAPE / KILL / prov
 | 5 | | | | | | | | | | |
 | 6 | | | | | | | | | | |
 
+## 1b. Survey responses (screening form, not interviews)
+Form: "How small firms decide whether to bid on public tenders (about 3 min)", Google Forms, opened 5 Nov 2026. Survey answers are self-reported and **do not count toward the gate** in §0. A respondent who agrees to a call becomes an interview and is logged in §1 and §2 like any other. Contact details stay with the team and off this public repo.
+
+| # | Date | Role | Firm size | Tenders read in 12 months | Time deciding on the last tender | Took longest | Tools | Did the tools say if you qualify? | Skipped a foreign tender? | Call |
+|---|---|---|---|---|---|---|---|---|---|---|
+| S1 | 5 Nov 2026 | Owner / MD | 5–19 | 3–5 | 1–2 days | Checking requirements (turnover, references, certifications) | Free portal alerts (TED, national) + spreadsheet / manual | No, worked it out myself | Not sure | Yes (contact held by the team) |
+
+Read against the hypotheses (signals only, n = 1, not gate evidence):
+- **H1 Pain:** signal yes. 1–2 days deciding on the last tender, far above the 1 h threshold in §0.
+- **H2 Wedge:** signal yes. Free alerts and a spreadsheet only, and the tools gave no answer on whether the firm qualifies.
+- **H3 Cross-border:** unclear ("Not sure").
+- **H4 Willingness:** not asked by the form.
+
+Data note: S1 also answered "If none, why?" ("We tried and it was too much effort") although they read 3–5 tenders. The form shows that question to everyone, so the answer is not used.
+
+Next: book the 20-minute call with S1 and log it as an interview (§1, §2).
+
 ## 2. Interview notes
 <!-- One block per interview, using the template in docs/INTERVIEW_KIT.md §6 -->
 

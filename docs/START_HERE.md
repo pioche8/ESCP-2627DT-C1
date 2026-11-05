@@ -29,22 +29,24 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 | `site/` | The marketing website (Next.js). It runs the app's `engine.js` on the app's `data.js` through copies in `site/src/generated/` (refreshed by `npm run sync`). Not deployed yet. | You change the website, or you changed `data.js` / `engine.js` / tokens and want the site to follow. |
 | `tests/` | `engine.test.js` (24 node tests), `smoke.js` (Playwright click-through at 390 × 844, light + dark + reduced motion), `declutter-scan.js` (the 18 banned visual patterns), `demo-record.js` (the backup video), `live-check.js` (is GitHub Pages serving this checkout?). | Every commit (see §4). |
 | `docs/` | `NAVIGATION.md` (routes, flows, states), `INTERVIEW_KIT.md`, `WEBSITE_BUILD_LOG.md`, `demo/` (the backup video and screenshots), this file. | You add a screen (update `NAVIGATION.md`) or a design document. |
+| `docs/design/` | [`UX_PLANES.md`](design/UX_PLANES.md): Garrett's five planes (strategy, scope, structure, skeleton, surface) mapped to the files that cover each, with a status; `USER_STORIES.md` (from the brief, not from interviews yet); `CONTENT_REQUIREMENTS.md` (every piece of content, its source of truth and who produces it). T9 and T10 add `PERSONA.md` and `JOURNEY.md` here. | You log interviews (add their links to the stories and update the planes' status), or you finish T9 or T10. |
 | `BRIEF.md`, `evidence.md` | The pitch and the 75-second demo script; the interview evidence and the gate. | After every interview. |
 | `README.md`, `CLAUDE.md`, `DESIGN.md`, `design/` | Project overview and AI-use disclosure; the build handoff with the rules and the decision log; the visual spec and the designer's handoffs. | Read before you build. |
+| `ARCHITECTURE.md`, `docs/HOW_IT_DECIDES.md` | One page with a diagram on how the pieces fit (data → engine → screens, tokens, state, URL parameters, gates, deploy and rollback); the decision model generated from the engine (`node shared/how-it-decides.js`, also the website's `/how` page). | You need the big picture, or you explain a verdict to someone. |
 
 ## 3. The rules (read, don't restate)
 
 - Product, engine, routes, state, honesty and accessibility rules: [`CLAUDE.md` §2–§7](../CLAUDE.md). The non-negotiables in §7 (the "Simulated AI" label, fictional data, no API keys, 44 px tap targets, WCAG AA, dark mode and reduced motion) apply to every commit.
 - Every decision already taken, and why: [`CLAUDE.md` §11](../CLAUDE.md#11-decisions-log-session-of-2-nov-2026-agreed-with-the-team-before-building). Check it before re-deciding something.
 - Visual design: [`DESIGN.md`](../DESIGN.md), then [`design/HANDOFF_V2.md`](../design/HANDOFF_V2.md) and [`design/MOTION.md`](../design/MOTION.md) where they differ, then the 4 Nov declutter decisions (`CLAUDE.md` §11 items 53–68). The engine and the data win over all three.
-- Navigation and states: [`docs/NAVIGATION.md`](NAVIGATION.md).
+- Navigation and states: [`docs/NAVIGATION.md`](NAVIGATION.md). The big picture: [`ARCHITECTURE.md`](../ARCHITECTURE.md). The rules as the code applies them: [`docs/HOW_IT_DECIDES.md`](HOW_IT_DECIDES.md).
 
 ## 4. Verify before you commit
 
 One command runs every gate in order and prints one line per gate with pass / fail and the command to rerun it alone:
 
 ```
-npm run preflight                # all gates (about 8 minutes with the three phone profiles and the site build)
+npm run preflight                # all gates (about 15 minutes with the three phone profiles, the site build and the site audit)
 npm run preflight -- --quick     # the node-only gates CI's "check" job runs (two seconds)
 ```
 
@@ -70,7 +72,7 @@ MONKEY_MINUTES=2 node tests/monkey.js             # the off-script monkey (10 mi
 
 CI runs the 390 × 844 smoke test too (the "smoke" job, on pull requests and on pushes to `main`); the iPhone 13 / SE profiles and the site build stay local, in `npm run preflight`.
 
-If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first).
+If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first, including the generated "How it decides" page and `docs/HOW_IT_DECIDES.md`). `npm run audit` adds the static export, the page check and Lighthouse + axe.
 
 Then open the result on a phone or at 390 px, in dark and light, and click the thing you built.
 
