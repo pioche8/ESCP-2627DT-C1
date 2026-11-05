@@ -70,6 +70,7 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
     <section id="how" ref={sectionRef} className="how" aria-labelledby="how-h">
       <div className="wrap how-head">
         <h2 id="how-h" className="h2 how-title">From {PAGES_TOTAL} pages to one answer.</h2>
+        <p className="body"><a className="how-link" href="/how">Every rule, weight and threshold, derived from the decision code, and a live block to try them</a>.</p>
       </div>
       <div className="wrap how-grid">
         <div className="how-sticky-col">

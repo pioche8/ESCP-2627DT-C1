@@ -21,7 +21,7 @@ export function Tonight({ tenders }: { tenders: TenderView[] }) {
           <SquareButton icon="arrow_forward" label="Next tender" onClick={next} />
         </div>
       </div>
-      <div ref={trackRef} onScroll={onScroll} className="track track-tenders" role="list" aria-label="Tonight’s tenders">
+      <div ref={trackRef} onScroll={onScroll} className="track track-tenders" role="list" aria-label="Tonight’s tenders" tabIndex={0}>
         {tenders.map((t) => <div role="listitem" key={t.id} className="track-item"><TenderCard t={t} /></div>)}
       </div>
       <div className="wrap"><ProgressBars count={tenders.length} active={index} /></div>

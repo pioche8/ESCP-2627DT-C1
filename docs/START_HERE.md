@@ -31,20 +31,21 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 | `docs/` | `NAVIGATION.md` (routes, flows, states), `INTERVIEW_KIT.md`, `WEBSITE_BUILD_LOG.md`, `demo/` (the backup video and screenshots), this file. | You add a screen (update `NAVIGATION.md`) or a design document. |
 | `BRIEF.md`, `evidence.md` | The pitch and the 75-second demo script; the interview evidence and the gate. | After every interview. |
 | `README.md`, `CLAUDE.md`, `DESIGN.md`, `design/` | Project overview and AI-use disclosure; the build handoff with the rules and the decision log; the visual spec and the designer's handoffs. | Read before you build. |
+| `ARCHITECTURE.md`, `docs/HOW_IT_DECIDES.md` | One page with a diagram on how the pieces fit (data → engine → screens, tokens, state, URL parameters, gates, deploy and rollback); the decision model generated from the engine (`node shared/how-it-decides.js`, also the website's `/how` page). | You need the big picture, or you explain a verdict to someone. |
 
 ## 3. The rules (read, don't restate)
 
 - Product, engine, routes, state, honesty and accessibility rules: [`CLAUDE.md` §2–§7](../CLAUDE.md). The non-negotiables in §7 (the "Simulated AI" label, fictional data, no API keys, 44 px tap targets, WCAG AA, dark mode and reduced motion) apply to every commit.
 - Every decision already taken, and why: [`CLAUDE.md` §11](../CLAUDE.md#11-decisions-log-session-of-2-nov-2026-agreed-with-the-team-before-building). Check it before re-deciding something.
 - Visual design: [`DESIGN.md`](../DESIGN.md), then [`design/HANDOFF_V2.md`](../design/HANDOFF_V2.md) and [`design/MOTION.md`](../design/MOTION.md) where they differ, then the 4 Nov declutter decisions (`CLAUDE.md` §11 items 53–68). The engine and the data win over all three.
-- Navigation and states: [`docs/NAVIGATION.md`](NAVIGATION.md).
+- Navigation and states: [`docs/NAVIGATION.md`](NAVIGATION.md). The big picture: [`ARCHITECTURE.md`](../ARCHITECTURE.md). The rules as the code applies them: [`docs/HOW_IT_DECIDES.md`](HOW_IT_DECIDES.md).
 
 ## 4. Verify before you commit
 
 One command runs every gate in order and prints one line per gate with pass / fail and the command to rerun it alone:
 
 ```
-npm run preflight                # all gates (about 8 minutes with the three phone profiles and the site build)
+npm run preflight                # all gates (about 15 minutes with the three phone profiles, the site build and the site audit)
 npm run preflight -- --quick     # the node-only gates CI's "check" job runs (two seconds)
 ```
 
@@ -69,7 +70,7 @@ node tests/browser-tests.js                       # tests.html in Chromium, over
 
 CI runs the 390 × 844 smoke test too (the "smoke" job, on pull requests and on pushes to `main`); the iPhone 13 / SE profiles and the site build stay local, in `npm run preflight`.
 
-If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first).
+If you changed `site/`, `shared/`, `data.js` or `engine.js`: `cd site && npm ci && npm run check` (lint, typecheck, build; it re-syncs the shared files first, including the generated "How it decides" page and `docs/HOW_IT_DECIDES.md`). `npm run audit` adds the static export, the page check and Lighthouse + axe.
 
 Then open the result on a phone or at 390 px, in dark and light, and click the thing you built.
 
