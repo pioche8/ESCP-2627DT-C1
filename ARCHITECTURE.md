@@ -45,7 +45,7 @@ flowchart LR
 
 ## 1. Runtime: four scripts, one direction
 
-The app at the repository root is four classic scripts loaded in order by `index.html` (`engine.js → data.js → ai.js → app.js`), two stylesheets (`shared/tokens.css`, then `styles.css`) and vendored fonts. There is no bundler and no dependency, so the same files run from GitHub Pages, from `python3 -m http.server` and from `file://`. The scripts are ES5 throughout (no arrow functions, no optional chaining), which keeps older Safari in reach.
+The app at the repository root is five classic scripts loaded in order by `index.html` (`engine.js → data.js → ai.js → insights.js → app.js`; `insights.js` since 5 Nov, the win/loss arithmetic), two stylesheets (`shared/tokens.css`, then `styles.css`) and vendored fonts. There is no bundler and no dependency, so the same files run from GitHub Pages, from `python3 -m http.server` and from `file://`. The scripts are ES5 throughout (no arrow functions, no optional chaining), which keeps older Safari in reach.
 
 - **`data.js`** holds the fictional demo: the company profile, six tenders with their requirements (each with the original sentence, its translation, the page and a confidence), the "AI" summaries and Q&A, the certificate options and the 45 CPV divisions. Every buyer and the company name carry "(fictional)". The demo date is fixed at `2026-11-05` so days left never drift. Display-only fields (`doc`, `highlight`, `photo`) are ignored by the engine.
 - **`engine.js`** is the only code that decides. `checkRequirement()` gives each requirement a status (`pass`, `risk`, `fail`, `review`), `evaluate()` adds the four score parts (sector 40, size 20, requirements 30, time 10) and applies the verdict rules (closed, No-go with a cap of 25, Go from 70 with no open line and at most one risk, Maybe otherwise), `rank()` orders the feed. The functions added later (`reasonLine`, `headline`, `verdicts`, `diff`, `whatIf`) are pure functions on top of `evaluate()`, whose return shape is locked by a test. It is deterministic, written as UMD (`window.Engine` in the browser, `module.exports` in node) and runs unchanged in node, in the browser and inside the website.
@@ -65,7 +65,8 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 | `#/t/:id` | `detail` | `detail()`; `loadingDetail()` on the first open per session | `AI.readTender`, `Engine.evaluate`, `Engine.headline`; Ask this tender → `AI.ask` |
 | `#/t/:id/req/:rid` | `detail` + `sub: req` | `detail()` underneath, `reqSheet()` in the sheet layer | the owner's answer → `overrides`, then a re-render |
 | `#/t/:id/skip` | `detail` + `sub: skip` | `skipSheet()` | `skipConfirm()` → `skipped`, back to the Feed |
-| `#/bids` | `bids` | `bids()`, `bidCard()` | `Engine.evaluate` |
+| `#/bids` | `bids` | `bids()`, `bidCard()`, `insightsLink()` | `Engine.evaluate`, `Insights.summary` |
+| `#/insights` | `insights` | `insightsScreen()` | `Insights.summary` (no engine call) |
 | `#/company` | `company` | `company()`, `rescoreCard()`, `hints()` | every lever → `applyLever()` → `Engine.verdicts` + `Engine.diff`; hints → `Engine.whatIf` |
 | `#/settings`, `#/about` | `settings` | `settings()` | Reset writes a fresh state |
 | anything else | `notfound` | `notFound()` | |

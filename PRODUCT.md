@@ -34,6 +34,7 @@ This user is a hypothesis until the interviews say otherwise (§7).
 | answers an unclear line | "We meet it" or "We don't meet it" (with Undo); that tender is re-scored at once | same sheet | the rules, with the owner's answer stored per tender |
 | asks the tender a question | a plain answer with the page it comes from ("Can we subcontract?") | Tender → Ask this tender | simulated AI |
 | saves or skips | a pipeline of Deciding / Bidding / Submitted; skipping with optional reasons, and Restore | Bids (`#/bids`), Skip sheet (`#/t/:id/skip`) | stored on the phone |
+| looks back at past bids | the win rate, the value won, the win rate by area and why bids were lost (for example 6.8% above the winner on price) | Win/loss insights (`#/insights`, from Bids) | plain arithmetic over the fictional past bids (`insights.js`) |
 | changes the profile (turnover, references, four certificates, five bid languages, bidding abroad) | every tender re-scored at once, the one that flipped named ("Landkreis Hohenau · No-go → Go"), and hints saying what a lever would unlock | Company (`#/company`) | the rules |
 | wants to know what is real | what is simulated, what is real code, that all data is fictional, that the build was AI-assisted; light or dark; reset | Settings tab (`#/settings`, also `#/about`) | — |
 

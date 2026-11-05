@@ -4,7 +4,7 @@
  * engine.js decides every verdict; this file only renders and stores state. */
 (function () {
   'use strict';
-  var E = window.Engine, D = window.DEMO, AI = window.AI;
+  var E = window.Engine, D = window.DEMO, AI = window.AI, I = window.Insights;
   var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme (and a palette field kept for shape stability), plus notifiedOn (5 Nov, additive)
   var STAGES = ['Deciding', 'Bidding', 'Submitted'];
   var SKIP_REASONS = ['Too big for us', 'Missing a certificate', 'Wrong region', 'Not enough time', 'Price-only', 'Other'];
@@ -547,7 +547,57 @@
     }
     return '<div class="screen has-tabs">' + navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<div class="bids-head"><h1 class="screen-title" tabindex="-1">Bids</h1><p class="sub">' + esc(sub) + '</p></div>' +
-      body + fiction() + '</div>';
+      insightsLink() + body + fiction() + '</div>';
+  }
+  // The way into Win/loss insights: past results belong next to the pipeline, so it sits at the top of Bids.
+  function insightsLink() {
+    var s = I.summary(D.PAST_BIDS, TODAY);
+    return '<a class="insights-link" href="#/insights"><span class="txt"><span class="row-label">Win/loss insights</span>' +
+      '<span class="row-sub">' + s.won + ' of ' + s.submitted + ' won · ' + s.winRate + '% in the last 12 months</span></span>' +
+      icon('arrow_forward', 's22') + '</a>';
+  }
+
+  // ---------- 08b Win/loss insights (#/insights) ----------
+  // Win rate by area and why bids were lost, from the company's past bids. insights.js does the arithmetic (no AI);
+  // every past bid is fictional (data.js PAST_BIDS). The tab bar stays, with Bids active: this is a page of Bids.
+  var REASON_HINT = { reference: 'The buyer asked for a reference you did not have', unknown: 'Add the buyer’s feedback when it arrives' };
+  function sectorName(cpv) { var x = D.SECTORS.filter(function (s) { return s[0] === cpv; })[0]; return x ? x[1] : cpv; }
+  function insightsScreen() {
+    var s = I.summary(D.PAST_BIDS, TODAY);
+    var kpi = function (n, k) { return '<div class="kpi"><p class="n">' + esc(n) + '</p><p class="k">' + esc(k) + '</p></div>'; };
+    var areas = s.byArea.map(function (a) {
+      var name = sectorName(a.cpv);
+      return '<li class="area-row"><div class="area-top"><span class="area-name">' + esc(name) + '</span>' +
+        '<span class="area-n">' + a.won + ' of ' + a.total + ' won · ' + a.rate + '%</span></div>' +
+        '<div class="area-bar" aria-hidden="true"><span style="width:' + a.rate + '%"></span></div></li>';
+    }).join('');
+    var reasons = s.reasons.map(function (r) {
+      var sub = r.reason === 'price' && r.avgGap !== null ? r.avgGap + '% above the winner on average'
+        : r.reason === 'quality' && r.cheaper ? 'You were the cheaper bid in ' + r.cheaper + ' of ' + r.count
+        : REASON_HINT[r.reason] || '';
+      return '<div class="row"><div class="txt"><p class="row-label">' + esc(r.label) + '</p>' + (sub ? '<p class="row-sub">' + esc(sub) + '</p>' : '') + '</div>' +
+        '<p class="reason-n">' + r.count + '<span class="sr-only"> ' + (r.count === 1 ? 'bid' : 'bids') + '</span></p></div>';
+    }).join('');
+    var top = s.reasons[0];
+    var note = !top ? '' : top.reason === 'price' && s.priceGap !== null
+      ? 'You lose most often on <b>price</b>: ' + top.count + ' of ' + s.lost + ' lost bids, on average ' + s.priceGap + '% above the winner.'
+      : 'Most lost bids: <b>' + esc(top.label.toLowerCase()) + '</b>, ' + top.count + ' of ' + s.lost + '.';
+    var body = !s.submitted ? emptyState('No results yet', 'Win/loss insights appear once you have submitted bids and the results are out.')
+      : '<div class="kpis">' +
+          kpi(s.winRate + '%', 'Win rate · ' + s.won + ' of ' + s.submitted + ' won') +
+          kpi(money(s.valueWon), 'Contract value won') +
+          kpi(String(s.lost), s.lost === 1 ? 'Bid lost' : 'Bids lost') +
+          kpi(s.priceGap === null ? '–' : s.priceGap + '%', 'Above the winner when you lost on price') +
+        '</div>' +
+        '<div class="sec-h"><h2>Win rate by area</h2><span class="aside">won of submitted</span></div>' +
+        '<ul class="group" aria-label="Win rate by area">' + areas + '</ul>' +
+        (s.lost ? '<div class="sec-h"><h2>Why you lost</h2><span class="aside">' + plural(s.lost, 'bid') + '</span></div>' +
+          '<p class="insight-note">' + note + '</p><div class="group">' + reasons + '</div>' : '');
+    return '<div class="screen has-tabs"><div class="nav back-nav">' + backBtn() + '</div>' +
+      '<div class="bids-head"><h1 class="screen-title" tabindex="-1">Win/loss insights</h1>' +
+      '<p class="sub">' + plural(s.submitted, 'bid') + ' submitted in the last 12 months</p></div>' + body +
+      '<p class="caption insights-foot">In the full product the results come from the EU’s award notices and the reasons from your own debrief notes. The numbers are plain arithmetic, not AI. All past bids, buyers and prices are fictional.</p>' +
+      '</div>';
   }
   var enteringId = null;
   function bidCard(t, r, stage, i) {
@@ -842,7 +892,7 @@
       return { name: 'notfound' };
     }
     if (h.length === 1 && (h[0] === 'about' || h[0] === 'settings')) return { name: 'settings' }; // #/about stays a working deep link
-    if (h.length === 1 && ['feed', 'bids', 'company', 'profile'].indexOf(h[0]) !== -1) return { name: h[0] };
+    if (h.length === 1 && ['feed', 'bids', 'company', 'profile', 'insights'].indexOf(h[0]) !== -1) return { name: h[0] };
     return { name: 'notfound' };
   }
   // History bookkeeping, so in-app Back, sheet close and Skip go *back* instead of stacking new entries.
@@ -868,6 +918,7 @@
     var r = parse(), prev = stack[stack.length - 2];
     if (r.name === 'detail') { if (prev === '#/feed' || prev === '#/bids') backTo(prev, 1); else replaceTo('#/feed'); return; }
     if (r.name === 'onb' && r.step === 3) { backTo('#/welcome/1', 1); return; }
+    if (r.name === 'insights') { if (prev === '#/bids') backTo('#/bids', 1); else replaceTo('#/bids'); return; } // a page of Bids
     if (stack.length > 1) { pendingPops = 1; history.back(); return; }
     replaceTo(S.onboarded ? '#/feed' : '#/welcome/1');
   }
@@ -887,6 +938,7 @@
         case 'feed': html = feed(); break;
         case 'detail': html = detail(r.id); break;
         case 'bids': html = bids(); break;
+        case 'insights': html = insightsScreen(); break;
         case 'company': html = company(); break;
         case 'profile': html = profile(); break;
         case 'settings': html = settings(); break;
@@ -898,8 +950,8 @@
       $screen.classList.toggle('entering', isNew && top === 0);
       $screen.innerHTML = html;
       dirty = false; curKey = key;
-      var tabbed = S.onboarded && ['feed', 'bids', 'company', 'profile', 'settings'].indexOf(r.name) !== -1;
-      setTabs(tabbed ? r.name : null);
+      var tabbed = S.onboarded && ['feed', 'bids', 'company', 'profile', 'settings', 'insights'].indexOf(r.name) !== -1;
+      setTabs(tabbed ? (r.name === 'insights' ? 'bids' : r.name) : null); // Win/loss insights is a page of Bids
       $toast.style.setProperty('--toast-offset', (tabbed ? 76 : $screen.querySelector('.action-bar') ? 96 : 24) + 'px');
       if (isNew) {
         window.scrollTo(0, top);

@@ -278,6 +278,21 @@ async function run(scheme) {
   check((await text('.screen')).includes('All companies and tenders are fictional'), 'fictional line on Bids');
   await scan('bids'); await shot('bids');
 
+  // 08b Win/loss insights (a page of Bids, 5 Nov 2026): insights.js on the fictional past bids, pinned in tests/insights.test.js
+  check((await text('.insights-link')).includes('8 of 21 won · 38% in the last 12 months'), 'Bids links to Win/loss insights with the win rate');
+  await page.click('.insights-link');
+  await page.waitForSelector('.kpis');
+  const wl = await text('.screen');
+  check(wl.includes('38%') && wl.includes('8 of 21 won') && wl.includes('€2.3M') && wl.includes('6.8%'), 'Win/loss tiles: 38 %, 8 of 21 won, €2.3M, 6.8 % above the winner');
+  check((await page.locator('.area-row .area-name').allInnerTexts()).join(' | ') === 'Telecom equipment | IT services | Installation | Construction work', 'win rate by area, best first');
+  check(wl.includes('You lose most often on price: 6 of 13 lost bids, on average 6.8% above the winner.'), 'why you lost: price first, with the average gap to the winner');
+  check(wl.includes('fictional') && wl.includes('not AI'), 'Win/loss says the past bids are fictional and the numbers are not AI');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Bids', 'Win/loss keeps Bids active in the tab bar');
+  await scan('insights'); await shot('insights'); await shot('insights-full', true);
+  await page.click('button[data-act="back"]');
+  await page.waitForSelector('.bids-head');
+  check(page.url().endsWith('#/bids'), 'Back from Win/loss returns to Bids');
+
   // 10 Settings (the 4th tab; was About): the header ⓘ and the old #/about link both open it
   check(await page.locator('.tabbar a').count() === 5 && (await page.locator('.tabbar a span:not(.ms)').allInnerTexts()).join(' ') === 'Feed Bids Company Profile Settings', 'five tabs: Feed, Bids, Company, Profile, Settings');
   await page.click('.tabbar a[href="#/profile"]');
@@ -338,6 +353,12 @@ async function run(scheme) {
   await load('', '#/bids');
   await page.waitForSelector('text=No bids yet');
   await scan('bids-empty'); await shot('bids-empty');
+  check(await page.locator('.insights-link').count() === 1, 'the Win/loss link shows on an empty Bids too (past results are history)');
+  await load('', '#/insights');
+  await page.waitForSelector('.kpis');
+  await page.click('button[data-act="back"]');
+  await page.waitForSelector('.bids-head');
+  check(page.url().endsWith('#/bids'), 'deep link #/insights: Back lands on Bids');
   await load('', '#/company');
   await page.waitForSelector('.co-head');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Landkreis Hohenau becomes Maybe'), 'without the answer the hint says Maybe');

@@ -3,7 +3,7 @@
     "engine": "engine.js",
     "engineSha": "d156c3a5078b",
     "data": "data.js",
-    "dataSha": "1a0be5771fed",
+    "dataSha": "69f99e355be5",
     "demoToday": "2026-11-05"
   },
   "constants": {
@@ -513,6 +513,6 @@
     "engine": 24,
     "golden": 11,
     "invariantCases": 3000,
-    "smokeChecks": 129
+    "smokeChecks": 138
   }
 }

@@ -8,6 +8,8 @@
  * tender.photo (added 3 Nov, ignored by engine.js) = file name in assets/img/ for the card band, Bids thumbnail
  * and detail header. Two tenders have no photo yet and show a document placeholder instead.
  * SECTORS (added 3 Nov, display only) = the 45 EU CPV divisions, shared with the marketing website.
+ * PAST_BIDS (added 5 Nov, read by insights.js, ignored by engine.js) = the company's fictional bid results of the
+ * last 12 months, for the Win/loss screen.
  */
 (function (root) {
   'use strict';
@@ -241,6 +243,34 @@
     }
   };
 
-  root.DEMO = { DEMO_TODAY: DEMO_TODAY, PROFILE: PROFILE, TENDERS: TENDERS, CERT_OPTIONS: CERT_OPTIONS, SECTORS: SECTORS, COMPETITION: COMPETITION };
+  // Past bids of the demo company over the last 12 months (added 5 Nov 2026, read by insights.js for the Win/loss screen,
+  // ignored by engine.js). ALL FICTIONAL: buyers, titles, prices and outcomes are invented, not interview evidence.
+  // cpv = the CPV division (area); ourPrice = the price we bid; winnerPrice = the winning price from the award notice
+  // (lost bids; null when the notice gives none); reason = the owner's debrief note: price | quality | reference | unknown.
+  var PAST_BIDS = [
+    { id: 'pb-01', submitted: '2025-11-20', cpv: '72', title: 'IT support for 9 district offices', buyer: 'Landkreis Weißenau (fictional)', country: 'DE', ourPrice: 184000, outcome: 'won' },
+    { id: 'pb-02', submitted: '2025-12-11', cpv: '51', title: 'Wi-Fi installation in the town library', buyer: 'Stadt Rabenfeld (fictional)', country: 'DE', ourPrice: 268000, outcome: 'lost', winnerPrice: 253000, reason: 'price' },
+    { id: 'pb-03', submitted: '2026-01-08', cpv: '32', title: 'Network switches for the vocational college', buyer: 'Berufsschulzentrum Ostmark (fictional)', country: 'DE', ourPrice: 96500, outcome: 'won' },
+    { id: 'pb-04', submitted: '2026-01-22', cpv: '45', title: 'Cable ducts for the new fire station', buyer: 'Gemeinde Lindtal (fictional)', country: 'AT', ourPrice: 410000, outcome: 'lost', winnerPrice: 398000, reason: 'reference' },
+    { id: 'pb-05', submitted: '2026-02-05', cpv: '72', title: 'Service desk for the job centre', buyer: 'Jobcenter Saalegrund (fictional)', country: 'DE', ourPrice: 132000, outcome: 'lost', winnerPrice: 139500, reason: 'quality' },
+    { id: 'pb-06', submitted: '2026-02-19', cpv: '51', title: 'Access points for 6 secondary schools', buyer: 'Stadt Kirchhain am See (fictional)', country: 'DE', ourPrice: 312000, outcome: 'won' },
+    { id: 'pb-07', submitted: '2026-03-05', cpv: '72', title: 'Server room maintenance, 3 years', buyer: 'Stadtwerke Mühlbach (fictional)', country: 'DE', ourPrice: 214400, outcome: 'lost', winnerPrice: 200000, reason: 'price' },
+    { id: 'pb-08', submitted: '2026-03-19', cpv: '45', title: 'Fibre trench works for a business park', buyer: 'Gemeinde Hollerau (fictional)', country: 'AT', ourPrice: 142800, outcome: 'won' },
+    { id: 'pb-09', submitted: '2026-04-02', cpv: '32', title: 'Video intercom for town halls', buyer: 'Marktgemeinde Seewinkel (fictional)', country: 'AT', ourPrice: 92650, outcome: 'lost', winnerPrice: 85000, reason: 'price' },
+    { id: 'pb-10', submitted: '2026-04-16', cpv: '51', title: 'Campus Wi-Fi upgrade', buyer: 'Hochschule Elbtal (fictional)', country: 'DE', ourPrice: 176000, outcome: 'lost', winnerPrice: 181000, reason: 'quality' },
+    { id: 'pb-11', submitted: '2026-04-30', cpv: '72', title: 'Managed network for 14 schools, 4 years', buyer: 'Landkreis Weißenau (fictional)', country: 'DE', ourPrice: 455000, outcome: 'won' },
+    { id: 'pb-12', submitted: '2026-05-14', cpv: '45', title: 'Street cabinet installation', buyer: 'Stadt Rabenfeld (fictional)', country: 'DE', ourPrice: 333600, outcome: 'lost', winnerPrice: 300000, reason: 'price' },
+    { id: 'pb-13', submitted: '2026-05-28', cpv: '51', title: 'Structured cabling for the town hall annex', buyer: 'Stadt Grünwalde (fictional)', country: 'DE', ourPrice: 238000, outcome: 'won' },
+    { id: 'pb-14', submitted: '2026-06-11', cpv: '72', title: 'Hospital network operations', buyer: 'Klinikum Auental (fictional)', country: 'DE', ourPrice: 520000, outcome: 'lost', winnerPrice: 495000, reason: 'reference' },
+    { id: 'pb-15', submitted: '2026-06-25', cpv: '32', title: 'Radio links for water pumping stations', buyer: 'Wasserverband Oberes Tal (fictional)', country: 'DE', ourPrice: 71400, outcome: 'won' },
+    { id: 'pb-16', submitted: '2026-07-09', cpv: '51', title: 'Wi-Fi for 4 youth centres', buyer: 'Stadt Kirchhain am See (fictional)', country: 'DE', ourPrice: 125280, outcome: 'lost', winnerPrice: 120000, reason: 'price' },
+    { id: 'pb-17', submitted: '2026-07-23', cpv: '72', title: 'IT security audit support', buyer: 'Stadt Grünwalde (fictional)', country: 'DE', ourPrice: 98000, outcome: 'lost', winnerPrice: 94500, reason: 'quality' },
+    { id: 'pb-18', submitted: '2026-08-06', cpv: '45', title: 'Duct network for an industrial estate', buyer: 'Gemeinde Lindtal (fictional)', country: 'AT', ourPrice: 610000, outcome: 'lost', winnerPrice: 640000, reason: 'quality' },
+    { id: 'pb-19', submitted: '2026-08-20', cpv: '72', title: 'Network modernisation for 3 town halls', buyer: 'Stadt Rabenfeld (fictional)', country: 'DE', ourPrice: 820000, outcome: 'won' },
+    { id: 'pb-20', submitted: '2026-09-10', cpv: '32', title: 'Telephone system for the library', buyer: 'Stadt Ostbrück (fictional)', country: 'DE', ourPrice: 51550, outcome: 'lost', winnerPrice: 50000, reason: 'price' },
+    { id: 'pb-21', submitted: '2026-10-01', cpv: '51', title: 'Wi-Fi in 5 sports halls', buyer: 'Gemeinde Hollerau (fictional)', country: 'AT', ourPrice: 205000, outcome: 'lost', winnerPrice: null, reason: 'unknown' }
+  ];
+
+  root.DEMO = { DEMO_TODAY: DEMO_TODAY, PROFILE: PROFILE, TENDERS: TENDERS, CERT_OPTIONS: CERT_OPTIONS, SECTORS: SECTORS, COMPETITION: COMPETITION, PAST_BIDS: PAST_BIDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.DEMO;
 })(this);

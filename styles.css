@@ -401,6 +401,26 @@ html.sheet-open { overflow:hidden; }
 .skip-row .t { font:700 15px/20px var(--font-ui); }
 .skip-row .r { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
 
+/* ---------- Win/loss insights (#/insights, opened from Bids; 5 Nov 2026) ----------
+   Flat surfaces like every other block: KPI tiles, an area list with one solid brand bar per area, a reason list. */
+.insights-link { display:flex; align-items:center; gap:12px; min-height:60px; margin:14px 16px 0; padding:10px 16px; border-radius:var(--r); background:var(--c-surface); color:var(--c-ink); }
+.insights-link .txt { flex:1; min-width:0; display:flex; flex-direction:column; }
+.insights-link .ms { color:var(--c-brand); }
+.kpis { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 16px 0; }
+.kpi { min-width:0; padding:14px 16px; border-radius:var(--r); background:var(--c-surface); }
+.kpi .n { font:800 28px/32px var(--font-ui); }
+.kpi .k { margin-top:4px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.area-row { padding:12px 0; }
+.area-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.area-name { font:700 16px/21px var(--font-ui); min-width:0; }
+.area-n { font:500 14px/20px var(--font-ui); color:var(--c-muted); white-space:nowrap; }
+.area-bar { margin-top:8px; height:6px; border-radius:3px; background:var(--c-bg); overflow:hidden; }
+.area-bar > span { display:block; height:100%; border-radius:3px; background:var(--c-brand); }
+.insight-note { margin:0 20px 12px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
+.insight-note b { color:var(--c-ink); font-weight:700; }
+.reason-n { flex:none; font:800 22px/26px var(--font-ui); }
+.insights-foot { margin:24px 20px 0; }
+
 /* ---------- Company ---------- */
 .co-head { padding:6px 20px 0; }
 .co-head .counts { margin-top:18px; }

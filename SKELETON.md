@@ -138,6 +138,8 @@ First open per session: the verdict block is replaced by "Reading 64 pages (Germ
 [header]    TenderScout .......................... ◐  ⓘ
 [title]     Bids
 [sub]       1 saved · next deadline in 29 days
+[row]       Win/loss insights                                  →
+            8 of 21 won · 38% in the last 12 months          opens #/insights
 [section]   Deciding 1
 [card]      [100]  ● Go
                    Structured cabling and Wi-Fi for 12 primary schools
@@ -151,7 +153,31 @@ First open per session: the verdict block is replaced by "Reading 64 pages (Germ
 [caption]   All companies and tenders are fictional
 [tab bar]   Feed | Bids* | Company | Settings
 ```
-With nothing saved or skipped: "No bids yet" and "Open Feed".
+With nothing saved or skipped: the Win/loss row, then "No bids yet" and "Open Feed".
+
+### Win/loss insights · `#/insights` (a page of Bids)
+```
+[header]    ‹
+[title]     Win/loss insights
+[sub]       21 bids submitted in the last 12 months
+[tiles]     38%  Win rate · 8 of 21 won    | €2.3M  Contract value won
+            13   Bids lost                 | 6.8%   Above the winner when you lost on price
+[section]   Win rate by area ................... won of submitted
+[row]       Telecom equipment ........... 2 of 4 won · 50%   [bar]
+            IT services ................. 3 of 7 won · 43%   [bar]
+            Installation ................ 2 of 6 won · 33%   [bar]
+            Construction work ........... 1 of 4 won · 25%   [bar]
+[section]   Why you lost ............................ 13 bids
+[note]      You lose most often on price: 6 of 13 lost bids, on average 6.8% above the winner.
+[row]       Price · 6.8% above the winner on average ............. 6
+            Quality score on the concept · You were the cheaper bid in 3 of 4 ... 4
+            Missing a reference · The buyer asked for a reference you did not have ... 2
+            No feedback yet · Add the buyer’s feedback when it arrives ... 1
+[caption]   In the full product the results come from the EU’s award notices and the reasons from your own
+            debrief notes. The numbers are plain arithmetic, not AI. All past bids, buyers and prices are fictional.
+[tab bar]   Feed | Bids* | Company | Profile | Settings
+```
+Numbers from `insights.js` on `DEMO.PAST_BIDS` (fictional). Without past bids: "No results yet".
 
 ### Company · `#/company`
 ```
