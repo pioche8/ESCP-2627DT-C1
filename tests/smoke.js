@@ -276,7 +276,7 @@ async function run(scheme) {
   await scan('bids'); await shot('bids');
 
   // 10 Settings (the 4th tab; was About): the header ⓘ and the old #/about link both open it
-  check(await page.locator('.tabbar a').count() === 4 && (await text('.tabbar')).replace(/\s+/g, ' ').includes('Feed Bids Company Settings'), 'four tabs: Feed, Bids, Company, Settings');
+  check(await page.locator('.tabbar a').count() === 4 && (await page.locator('.tabbar a > span:not(.ms)').allInnerTexts()).join(' ') === 'Feed Bids Company Settings', 'four tabs: Feed, Bids, Company, Settings');
   check(await page.locator('.nav button[data-go="#/settings"]').count() === 1, 'the header ⓘ opens Settings');
   await page.click('.tabbar a[href="#/settings"]');
   await page.waitForSelector('.about-row');
@@ -349,6 +349,22 @@ async function run(scheme) {
   await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
   const readMs = Date.now() - t0;
   check(readMs < 1200 && await page.locator('.vhead .ai').count() === 1, 'fast mode: the tender is read in ' + readMs + ' ms with the "Simulated AI" label in place');
+
+  // Morning notification (simulated lock screen, once a day; CLAUDE.md §11 item 115)
+  await load('', '#/feed'); await page.waitForSelector('.feed-list');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: not shown again on the day a fresh state was written');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.notifiedOn = '2026-11-04'; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await load('', '#/feed'); await page.waitForSelector('.lockscreen');
+  check(await page.locator('.lockscreen[role="dialog"][aria-modal="true"]').count() === 1 && (await text('.lockscreen')).includes('Simulated notification') && (await text('.lockscreen')).includes('Thursday 5 November'), 'morning notification: first Feed open of a new day shows the simulated lock screen (dialog, "Simulated notification", the date)');
+  check((await page.locator('.notif').innerText()).replace(/\s+/g, ' ').includes('TenderScout now 1 Go 2 Maybe 3 No-go') && await page.locator('.notif .shape').count() === 3, 'morning notification: "1 Go · 2 Maybe · 3 No-go" from the engine, each with its shape');
+  await scan('morning-notification'); await shot('morning-notification');
+  await page.click('.notif'); await page.waitForTimeout(100);
+  check(!(await page.locator('.lockscreen').count()) && page.url().endsWith('#/feed'), 'morning notification: tapping it opens the Feed');
+  await load('', '#/feed'); await page.waitForSelector('.feed-list');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: once a day (a reload the same day does not show it again)');
+  await load('', '#/about'); await page.click('[data-act="morning"]'); await page.waitForSelector('.lockscreen');
+  await page.keyboard.press('Escape');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: Settings replays it and Escape closes it');
 
   // Touch targets: interactive elements smaller than 44 px (pseudo-element hit areas are not measured here)
   const small = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, input, [role="switch"]'))

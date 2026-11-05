@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   var E = window.Engine, D = window.DEMO, AI = window.AI;
-  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme (and a palette field kept for shape stability)
+  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme (and a palette field kept for shape stability), plus notifiedOn (5 Nov, additive)
   var STAGES = ['Deciding', 'Bidding', 'Submitted'];
   var SKIP_REASONS = ['Too big for us', 'Missing a certificate', 'Wrong region', 'Not enough time', 'Price-only', 'Other'];
   var LANG_OPTIONS = ['de', 'en', 'es', 'fr', 'nl'];
@@ -33,8 +33,10 @@
   // ---------- state ----------
   var mem = null; // in-memory fallback when storage is blocked
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  // notifiedOn = the day the morning notification last showed. A fresh state counts as notified today, so it first shows
+  // on the next day the app is opened (in the prototype "today" is fixed, so use ?demo=morning or About to see it).
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand' };
+    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand', notifiedOn: TODAY };
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -45,12 +47,19 @@
   function save() { dirty = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } }
   var S = load();
   if (THEMES.indexOf(themeParam) !== -1) { S.theme = themeParam; save(); }
-  var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both
+  var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both · ?demo=morning shows the morning notification once
   if (demoFlags.indexOf('reset') !== -1) {
     S = fresh(); if (THEMES.indexOf(themeParam) !== -1) S.theme = themeParam; save();
     if (demoFlags.indexOf('fast') !== -1) params.set('demo', 'fast'); else params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
+  }
+  if (demoFlags.indexOf('morning') !== -1) { // demo: play this morning's notification once, then drop the flag so a reload does not replay it
+    S.notifiedOn = ''; save();
+    var mf = demoFlags.filter(function (x) { return x && x !== 'morning'; });
+    if (mf.length) params.set('demo', mf.join(',')); else params.delete('demo');
+    var mqs = params.toString();
+    history.replaceState(null, '', location.pathname + (mqs ? '?' + mqs : '') + (location.hash || '#/feed'));
   }
 
   // session-only UI state
@@ -67,9 +76,9 @@
   // ---------- DOM ----------
   var $app = document.getElementById('app');
   $app.innerHTML = '<div id="screen"></div><div id="tabbar-root"></div><div id="sheet-root" class="sheet-root" hidden></div>' +
-    '<div id="toast-root" class="toast-root" role="status" aria-live="polite"></div>';
+    '<div id="toast-root" class="toast-root" role="status" aria-live="polite"></div><div id="notify-root" class="notify-root" hidden></div>';
   var $screen = document.getElementById('screen'), $tabs = document.getElementById('tabbar-root'),
-      $sheet = document.getElementById('sheet-root'), $toast = document.getElementById('toast-root');
+      $sheet = document.getElementById('sheet-root'), $toast = document.getElementById('toast-root'), $notify = document.getElementById('notify-root');
 
   // ---------- helpers ----------
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -691,6 +700,9 @@
       '<div class="about-intro"><h1 class="screen-title" tabindex="-1">Settings</h1></div>' +
       '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
         '<p class="label-text" id="lbl-theme">Light or dark</p><div class="tabs" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
+      '<div class="sec-h"><h2>Morning notification</h2></div><div class="group notify-row">' +
+        '<p>Once a day, after the overnight read, TenderScout tells you how many new tenders you qualify for. In this prototype it is shown inside the app, not sent to your phone.</p>' +
+        '<button class="btn btn-secondary btn-block" data-act="morning">Show this morning’s notification</button></div>' +
       '<div class="sec-h"><h2>Demo</h2></div>' +
       '<div class="about-actions settings-demo"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
       '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
@@ -709,6 +721,57 @@
       '<h1 class="sr-only" tabindex="-1">Not found</h1>' +
       emptyState('Page not found', 'That link matches no screen in TenderScout.', '<button class="btn btn-primary" data-go="#/feed">Open Feed</button>') + '</div>';
   }
+
+  // ---------- morning notification (simulated) ----------
+  // Once a day, after the overnight read, a lock-screen notification gives the day's counts: Go (you qualify),
+  // Maybe (something small is missing) and No-go (you don't qualify). Counts come from engine.js through openCounts().
+  // Simulated: shown inside the app as a lock screen; no push, no service worker, nothing leaves the phone.
+  var LONG_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var NOTIFY_TIME = '7:00';   // the notification goes out once the overnight read is done
+  var notifyShown = false, notifyFocus = null;
+  function longDate(iso) { var d = new Date(iso + 'T00:00:00Z'); return LONG_DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()]; }
+  function morningHTML() {
+    var c = openCounts(), n = c.go + c.maybe + c.nogo;
+    var item = function (v, label) { return '<span class="n-count v-' + v + '">' + shape(SHAPE[v]) + c[v] + ' ' + label + '</span>'; };
+    var spoken = 'TenderScout, now. ' + plural(n, 'new tender') + ' read overnight: ' + c.go + ' you qualify for (Go), ' +
+      c.maybe + ' missing something small (Maybe), ' + c.nogo + ' you don’t qualify for (No-go). Open the Feed.';
+    return '<div class="lockscreen" role="dialog" aria-modal="true" aria-labelledby="ls-time" data-act="notify-close">' +
+      '<div class="ls-top" data-stop><p class="ls-sim">Simulated notification</p>' +
+        '<button class="icon-btn ls-close" data-act="notify-close" aria-label="Close notification">' + icon('close', 's22') + '</button></div>' +
+      '<div class="ls-clock" data-stop><p class="ls-date">' + esc(longDate(TODAY)) + '</p><p class="ls-time" id="ls-time" tabindex="-1" aria-label="' + esc(longDate(TODAY)) + ', ' + NOTIFY_TIME + '">' + NOTIFY_TIME + '</p></div>' +
+      '<button class="notif" data-act="notify-open" aria-label="' + esc(spoken) + '">' +
+        '<span class="notif-icon" aria-hidden="true">' + icon('radar', 's24') + '</span>' +
+        '<span class="notif-body" aria-hidden="true"><span class="notif-head"><b>TenderScout</b><span class="notif-when">now</span></span>' +
+          '<span class="notif-counts">' + item('go', 'Go') + item('maybe', 'Maybe') + item('nogo', 'No-go') + '</span></span>' +
+      '</button>' +
+      '<p class="caption ls-foot" data-stop>Tap the notification to open your Feed · all tenders are fictional</p>' +
+    '</div>';
+  }
+  function showMorning() {
+    if (notifyShown) return;
+    notifyShown = true;
+    S.notifiedOn = TODAY; save();
+    notifyFocus = document.activeElement;
+    $notify.innerHTML = morningHTML(); $notify.hidden = false;
+    $screen.inert = true; $tabs.inert = true; $sheet.inert = true;
+    document.documentElement.classList.add('sheet-open');
+    void $notify.offsetHeight;
+    $notify.classList.add('open');
+    var t = document.getElementById('ls-time'); if (t) t.focus({ preventScroll: true });
+  }
+  function hideMorning(then) {
+    if (!notifyShown) return;
+    notifyShown = false;
+    $notify.classList.remove('open'); $notify.hidden = true; $notify.innerHTML = '';
+    $screen.inert = false; $tabs.inert = false; $sheet.inert = false;
+    if (!sheetKey) document.documentElement.classList.remove('sheet-open');
+    if (then) { then(); return; }
+    if (notifyFocus && document.body.contains(notifyFocus)) notifyFocus.focus({ preventScroll: true });
+    notifyFocus = null;
+  }
+  // Due once per day: onboarded, on the Feed, and not yet shown today. Not with the test-only ?today= (Closed state checks).
+  function morningDue(r) { return S.onboarded && r.name === 'feed' && S.notifiedOn !== TODAY && !params.get('today'); }
 
   // ---------- router ----------
   function parse() {
@@ -788,6 +851,7 @@
       afterRender(r);
     }
     syncSheet(r);
+    if (morningDue(r)) showMorning();
     var h1t = $screen.querySelector('h1');
     document.title = (h1t ? h1t.textContent + ' · ' : '') + 'TenderScout';
     firstRender = false;
@@ -893,6 +957,7 @@
     var el = e.target.closest('[data-go],[data-act],[data-filter],[data-confirm],[data-ask],[data-skip],[data-stage],[data-unskip],[data-cert],[data-lang],[data-ref]');
     if (!el) return;
     var d = el.dataset;
+    if (d.act === 'notify-close' && el.classList.contains('lockscreen') && e.target.closest('[data-stop],.notif')) return; // a tap on the clock or caption keeps it open
     if (d.act === 'close-sheet') { var stop = e.target.closest('[data-stop]'); if (stop && el.contains(stop)) return; } // click inside the sheet
     if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
     if (d.go) { e.preventDefault(); go(d.go); return; }
@@ -920,6 +985,9 @@
         break;
       case 'xb': applyLever('xb', function (p) { p.crossBorder = !p.crossBorder; }, el); break;
       case 'close-sheet': closeSheet(); break;
+      case 'morning': notifyShown = false; showMorning(); break;
+      case 'notify-close': hideMorning(); break;
+      case 'notify-open': hideMorning(function () { S.filter = 'all'; save(); if (parse().name === 'feed') render(true); else go('#/feed'); }); break;
       case 'skip-confirm': skipConfirm(d.id); break;
       case 'toast-action': var fn = toastFn; hideToast(); if (fn) fn(); break;
       case 'theme': S.theme = d.value; save(); applyTheme(); render(true); break;
@@ -962,6 +1030,7 @@
     }
   });
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && notifyShown) { e.preventDefault(); hideMorning(); return; }
     if (e.key === 'Escape' && sheetKey) { e.preventDefault(); closeSheet(); return; }
     if (e.key === 'Enter' && e.target.dataset && e.target.dataset.field === 'turnover') { e.target.blur(); return; }
     // Arrow keys move between options in radio groups (filter, stage, appearance)
