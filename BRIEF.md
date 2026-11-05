@@ -29,10 +29,10 @@ ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skip
 5. **Profile as a lever:** add ISO 27001 or a consortium partner, and every verdict updates instantly. This shows which certificate is worth getting.
 
 ## Product objectives and success metric
-> Every target in this section is an **ASSUMPTION (untested)**. They are the numbers we would test against, not results. The evidence in [`evidence.md`](evidence.md) sets the real thresholds once interviews are logged. Which figures in the brief are real and which are fictional or assumed: [`docs/design/REAL_AND_FICTIONAL.md`](docs/design/REAL_AND_FICTIONAL.md).
+> Every target in this section is an **ASSUMPTION (untested)**. They are the numbers we would test against, not results. The evidence in [`evidence.md`](evidence.md) sets the real thresholds once interviews are logged. Real or fictional, figure by figure: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 **North-star metric: qualification checks completed per firm per week.** A check counts as completed when the owner records a decision on a tender they opened: saved it to Bids, or skipped it (with or without a reason). This tracks the value TenderScout promises, a decision on "can we even bid on this?" backed by the page that proves it. It does not track attention. Opening the app, scrolling the Feed or reading a summary without deciding gives the firm nothing. More completed checks per week means screening got cheaper (H1) and the answer was good enough to act on (H2).
-Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The only real user data so far, one self-reported survey answer (S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews), n = 1, not gate evidence), read 3–5 tenders in a whole year. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
+Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The only survey answer so far (S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews), n = 1, not gate evidence), read 3–5 tenders in a whole year. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
 
 **Supporting metrics**, each tied to something the prototype already does:
 

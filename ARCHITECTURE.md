@@ -1,6 +1,6 @@
 # TenderScout architecture
 
-One page on how the prototype is put together: what decides, what is simulated, where state lives, how the website shares the same code, how it is tested, deployed and rolled back. Written 5 Nov 2026 for the workshop; the rules themselves are in [`CLAUDE.md`](../CLAUDE.md) §4–§7 and the decision log in §11. Routes and flows are in [`docs/NAVIGATION.md`](NAVIGATION.md); the decision model, generated from the code, is in [`docs/HOW_IT_DECIDES.md`](HOW_IT_DECIDES.md).
+One page on how the prototype is put together: what decides, what is simulated, what is real and what is fictional, where state lives, how the website shares the same code, how it is tested, deployed and rolled back. Written 5 Nov 2026 for the workshop; the rules themselves are in [`CLAUDE.md`](CLAUDE.md) §4–§7 and the decision log in §11. Routes and flows are in [`docs/NAVIGATION.md`](docs/NAVIGATION.md); the decision model, generated from the code, is in [`docs/HOW_IT_DECIDES.md`](docs/HOW_IT_DECIDES.md).
 
 ```mermaid
 flowchart LR
@@ -48,7 +48,7 @@ The app at the repository root is four classic scripts loaded in order by `index
 - **`ai.js`** stands in for the language model: the three jobs that would need one (reading a tender pack, answering a question, drafting the profile) return pre-written output from `data.js` after a short delay, with `simulated: true` so the UI can label it. `?demo=fast` shortens the delays. Nothing calls a model; there are no keys.
 - **`app.js`** renders the screens from the engine's results, routes on the URL hash, and stores state. It never computes a verdict itself. Every interactive element carries a `data-*` attribute (`data-go`, `data-act`, `data-filter`, `data-confirm`, `data-ask`, `data-skip`, `data-stage`, `data-unskip`, `data-cert`, `data-lang`, `data-ref`, `data-field`), and one delegated click handler dispatches on them.
 
-The split is the product's honesty claim: the AI reads, the rules decide. The About screen says so, "Simulated AI" is written next to every piece of AI output, and `tests/data-check.js` asserts that both labels are still rendered.
+The split is the product's honesty claim: the AI reads, the rules decide. The About screen says so, "Simulated AI" is written next to every piece of AI output, and `tests/data-check.js` asserts that both labels are still rendered. Which data in the repository is real and which is fictional: [§9](#9-what-is-real-and-what-is-fictional).
 
 ## 2. Screens and routes
 
@@ -63,7 +63,7 @@ The split is the product's honesty claim: the AI reads, the rules decide. The Ab
 | `#/company` | Profile levers; every change re-scores all tenders and shows the one that flipped | the hero moment: ISO 27001 → Hohenau No-go → Go |
 | `#/about` | What is simulated, what is real, that data is fictional, AI-assisted build; Appearance; Reset demo | |
 
-Bottom tabs Feed / Bids / Company are hidden during onboarding, on a tender and on About. Unknown routes show "Page not found". Full flows and states: [`docs/NAVIGATION.md`](NAVIGATION.md).
+Bottom tabs Feed / Bids / Company are hidden during onboarding, on a tender and on About. Unknown routes show "Page not found". Full flows and states: [`docs/NAVIGATION.md`](docs/NAVIGATION.md).
 
 ## 3. State
 
@@ -79,7 +79,7 @@ One `localStorage` key, **`tenderscout.v2`**: `{ onboarded, profile, website, ov
 | `?today=YYYY-MM-DD` | moves the demo date (shows the Closed state); tests only |
 | `?offline=1` | shows the offline note; tests only |
 
-The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` ([`BRIEF.md`](../BRIEF.md)).
+The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` ([`BRIEF.md`](BRIEF.md)).
 
 ## 5. Design tokens: one source, two products
 
@@ -117,3 +117,17 @@ git push --force-with-lease origin release/v1-workshop:main
 ```
 
 Older rollback points are the `backup/*` branches. Every later change reaches `main` through a pull request with CI green, so the demo cannot break by accident.
+
+## 9. What is real and what is fictional
+
+The code is real, the demo data it runs on is fictional, and the only real user data so far is one survey answer. Every number, name and example in this repository's documents is one of five kinds:
+
+| Kind | What | Details in | Evidence about users? |
+|---|---|---|---|
+| **Real: user data** | Survey response S1 (one respondent, self-reported); no interviews yet | [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews) | Yes, as signals only, outside the gate |
+| **Real: desk research** | The European Court of Auditors' figures on EU procurement, the competitors, the 45 CPV divisions | [`evidence.md` §5](evidence.md#5-desk-research-separate-from-interview-evidence) (sources and access dates) | Context only. The smaller competitors and "eForms mandatory on TED since Oct 2023" in [`BRIEF.md`](BRIEF.md) have no source in §5 yet |
+| **Real: code and measurements** | The rules, score and verdicts, the screens, the test results | §1 and §7 above | It proves how the prototype behaves, not that anyone needs it. The weights and thresholds are design choices, not set by evidence |
+| **Fictional** | The company, the six tenders and their buyers, every quote, translation, page number, confidence value and AI answer, and so every demo number the engine computes from them (Hohenau 25 → 90 → 100, 777 pages); the website's weekly sector counts | `data.js`, `site/src/data/sectors.ts` | No. The app marks it "(fictional)", "All companies and tenders are fictional" and "Simulated AI"; the website says "illustrative" |
+| **ASSUMPTION** | The metric targets, prices, bid cost and screening time | [`BRIEF.md`](BRIEF.md) | No. These are what the interviews have to test |
+
+**The rule:** fictional data may show how the product behaves, never that users need it.

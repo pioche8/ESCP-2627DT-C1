@@ -32,7 +32,7 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 | `docs/design/` | [`UX_PLANES.md`](design/UX_PLANES.md): Garrett's five planes (strategy, scope, structure, skeleton, surface) mapped to the files that cover each, with a status; `USER_STORIES.md` (from the brief, not from interviews yet); `CONTENT_REQUIREMENTS.md` (every piece of content, its source of truth and who produces it). T9 and T10 add `PERSONA.md` and `JOURNEY.md` here. | You log interviews (add their links to the stories and update the planes' status), or you finish T9 or T10. |
 | `BRIEF.md`, `evidence.md` | The pitch and the 75-second demo script; the interview evidence and the gate. | After every interview. |
 | `README.md`, `CLAUDE.md`, `DESIGN.md`, `design/` | Project overview and AI-use disclosure; the build handoff with the rules and the decision log; the visual spec and the designer's handoffs. | Read before you build. |
-| `ARCHITECTURE.md`, `docs/HOW_IT_DECIDES.md` | One page with a diagram on how the pieces fit (data → engine → screens, tokens, state, URL parameters, gates, deploy and rollback); the decision model generated from the engine (`node shared/how-it-decides.js`, also the website's `/how` page). | You need the big picture, or you explain a verdict to someone. |
+| `ARCHITECTURE.md`, `docs/HOW_IT_DECIDES.md` | One page with a diagram on how the pieces fit (data → engine → screens, tokens, state, URL parameters, gates, deploy and rollback) and, in §9, what is real and what is fictional; the decision model generated from the engine (`node shared/how-it-decides.js`, also the website's `/how` page). | You need the big picture, or you explain a verdict to someone. |
 
 ## 3. The rules (read, don't restate)
 
