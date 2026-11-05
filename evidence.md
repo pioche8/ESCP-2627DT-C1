@@ -5,7 +5,7 @@ Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 
 > **Integrity rules.** Every entry below comes from a real interview held by the named team member. No AI-generated or "illustrative" interviews. Names and companies are anonymised. Figures are only those the interviewee gave; anything else is marked ASSUMPTION. Demo data in the prototype is fictional and is **not** evidence.
 >
-> **Real or fictional, for every figure in the repo:** [`docs/design/REAL_AND_FICTIONAL.md`](docs/design/REAL_AND_FICTIONAL.md). Today the only real user data is the one survey answer in §1b; there are no interviews yet.
+> **Real or fictional, for every figure in the repo:** [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional). Today the only real user data is the one survey answer in §1b; there are no interviews yet.
 
 ## 0. Hypotheses and kill gate (written BEFORE interview #1, tagged `v0-shell`)
 TODO: Tag `v0-shell` only if no interview happened before this commit.

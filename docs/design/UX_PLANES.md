@@ -2,7 +2,7 @@
 
 Jesse James Garrett's *The Elements of User Experience* splits a product into five planes. They run from the abstract (strategy, at the bottom) to the concrete (surface, at the top), and each plane is built on the decisions of the one below it. Each plane has a "product as functionality" side and a "product as information" side. This page maps every element to the files that cover it in this repository, and says what is missing.
 
-**Real or fictional:** the documents mapped here describe real code, but every example in them runs on fictional demo data, and the only real user data so far is one survey answer (S1). Which figure comes from where: [`REAL_AND_FICTIONAL.md`](REAL_AND_FICTIONAL.md).
+**Real or fictional:** the documents mapped here describe real code, but every example in them runs on fictional demo data, and the only real user data so far is one survey answer (S1). Which figure comes from where: [`ARCHITECTURE.md` §9](../../ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 Status: **Covered** = a file exists and matches the prototype. **Partial** = a file exists, but the evidence it needs does not yet. **Pending** = waits for real interviews, on purpose.
 
