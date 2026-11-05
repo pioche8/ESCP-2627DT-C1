@@ -3,8 +3,8 @@
  * TenderScout · shared/build-tokens.js
  * Reads shared/tokens.json (the only place colours, type, radius, easing and durations are written) and emits:
  *   shared/tokens.css                 custom properties for the app (plain stylesheet, no build step, works from file://)
- *   site/src/styles/tokens.css        the same values as a Tailwind v4 @theme block + :root for the website
- *   site/src/generated/tokens.ts      the JSON as a typed TS module (PhoneDemo, Map, VerdictTile read colours from it)
+ *   (not the website: since 5 Nov 2026 site/src/styles/tokens.css and site/src/generated/tokens.ts are the frozen 3 Nov
+ *    originals, restored with the original website design; they are edited by hand, CLAUDE.md §11 item 103)
  *   .design-cache/tenderscout.md      token sheet for the design-drift scanner (gitignored, session-local)
  * Run: node shared/build-tokens.js      (also runs from site/: `npm run tokens`)
  */
@@ -61,43 +61,12 @@ function schemeVars(scheme) {
 
 /* ---------- 1. shared/tokens.css (the app) ---------- */
 const def = T.color.default, other = T.color.schemes.filter((s) => s !== def)[0];
-const sharedCss = '/* ' + stamp + '\n * The app loads this file before styles.css; the website imports the same values through site/src/styles/tokens.css.\n' +
+const sharedCss = '/* ' + stamp + '\n * The app loads this file before styles.css. The website keeps its own tokens (site/src/styles/tokens.css).\n' +
   ' * Schemes: <html data-scheme="light|dark">. Default: ' + def + '. */\n' +
   ':root {\n' + sharedVars() + '\n}\n' +
   ':root, [data-scheme="' + def + '"] {\n' + schemeVars(def) + '\n}\n' +
   '[data-scheme="' + other + '"] {\n' + schemeVars(other) + '\n}\n';
 fs.writeFileSync(path.join(__dirname, 'tokens.css'), sharedCss);
-
-/* ---------- 2. site/src/styles/tokens.css (Tailwind v4 @theme; the site uses the dark scheme) ---------- */
-function tailwindTheme() {
-  const l = [], t = T.color.themes[T.color.site];
-  l.push('  --color-*: initial;'); // only TenderScout colours become utilities (bg-ts-bg, text-ts-muted …)
-  COLORS.forEach((k) => l.push('  --color-ts-' + k + ': ' + t[k] + ';'));
-  l.push('  --color-transparent: transparent; --color-current: currentColor;');
-  l.push('  --font-ui: ' + T.font.family.ui + ';');
-  l.push('  --font-icon: ' + T.font.family.icon + ';');
-  l.push('  --radius-*: initial; --radius-base: ' + T.radius.base + ';');
-  l.push('  --shadow-*: initial;');
-  l.push('  --ease-*: initial;');
-  Object.keys(T.easing).filter((k) => !k.startsWith('$')).forEach((k) => l.push('  --ease-' + kebab(k) + ': ' + T.easing[k] + ';'));
-  Object.keys(T.type.site).forEach((k) => {
-    const s = T.type.site[k], n = 'ts-' + kebab(k);
-    l.push('  --text-' + n + ': ' + s.size + '; --text-' + n + '--line-height: ' + s.line + '; --text-' + n + '--font-weight: ' + s.weight + ';');
-  });
-  l.push('  --breakpoint-*: initial; --breakpoint-sm: 390px; --breakpoint-md: 768px; --breakpoint-lg: 1024px; --breakpoint-xl: 1440px;');
-  l.push('  --container-site: ' + T.layout.site.maxWidth + ';');
-  return l.join('\n');
-}
-const siteCss = '/* ' + stamp + ' */\n@theme {\n' + tailwindTheme() + '\n}\n:root {\n' + sharedVars() + '\n' + schemeVars(T.color.site) + '\n}\n';
-const siteStyles = path.join(ROOT, 'site', 'src', 'styles');
-if (fs.existsSync(path.join(ROOT, 'site'))) {
-  fs.mkdirSync(siteStyles, { recursive: true });
-  fs.writeFileSync(path.join(siteStyles, 'tokens.css'), siteCss);
-  const gen = path.join(ROOT, 'site', 'src', 'generated');
-  fs.mkdirSync(gen, { recursive: true });
-  const clean = JSON.parse(JSON.stringify(T, (k, v) => (k.startsWith('$') ? undefined : v)));
-  fs.writeFileSync(path.join(gen, 'tokens.ts'), '// ' + stamp + '\nexport const tokens = ' + JSON.stringify(clean, null, 2) + ' as const;\nexport type Tokens = typeof tokens;\nexport default tokens;\n');
-}
 
 /* ---------- 3. design-drift cache (tokens the scanner can parse) ---------- */
 const hexes = new Set();
@@ -113,4 +82,4 @@ const md = ['# TenderScout design system (generated from shared/tokens.json v' +
 fs.mkdirSync(path.join(ROOT, '.design-cache'), { recursive: true });
 fs.writeFileSync(path.join(ROOT, '.design-cache', 'tenderscout.md'), md);
 
-console.log('tokens: shared/tokens.css (' + sharedCss.length + ' B)' + (fs.existsSync(path.join(ROOT, 'site')) ? ', site/src/styles/tokens.css, site/src/generated/tokens.ts' : '') + ', .design-cache/tenderscout.md · ' + hexes.size + ' colours');
+console.log('tokens: shared/tokens.css (' + sharedCss.length + ' B)' + ', .design-cache/tenderscout.md · ' + hexes.size + ' colours');

@@ -27,14 +27,14 @@ jobs:
         run: node tests/demo-golden.test.js
       - name: Engine invariants (seeded property test)
         run: node tests/engine-invariants.test.js
-      - name: Declutter scan (static, five stylesheets)
+      - name: Declutter scan (static, the app's two stylesheets)
         run: node tests/declutter-scan.js
       - name: WCAG AA audit of shared/tokens.json
         run: node shared/check-contrast.js
-      - name: Generated token files match shared/tokens.json
+      - name: Generated token file matches shared/tokens.json
         run: |
           node shared/build-tokens.js
-          git diff --exit-code -- shared/tokens.css site/src/styles/tokens.css site/src/generated/tokens.ts
+          git diff --exit-code -- shared/tokens.css
       - name: Generated decision-model files match engine.js and data.js
         run: |
           node shared/how-it-decides.js

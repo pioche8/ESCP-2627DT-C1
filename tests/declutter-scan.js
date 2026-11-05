@@ -14,7 +14,9 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const CSS_FILES = ['styles.css', 'shared/tokens.css', 'site/src/styles/components.css', 'site/src/styles/tokens.css', 'site/src/app/globals.css'];
+// The app only: since 5 Nov 2026 the website is back to its original 3 Nov design, which the declutter brief does not cover
+// (CLAUDE.md §11 item 103).
+const CSS_FILES = ['styles.css', 'shared/tokens.css'];
 
 /* ---------- static CSS scan ---------- */
 function stripComments(css) { return css.replace(/\/\*[\s\S]*?\*\//g, ''); }

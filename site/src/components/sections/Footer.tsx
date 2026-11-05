@@ -10,15 +10,18 @@ export function Footer() {
   );
   return (
     <footer className="footer">
-      <div className="wrap footer-top">
-        <div className="footer-brand">
-          <Wordmark size={20} />
-          <p className="footer-blurb">{footer.blurb}</p>
+      <div className="wrap footer-inner">
+        <div className="footer-top">
+          <div className="footer-brand">
+            <Wordmark size={20} />
+            <p className="footer-blurb">{footer.blurb}</p>
+          </div>
+          <nav className="foot-cols" aria-label="Footer">
+            {col('PRODUCT', footer.product)}
+            {col('PROJECT', footer.project)}
+          </nav>
         </div>
-        <nav className="foot-cols" aria-label="Footer">
-          {col('Product', footer.product)}
-          {col('Project', footer.project)}
-        </nav>
+        <div className="footer-wordmark" aria-hidden="true" />
       </div>
     </footer>
   );
