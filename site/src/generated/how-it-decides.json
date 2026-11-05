@@ -513,6 +513,6 @@
     "engine": 24,
     "golden": 11,
     "invariantCases": 3000,
-    "smokeChecks": 113
+    "smokeChecks": 116
   }
 }
