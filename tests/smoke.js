@@ -279,7 +279,11 @@ async function run(scheme) {
   await scan('bids'); await shot('bids');
 
   // 10 Settings (the 4th tab; was About): the header ⓘ and the old #/about link both open it
-  check(await page.locator('.tabbar a').count() === 4 && (await page.locator('.tabbar a span:not(.ms)').allInnerTexts()).join(' ') === 'Feed Bids Company Settings', 'four tabs: Feed, Bids, Company, Settings');
+  check(await page.locator('.tabbar a').count() === 5 && (await page.locator('.tabbar a span:not(.ms)').allInnerTexts()).join(' ') === 'Feed Bids Company Profile Settings', 'five tabs: Feed, Bids, Company, Profile, Settings');
+  await page.click('.tabbar a[href="#/profile"]');
+  await page.waitForSelector('.profile-card');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Profile' && (await text('.screen')).includes('Nordlicht Netzwerk GmbH') && await page.locator('.screen [data-go="#/company"].btn-block').count() === 1, 'Profile tab: the company profile and Edit on Company');
+  await scan('profile'); await shot('profile');
   check(await page.locator('.nav button[data-go="#/settings"]').count() === 1, 'the header ⓘ opens Settings');
   await page.click('.tabbar a[href="#/settings"]');
   await page.waitForSelector('.about-row');

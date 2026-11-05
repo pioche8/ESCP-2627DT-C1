@@ -149,7 +149,7 @@
   }
   function backBtn() { return '<button class="icon-btn" data-act="back" aria-label="Back">' + icon('chevron_left', 's22') + '</button>'; }
   // The bottom tab bar: full width, icon + label; the active tab is brand-coloured with a filled icon and a bolder label.
-  var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company'], ['settings', '#/settings', 'tune', 'Settings']];
+  var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company'], ['profile', '#/profile', 'badge', 'Profile'], ['settings', '#/settings', 'tune', 'Settings']];
   function setTabs(active) {
     if (!active) { $tabs.innerHTML = ''; return; }
     if (!$tabs.querySelector('.tabbar')) {
@@ -221,21 +221,38 @@
   // ---------- 03 Check your profile ----------
   function checkProfile() {
     var p = S.profile;
-    var kv = function (k, v) { return '<div class="kv"><p class="k">' + k + '</p><p class="v">' + esc(v) + '</p></div>'; };
     return '<div class="screen has-bar">' +
       '<div class="nav back-nav">' + backBtn() + '<span class="spacer"></span>' + ai() + '<span style="width:12px"></span></div>' +
       '<div class="gutter"><h1 class="screen-title" tabindex="-1">Check your profile</h1>' +
       '<p class="sub">Drafted from ' + esc(S.website || p.website || 'your website') + '. Fix anything that’s off.</p></div>' +
-      '<section class="card profile-card" aria-label="Drafted company profile">' +
+      profileCard(p, 'Drafted company profile', true) +
+      '</div>' +
+      '<div class="action-bar"><button class="btn btn-secondary" data-go="#/company">Edit</button><button class="btn btn-primary" data-act="finish">Looks right</button></div>';
+  }
+
+  // The company profile card: on Check your profile (with the AI's sources) and on the Profile tab (without them).
+  function profileCard(p, label, withSources) {
+    var kv = function (k, v) { return '<div class="kv"><p class="k">' + k + '</p><p class="v">' + esc(v) + '</p></div>'; };
+    return '<section class="card profile-card" aria-label="' + label + '">' +
         '<div><p class="co-name">' + esc(p.name) + '</p><p class="meta-text">' + esc(p.city) + '</p></div>' +
         '<div class="stat-row"><div><b>' + p.staff + '</b><span>Staff</span></div><div><b>' + money(p.turnover) + '</b><span>Turnover</span></div><div><b>' + p.references + '</b><span>References</span></div></div>' +
         kv('Sectors', p.sectorsLabel.join(', ')) +
         kv('Certificates', p.certifications.length ? p.certifications.join(', ') : 'None yet') +
         kv('Bid languages', p.languages.map(E.langName).join(', ')) +
         kv('Countries', p.countries.map(E.countryName).join(', ') + (p.crossBorder ? ', cross-border' : '')) +
-        '<p class="meta-text">Sources: ' + esc(S.website || 'nordlicht-netzwerk.example') + ', 18 pages, ' + plural(p.references, 'award notice') + ' (fictional)</p>' +
-      '</section></div>' +
-      '<div class="action-bar"><button class="btn btn-secondary" data-go="#/company">Edit</button><button class="btn btn-primary" data-act="finish">Looks right</button></div>';
+        (withSources ? '<p class="meta-text">Sources: ' + esc(S.website || 'nordlicht-netzwerk.example') + ', 18 pages, ' + plural(p.references, 'award notice') + ' (fictional)</p>' : '') +
+      '</section>';
+  }
+
+  // ---------- Profile (4th tab): the company profile at a glance; changes happen on Company ----------
+  function profile() {
+    return '<div class="screen has-tabs">' +
+      navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
+      '<div class="gutter"><h1 class="screen-title" tabindex="-1">Profile</h1>' +
+      '<p class="sub">What TenderScout checks every tender against.</p></div>' +
+      profileCard(S.profile, 'Company profile', false) +
+      '<div class="about-actions"><button class="btn btn-secondary btn-block" data-go="#/company">Edit on Company</button></div>' +
+      '</div>';
   }
 
   // ---------- 04 Feed ----------
@@ -785,7 +802,7 @@
       return { name: 'notfound' };
     }
     if (h.length === 1 && (h[0] === 'about' || h[0] === 'settings')) return { name: 'settings' }; // #/about stays a working deep link
-    if (h.length === 1 && ['feed', 'bids', 'company'].indexOf(h[0]) !== -1) return { name: h[0] };
+    if (h.length === 1 && ['feed', 'bids', 'company', 'profile'].indexOf(h[0]) !== -1) return { name: h[0] };
     return { name: 'notfound' };
   }
   // History bookkeeping, so in-app Back, sheet close and Skip go *back* instead of stacking new entries.
@@ -831,6 +848,7 @@
         case 'detail': html = detail(r.id); break;
         case 'bids': html = bids(); break;
         case 'company': html = company(); break;
+        case 'profile': html = profile(); break;
         case 'settings': html = settings(); break;
         default: html = notFound();
       }
@@ -840,7 +858,7 @@
       $screen.classList.toggle('entering', isNew && top === 0);
       $screen.innerHTML = html;
       dirty = false; curKey = key;
-      var tabbed = S.onboarded && ['feed', 'bids', 'company', 'settings'].indexOf(r.name) !== -1;
+      var tabbed = S.onboarded && ['feed', 'bids', 'company', 'profile', 'settings'].indexOf(r.name) !== -1;
       setTabs(tabbed ? r.name : null);
       $toast.style.setProperty('--toast-offset', (tabbed ? 76 : $screen.querySelector('.action-bar') ? 96 : 24) + 'px');
       if (isNew) {
