@@ -67,6 +67,8 @@ Subscription per company: **€49/month** (1 user, 2 countries) or **€149/mont
 
 ## 75-second demo (on a real phone, after `?demo=reset,fast`)
 Open `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` (`?demo=fast` alone keeps your state). `fast` shortens the two simulated AI waits (profile draft, tender reading) to about 300 ms so the path fits in 75 seconds; the "Simulated AI" labels and everything else are unchanged.
+
+**Home-screen icon (optional):** in Safari, Share → Add to Home Screen once. The icon opens the app full screen (standalone mode: no address bar, no browser chrome) and always starts at `?demo=reset,fast`, so the icon itself is the demo launcher: tap it, and the 7 steps below begin on a clean Welcome. There is no offline copy (no service worker), so the phone still needs the network for the first load. If you need the address bar (for `?today=` or `?theme=`), open the URL in Safari instead.
 1. Welcome → "Draft my profile" → reading → "Looks right" (10 s)
 2. Feed: "1 Go · 2 Maybe · 3 No-go, read 777 pages in 4 languages" (5 s)
 3. Open the **Go** tender → the qualification check → tap a line → original German sentence + translation + page (15 s)
