@@ -279,7 +279,7 @@ async function run(scheme) {
   await scan('bids'); await shot('bids');
 
   // 10 Settings (the 4th tab; was About): the header ⓘ and the old #/about link both open it
-  check(await page.locator('.tabbar a').count() === 4 && (await text('.tabbar')).replace(/\s+/g, ' ').includes('Feed Bids Company Settings'), 'four tabs: Feed, Bids, Company, Settings');
+  check(await page.locator('.tabbar a').count() === 4 && (await page.locator('.tabbar a span:not(.ms)').allInnerTexts()).join(' ') === 'Feed Bids Company Settings', 'four tabs: Feed, Bids, Company, Settings');
   check(await page.locator('.nav button[data-go="#/settings"]').count() === 1, 'the header ⓘ opens Settings');
   await page.click('.tabbar a[href="#/settings"]');
   await page.waitForSelector('.about-row');
