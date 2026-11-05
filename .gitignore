@@ -5,3 +5,6 @@ site/screenshots/
 site/lighthouse/
 
 node_modules/
+
+# design/figma/capture.js + make-batches.js output (regenerated; never imported as a picture of a screen)
+design/figma/out/

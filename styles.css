@@ -266,7 +266,7 @@ html.sheet-open { overflow:hidden; }
 .empty.compact { padding:24px 28px; }
 
 /* ---------- Tender detail ---------- */
-.vhead { padding:calc(var(--safe-top) + 6px) 20px 8px; }
+.vhead { padding:6px 20px 8px; } /* the top inset is already on .screen: adding it here doubled the gap on a home-screen iPhone */
 .vhead-nav { height:48px; display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 -8px; }
 .vhead-verdict { display:flex; align-items:center; gap:8px; margin-top:18px; font:700 17px/22px var(--font-ui); color:var(--v); }
 .vhead-score { display:flex; align-items:baseline; gap:8px; margin-top:4px; color:var(--v); }
@@ -275,7 +275,7 @@ html.sheet-open { overflow:hidden; }
 .vhead-reason { margin-top:12px; font:600 18px/25px var(--font-ui); max-width:32ch; color:var(--c-ink); }
 .v-closed .vhead-reason { color:var(--c-muted); }
 .closed-word { margin-top:4px; font:800 48px/1 var(--font-ui); color:var(--c-muted); }
-.detail-photo { margin:16px 16px 0; height:160px; }
+.detail-photo { width:calc(100% - 32px); margin:16px 16px 0; height:160px; } /* width:100% plus the side margins overflowed the right edge */
 .detail-head { padding:20px 20px 0; }
 .detail-title { font:800 24px/30px var(--font-ui); }
 .detail-head .orig { margin-top:4px; font-size:14px; line-height:20px; }

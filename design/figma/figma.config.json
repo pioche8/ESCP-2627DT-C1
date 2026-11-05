@@ -1,0 +1,20 @@
+{
+  "$comment": "The Figma file this pipeline writes to (docs/FIGMA.md). Ids come from the build session of 5 Nov 2026; if the file is re-created, update them here and re-run make-batches.js.",
+  "fileKey": "0fts7XGooeInJiOQ8s5v7y",
+  "url": "https://www.figma.com/design/0fts7XGooeInJiOQ8s5v7y",
+  "plan": "Luca Zorzi's team (Starter, View seat): 3 pages per file, 1 mode per variable collection, a capped number of MCP tool calls, no API imports from community libraries",
+  "pages": { "overview": "0:1", "dark": "14:2", "light": "14:993" },
+  "pageNames": { "dark": "iPhone screens · dark", "light": "iPhone screens · light" },
+  "collections": { "dark": "VariableCollectionId:16:524", "light": "VariableCollectionId:16:525" },
+  "components": { "statusBar": "33:525", "homeIndicator": "33:541", "section": "33:524" },
+  "codeLayer": "19:525",
+  "designSystemSection": "Design system · TenderScout",
+  "flowName": "TenderScout · BRIEF.md demo (iPhone)",
+  "legacyFrames": ["01 Welcome", "02 Check your profile", "03 Feed", "04 Tender · Go (Stadt Ellerbach)", "05 Tender · No-go (Landkreis Hohenau)", "06 Requirement sheet · Needs your check", "07 Company", "08 Company · re-score (No-go → Go)", "09 Skip reason sheet", "10 Bids", "11 About"],
+  "cleanup": [
+    { "id": "16:544", "type": "SECTION", "name": "TenderScout app · dark" },
+    { "id": "16:545", "type": "SECTION", "name": "TenderScout app · light" },
+    { "id": "16:546", "type": "SECTION", "name": "Photos · " }
+  ],
+  "maxScript": 46000
+}
