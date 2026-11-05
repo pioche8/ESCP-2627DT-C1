@@ -107,8 +107,10 @@ if (fs) {
     const m = /function fresh\(\) \{\s*return (\{[\s\S]*?\});\s*\}/.exec(app);
     assert.ok(m, 'fresh() found in app.js');
     const clone = (o) => JSON.parse(JSON.stringify(o));
-    const state = new Function('D', 'clone', 'return ' + m[1] + ';')(D, clone); // eslint-disable-line no-new-func
-    assert.deepStrictEqual(Object.keys(state).sort(), ['filter', 'onboarded', 'overrides', 'palette', 'profile', 'saved', 'skipped', 'theme', 'website'].sort(), 'tenderscout.v2 shape');
+    const state = new Function('D', 'clone', 'TODAY', 'return ' + m[1] + ';')(D, clone, TODAY); // eslint-disable-line no-new-func
+    // notifiedOn (5 Nov, additive, CLAUDE.md §11 item 115): a fresh state counts as notified today, so ?demo=reset does not pop the morning notification
+    assert.deepStrictEqual(Object.keys(state).sort(), ['filter', 'notifiedOn', 'onboarded', 'overrides', 'palette', 'profile', 'saved', 'skipped', 'theme', 'website'].sort(), 'tenderscout.v2 shape');
+    assert.strictEqual(state.notifiedOn, TODAY, 'a fresh state counts as notified on the demo day');
     assert.strictEqual(state.onboarded, false);
     assert.deepStrictEqual(state.profile, D.PROFILE, 'profile = the demo profile');
     assert.deepStrictEqual([state.overrides, state.saved, state.skipped], [{}, {}, {}]);
