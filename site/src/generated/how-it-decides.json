@@ -1,0 +1,518 @@
+{
+  "source": {
+    "engine": "engine.js",
+    "engineSha": "d156c3a5078b",
+    "data": "data.js",
+    "dataSha": "cd4c4f9a6359",
+    "demoToday": "2026-11-05"
+  },
+  "constants": {
+    "reviewThreshold": 0.7,
+    "knockoutCap": 25,
+    "goMinScore": 70,
+    "goMaxRisks": 1,
+    "probes": {
+      "lowestGo": 70,
+      "highestMaybe": 68
+    }
+  },
+  "weights": {
+    "sector": 40,
+    "size": {
+      "max": 20,
+      "inRange": 20,
+      "below": 8,
+      "above": 5
+    },
+    "requirements": {
+      "max": 30,
+      "pass": 1,
+      "risk": 0.5,
+      "review": 0
+    },
+    "time": {
+      "max": 10,
+      "bands": [
+        {
+          "from": 21,
+          "pts": 10
+        },
+        {
+          "from": 10,
+          "pts": 5
+        },
+        {
+          "from": 1,
+          "pts": 2
+        },
+        {
+          "from": null,
+          "pts": 0
+        }
+      ]
+    }
+  },
+  "statuses": [
+    {
+      "status": "pass",
+      "label": "Meets",
+      "shape": "circle",
+      "verdict": "go"
+    },
+    {
+      "status": "risk",
+      "label": "Risk",
+      "shape": "triangle",
+      "verdict": "maybe"
+    },
+    {
+      "status": "review",
+      "label": "Needs your check",
+      "shape": "diamond",
+      "verdict": "check"
+    },
+    {
+      "status": "fail",
+      "label": "Fails",
+      "shape": "square",
+      "verdict": "nogo"
+    }
+  ],
+  "confidence": [
+    {
+      "condition": "AI confidence below 0.7 (70 %), no answer from the owner",
+      "status": "review"
+    },
+    {
+      "condition": "AI confidence at or above 0.7",
+      "status": "pass"
+    },
+    {
+      "condition": "the owner answered \"We meet it\" (whatever the confidence)",
+      "status": "pass"
+    },
+    {
+      "condition": "the owner answered \"We don’t meet it\"",
+      "status": "fail"
+    }
+  ],
+  "rules": [
+    {
+      "type": "min_turnover",
+      "label": "Minimum turnover",
+      "cases": [
+        {
+          "condition": "turnover at or above the minimum",
+          "status": "pass",
+          "note": "Your turnover €1.5M ≥ €1.5M"
+        },
+        {
+          "condition": "turnover below the minimum",
+          "status": "fail",
+          "note": "Needs €1.5M turnover, you have €900k"
+        }
+      ]
+    },
+    {
+      "type": "certification",
+      "label": "Certificate",
+      "cases": [
+        {
+          "condition": "certificate held",
+          "status": "pass",
+          "note": "You hold ISO 9001"
+        },
+        {
+          "condition": "missing, subcontracting allowed",
+          "status": "risk",
+          "note": "Missing ISO 27001. Subcontracting is allowed, so a partner could cover it"
+        },
+        {
+          "condition": "missing, subcontracting not allowed",
+          "status": "fail",
+          "note": "Missing ISO 27001 (mandatory)"
+        }
+      ]
+    },
+    {
+      "type": "min_references",
+      "label": "Minimum references",
+      "cases": [
+        {
+          "condition": "enough references",
+          "status": "pass",
+          "note": "3 comparable references ≥ 3"
+        },
+        {
+          "condition": "short by one",
+          "status": "risk",
+          "note": "Short by 1 reference. A consortium partner could close the gap"
+        },
+        {
+          "condition": "short by two or more",
+          "status": "fail",
+          "note": "Needs 3 references, you have 1"
+        }
+      ]
+    },
+    {
+      "type": "language",
+      "label": "Bid language",
+      "cases": [
+        {
+          "condition": "language in the profile",
+          "status": "pass",
+          "note": "Bid language German is covered"
+        },
+        {
+          "condition": "language not in the profile",
+          "status": "risk",
+          "note": "Bid must be written in French. Translation adds effort"
+        }
+      ]
+    },
+    {
+      "type": "region",
+      "label": "Place of delivery",
+      "cases": [
+        {
+          "condition": "a home country",
+          "status": "pass",
+          "note": "You already work in DE"
+        },
+        {
+          "condition": "abroad, cross-border on",
+          "status": "risk",
+          "note": "Work is delivered in ES, which is new for you"
+        },
+        {
+          "condition": "abroad, cross-border off",
+          "status": "fail",
+          "note": "Delivery in ES, and you do not take cross-border work"
+        }
+      ]
+    },
+    {
+      "type": "site_visit",
+      "label": "Mandatory site visit",
+      "cases": [
+        {
+          "condition": "always",
+          "status": "risk",
+          "note": "Mandatory site visit: 20 Nov 2026, 10:00"
+        }
+      ]
+    },
+    {
+      "type": "other",
+      "label": "Anything else the AI extracted",
+      "cases": [
+        {
+          "condition": "always",
+          "status": "risk",
+          "note": "Wording is vague."
+        }
+      ]
+    }
+  ],
+  "verdicts": [
+    {
+      "verdict": "closed",
+      "label": "Closed",
+      "rule": "the deadline is today or has passed (days left ≤ 0)",
+      "score": "always 0"
+    },
+    {
+      "verdict": "nogo",
+      "label": "No-go",
+      "rule": "any requirement fails, or none of the tender’s CPV divisions is in the profile",
+      "score": "capped at 25"
+    },
+    {
+      "verdict": "go",
+      "label": "Go",
+      "rule": "score at least 70, no line needs the owner’s check, at most 1 risk",
+      "score": "70 to 100"
+    },
+    {
+      "verdict": "maybe",
+      "label": "Maybe",
+      "rule": "everything else: a line needs the owner’s check, more than 1 risk, or a score under 70",
+      "score": "under 70, or higher with open lines"
+    }
+  ],
+  "ranking": "Go → Maybe → No-go → Closed, then by score, then by days left",
+  "profileFields": [
+    {
+      "field": "turnover",
+      "usedFor": "minimum turnover (euros)",
+      "demoValue": 3200000
+    },
+    {
+      "field": "references",
+      "usedFor": "minimum references",
+      "demoValue": 4
+    },
+    {
+      "field": "certifications",
+      "usedFor": "certificates (mandatory or via a partner)",
+      "demoValue": [
+        "ISO 9001"
+      ]
+    },
+    {
+      "field": "languages",
+      "usedFor": "bid language",
+      "demoValue": [
+        "de",
+        "en"
+      ]
+    },
+    {
+      "field": "countries",
+      "usedFor": "place of delivery",
+      "demoValue": [
+        "DE",
+        "AT"
+      ]
+    },
+    {
+      "field": "crossBorder",
+      "usedFor": "place of delivery abroad",
+      "demoValue": true
+    },
+    {
+      "field": "cpv",
+      "usedFor": "sector fit (the two-digit CPV division)",
+      "demoValue": [
+        "32",
+        "45",
+        "51",
+        "72"
+      ]
+    },
+    {
+      "field": "minValue",
+      "usedFor": "size fit",
+      "demoValue": 50000
+    },
+    {
+      "field": "maxValue",
+      "usedFor": "size fit",
+      "demoValue": 1500000
+    }
+  ],
+  "profileNotRead": [
+    "name",
+    "city",
+    "staff",
+    "sectorsLabel"
+  ],
+  "citation": {
+    "tender": "Landkreis Hohenau",
+    "doc": "Vergabeunterlagen",
+    "fields": {
+      "id": "r1",
+      "type": "certification",
+      "value": "ISO 27001",
+      "label": "ISO 27001 information security",
+      "cite": "p. 12, §3.1",
+      "confidence": 0.95,
+      "src": "Der Auftragnehmer muss nach ISO/IEC 27001 zertifiziert sein.",
+      "highlight": "nach ISO/IEC 27001 zertifiziert",
+      "tr": "The contractor must be certified to ISO/IEC 27001."
+    },
+    "pages": 64,
+    "language": "German"
+  },
+  "demo": {
+    "today": "2026-11-05",
+    "profile": {
+      "name": "Nordlicht Netzwerk GmbH (fictional)",
+      "city": "Leipzig, DE",
+      "turnover": 3200000,
+      "references": 4,
+      "certifications": [
+        "ISO 9001"
+      ],
+      "languages": [
+        "de",
+        "en"
+      ],
+      "countries": [
+        "DE",
+        "AT"
+      ],
+      "crossBorder": true,
+      "cpv": [
+        "32",
+        "45",
+        "51",
+        "72"
+      ]
+    },
+    "tenders": [
+      {
+        "id": "ell-schools",
+        "buyer": "Stadt Ellerbach",
+        "title": "Structured cabling and Wi-Fi for 12 primary schools",
+        "country": "DE",
+        "language": "German",
+        "value": 480000,
+        "pages": 146,
+        "daysLeft": 29,
+        "verdict": "go",
+        "score": 100,
+        "reason": "Meets all 4 requirements",
+        "counts": {
+          "pass": 4,
+          "risk": 0,
+          "fail": 0,
+          "review": 0
+        },
+        "requirements": 4
+      },
+      {
+        "id": "kal-fibre",
+        "buyer": "Stadtwerke Kaltbrunn",
+        "title": "Fibre-to-the-building rollout, municipal utility",
+        "country": "AT",
+        "language": "German",
+        "value": 1100000,
+        "pages": 212,
+        "daysLeft": 43,
+        "verdict": "maybe",
+        "score": 90,
+        "reason": "Short by 1 reference · mandatory site visit",
+        "counts": {
+          "pass": 1,
+          "risk": 2,
+          "fail": 0,
+          "review": 0
+        },
+        "requirements": 3
+      },
+      {
+        "id": "val-dc",
+        "buyer": "Universidad de Valdemora",
+        "title": "Data centre cabling, lot 2 (university campus)",
+        "country": "ES",
+        "language": "Spanish",
+        "value": 310000,
+        "pages": 98,
+        "daysLeft": 9,
+        "verdict": "maybe",
+        "score": 85,
+        "reason": "Bid must be in Spanish · work in Spain",
+        "counts": {
+          "pass": 2,
+          "risk": 2,
+          "fail": 0,
+          "review": 0
+        },
+        "requirements": 4
+      },
+      {
+        "id": "hoh-security",
+        "buyer": "Landkreis Hohenau",
+        "title": "IT security audit and hardening for district administration",
+        "country": "DE",
+        "language": "German",
+        "value": 95000,
+        "pages": 64,
+        "daysLeft": 22,
+        "verdict": "nogo",
+        "score": 25,
+        "reason": "ISO 27001 mandatory · 1 to check",
+        "counts": {
+          "pass": 1,
+          "risk": 0,
+          "fail": 1,
+          "review": 1
+        },
+        "requirements": 3
+      },
+      {
+        "id": "vli-libraries",
+        "buyer": "Gemeente Vlietdam",
+        "title": "Public Wi-Fi for 9 libraries",
+        "country": "NL",
+        "language": "Dutch",
+        "value": 220000,
+        "pages": 77,
+        "daysLeft": 35,
+        "verdict": "nogo",
+        "score": 25,
+        "reason": "VCA mandatory",
+        "counts": {
+          "pass": 0,
+          "risk": 2,
+          "fail": 1,
+          "review": 0
+        },
+        "requirements": 3
+      },
+      {
+        "id": "mor-support",
+        "buyer": "Centre Hospitalier de Morlanne",
+        "title": "IT support framework agreement (4 years)",
+        "country": "FR",
+        "language": "French",
+        "value": 2400000,
+        "pages": 180,
+        "daysLeft": 47,
+        "verdict": "nogo",
+        "score": 25,
+        "reason": "Needs €5M turnover",
+        "counts": {
+          "pass": 0,
+          "risk": 1,
+          "fail": 1,
+          "review": 0
+        },
+        "requirements": 2
+      }
+    ],
+    "counts": {
+      "go": 1,
+      "maybe": 2,
+      "nogo": 3
+    },
+    "pages": 777,
+    "languages": [
+      "German",
+      "Spanish",
+      "Dutch",
+      "French"
+    ],
+    "hohenau": [
+      {
+        "step": "As read, with the demo profile",
+        "verdict": "nogo",
+        "score": 25,
+        "reason": "ISO 27001 mandatory · 1 to check",
+        "headline": "1 knock-out requirement: you don’t hold ISO 27001. One more needs your answer."
+      },
+      {
+        "step": "ISO 27001 switched on in Company",
+        "verdict": "maybe",
+        "score": 90,
+        "reason": "1 to check",
+        "headline": "No knock-outs. One line needs your answer."
+      },
+      {
+        "step": "\"We meet it\" on the unclear line",
+        "verdict": "go",
+        "score": 100,
+        "reason": "Meets all 3 requirements",
+        "headline": "You meet all 3 requirements."
+      }
+    ]
+  },
+  "tests": {
+    "engine": 24,
+    "golden": 11,
+    "invariantCases": 3000,
+    "smokeChecks": 113
+  }
+}

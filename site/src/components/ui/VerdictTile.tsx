@@ -27,12 +27,12 @@ export function ScoreTile({ verdict, score, size = 48, fontSize = 20, className 
 }
 
 /** "● Go": shape + word in the verdict's colour, then (optionally) the reason in muted ink. */
-export function StatusLine({ verdict, why, size = 8, className = '' }: { verdict: VerdictKey; why?: string; size?: number; className?: string }) {
+export function StatusLine({ verdict, why, size = 8, className = '', label }: { verdict: VerdictKey; why?: string; size?: number; className?: string; label?: string }) {
   const v = VERDICT[verdict];
   return (
     <div className={`status-line v-${verdict} ${className}`}>
       <VerdictShape verdict={verdict} size={size} />
-      <b>{v.label}</b>
+      <b>{label ?? v.label}</b>
       {why ? <span className="status-why">· {why}</span> : null}
     </div>
   );
