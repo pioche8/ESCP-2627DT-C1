@@ -288,8 +288,5 @@ a new layer should be clickable, add a `link(…)` in `prototype.figma.js`.
 - Photos and the 30-frame rebuild wait on the Starter plan's MCP call cap. The prepared scripts above are the
   complete remaining work. The current iPhone pages hold the first 11 screens.
 - The SF Pro font is not reliably available to Figma's renderer, so the status-bar time uses Inter.
-- Three app rendering bugs show in the frames exactly as the app renders them (a separate task):
-  - "Needs your check" shows a square, because `SHAPE` in `app.js` has no `check: 'diamond'`;
-  - the tender photo overflows the right edge (`.detail-photo` combines `width: 100%` with side margins);
-  - on a home-screen iPhone the tender header adds the top inset twice (`.screen` and `.vhead` both use `--safe-top`).
+- The first 11 frames already in the file (built before the fixes of `CLAUDE.md` §11 item 107) still show the old square ◆, the photo overflow and the doubled top gap on the tender screens; the prepared batches replace them with captures of the fixed app.
 - Website screens are not in Figma yet. The same capture approach works on `site/` pages at 390 and 1440 px.

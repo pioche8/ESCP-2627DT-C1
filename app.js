@@ -10,7 +10,7 @@
   var SKIP_REASONS = ['Too big for us', 'Missing a certificate', 'Wrong region', 'Not enough time', 'Price-only', 'Other'];
   var LANG_OPTIONS = ['de', 'en', 'es', 'fr', 'nl'];
   var V = E.VERDICT_LABEL;             // go → 'Go', maybe → 'Maybe', nogo → 'No-go', closed → 'Closed'
-  var SHAPE = { go: 'circle', maybe: 'tri', nogo: 'square' };
+  var SHAPE = { go: 'circle', maybe: 'tri', nogo: 'square', check: 'diamond' };   // check = ◆ Needs your check (status lines)
   // Requirement status → colour, shape and label. UI only: engine.js keeps pass/risk/fail/review.
   var STATUS = {
     fail:   { v: 'nogo',  shape: 'square',  label: 'Fails' },

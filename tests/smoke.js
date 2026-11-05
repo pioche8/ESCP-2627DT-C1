@@ -169,6 +169,9 @@ async function run(scheme) {
   check((await page.locator('a.req .cite').first().innerText()) === 'Vergabeunterlagen, p. 12, §3.1', 'citation as regular text "Vergabeunterlagen, p. 12, §3.1"');
   const cta = await page.locator('a.req[href="#/t/hoh-security/req/r3"] .req-cta').boundingBox();
   check(cta && cta.height >= 44 && (await page.locator('a.req[href="#/t/hoh-security/req/r3"] .req-cta').innerText()).startsWith('Check') && await page.locator('a.req .req-cta').count() === 1, 'the "Needs your check" line shows a 44 px "Check" call to action, the other lines do not');
+  check(await page.locator('a.req[href="#/t/hoh-security/req/r3"] .status .shape.diamond').count() === 1 && await page.locator('.shape:not(.circle):not(.tri):not(.square):not(.diamond)').count() === 0, 'the "Needs your check" line carries the ◆ diamond, and every shape has a kind');
+  const photoBox = await page.locator('.detail-photo').boundingBox();
+  check(photoBox && Math.round(photoBox.x) === 16 && Math.round(photoBox.x + photoBox.width) === VW - 16, 'the tender photo keeps the 16 px gutter on both sides (' + (photoBox ? Math.round(photoBox.x) + '–' + Math.round(photoBox.x + photoBox.width) : 'missing') + ' of ' + VW + ')');
   await scan('detail-nogo'); await shot('detail-nogo'); await shot('detail-nogo-full', true);
   const reqSel = 'a.req[href="#/t/hoh-security/req/r3"]';
   await page.click(reqSel); await waitSheet(true);
@@ -344,6 +347,17 @@ async function run(scheme) {
   await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
   const readMs = Date.now() - t0;
   check(readMs < 1200 && await page.locator('.vhead .ai').count() === 1, 'fast mode: the tender is read in ' + readMs + ' ms with the "Simulated AI" label in place');
+
+  // iPhone home-screen insets (viewport-fit=cover, 47 px top / 34 px bottom): the top inset is applied once
+  const inset = await ctx.newPage();
+  await inset.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = ':root{--safe-top:47px !important;--safe-bottom:34px !important}'; document.head.appendChild(s); }); });
+  await inset.goto(url('demo=fast', '#/feed')); await inset.waitForSelector('.feed-list');
+  const feedNav = await inset.locator('.nav').first().boundingBox();
+  const insetBar = await inset.locator('.tabbar').boundingBox();
+  await inset.goto(url('demo=fast', '#/t/ell-schools')); await inset.waitForSelector('.vhead.v-go', { timeout: 8000 });
+  const backRow = await inset.locator('.vhead-nav').first().boundingBox();
+  check(feedNav && Math.round(feedNav.y) === 47 && backRow && Math.round(backRow.y) === 53 && insetBar && Math.round(insetBar.height) === 94, 'with iPhone insets the Feed header starts at 47 px, the tender back row at ' + (backRow ? Math.round(backRow.y) : '?') + ' px (47 + 6, inset applied once) and the tab bar is 60 + 34 px');
+  await inset.close();
 
   // Touch targets: interactive elements smaller than 44 px (pseudo-element hit areas are not measured here)
   const small = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, input, [role="switch"]'))
