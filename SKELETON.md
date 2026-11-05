@@ -4,7 +4,7 @@ The skeleton plane of Garrett's *Elements of User Experience*: where things sit 
 
 | This file covers | Not in this file (look here instead) |
 |---|---|
-| The frame every screen shares, one text wireframe per screen (top to bottom), the navigation elements, the ordering rules for information, the controls | What each screen gives the owner and why: [`PRODUCT.md`](PRODUCT.md) §3 · routes, flows, states and Back behaviour: [`docs/NAVIGATION.md`](docs/NAVIGATION.md) · the exact words and where they come from: [`docs/design/CONTENT_REQUIREMENTS.md`](docs/design/CONTENT_REQUIREMENTS.md) · colours, type, radius, motion: [`shared/tokens.json`](shared/tokens.json), [`DESIGN.md`](DESIGN.md) and `CLAUDE.md` §11 items 53–68 · how the code is built: [`ARCHITECTURE.md`](ARCHITECTURE.md) · all five planes: [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md) |
+| The frame every screen shares, one text wireframe per screen (top to bottom), the navigation elements, the ordering rules for information, the controls | What each screen gives the owner and why: [`PRODUCT.md`](PRODUCT.md) §3 · routes, flows, states and Back behaviour: [`docs/NAVIGATION.md`](docs/NAVIGATION.md) · the exact words and where they come from: [`docs/design/CONTENT_REQUIREMENTS.md`](docs/design/CONTENT_REQUIREMENTS.md) · how each screen looks (screenshots) and the visual system: [`UI_DESIGN.md`](UI_DESIGN.md) · how the code is built: [`ARCHITECTURE.md`](ARCHITECTURE.md) · all five planes: [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md) |
 
 ## 1. The frame every screen shares
 
