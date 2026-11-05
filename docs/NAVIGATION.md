@@ -57,15 +57,19 @@ flowchart TD
 
 ## Core flows
 **Flow 1: Morning triage (target under 60 s)**
+
 Push / open app → Feed (counts at top) → tap the Go card → scan the qualification check (all ● Meets) → Save to Bids. The button turns into "In Bids · Deciding" and a toast offers "View".
 
 **Flow 2: Resolve an unclear line**
+
 Detail → the ◆ "Needs your check" line sorts right after any fails → tap → sheet shows the original sentence, translation and page → "We meet it" → the sheet closes, the verdict recalculates, and a toast says "Answer saved · now …" with Undo.
 
 **Flow 3: Learn what's blocking you**
+
 Detail shows ■ "ISO 27001 mandatory" → Company tab → the hint under ISO 27001 says what turning it on would do → toggle → the re-score card shows "Landkreis Hohenau · No-go → Go" and the tiles re-flex. The hint is honest: if the "comparable qualification" line is still unanswered, it says Hohenau only becomes **Maybe**, and the re-score card shows No-go → Maybe. On the next Feed visit the changed card's score tile pulses once.
 
 **Flow 4: Skip with reasons**
+
 Detail → Skip → pick reasons (optional) → Skip tender → back to the Feed, the card collapses out, and a toast says "Skipped. Reason saved." with Undo. The tender shows under Bids → Skipped with its reasons. Restore puts it in Deciding.
 
 ## Deep linking and back behaviour

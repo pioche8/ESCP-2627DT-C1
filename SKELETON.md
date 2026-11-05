@@ -107,6 +107,7 @@ The whole card is the link. Empty states replace the cards: "Nothing new tonight
 [action]    | Skip | Save to Bids |
 ```
 Bar variants: saved → `| Skip | In Bids · Deciding |`; skipped → `| Restore | Save to Bids |`; closed → the note "Closed tenders can't be saved" above `| Skip | Save to Bids (disabled) |`.
+
 First open per session: the verdict block is replaced by "Reading 64 pages (German)…", "p. N of 64", a progress bar and three steps, and the body by placeholder bars; the action bar is already there.
 
 ### Requirement sheet · `#/t/:id/req/:rid`

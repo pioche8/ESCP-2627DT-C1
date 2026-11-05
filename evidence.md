@@ -1,6 +1,7 @@
 # evidence.md: TenderScout
 
 Team: ESCP-2627DT-C1 · Members: <!-- TEAM NAMES -->[names] · Market: EU (interviews in [countries])
+
 Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 
 > **Integrity rules.** Every entry below comes from a real interview held by the named team member. No AI-generated or "illustrative" interviews. Names and companies are anonymised. Figures are only those the interviewee gave; anything else is marked ASSUMPTION. Demo data in the prototype is fictional and is **not** evidence.
@@ -56,19 +57,19 @@ Next: book the 20-minute call with S1 and log it as an interview (§1, §2).
 <!-- One block per interview, using the template in docs/INTERVIEW_KIT.md §6 -->
 
 ### Interview 1 · [role] · [sector] · [size] · [country] · [date] · interviewer: [name]
-Consent: quote anonymously yes/no · recorded yes/no
-Public-sector share of revenue:
-Last tender story:
-Time spent screening one tender:
-Tenders seen / screened / bid per month:
-Knock-out surprise ever?:
-Foreign-language tenders?:
-Current tools / paid for:
-Biggest pain (their words):
-Quotes:
+- Consent: quote anonymously yes/no · recorded yes/no
+- Public-sector share of revenue:
+- Last tender story:
+- Time spent screening one tender:
+- Tenders seen / screened / bid per month:
+- Knock-out surprise ever?:
+- Foreign-language tenders?:
+- Current tools / paid for:
+- Biggest pain (their words):
+- Quotes:
   - ""
-Gate: H1 yes/no · H2 yes/no · H3 yes/no · H4 yes/no
-Surprises:
+- Gate: H1 yes/no · H2 yes/no · H3 yes/no · H4 yes/no
+- Surprises:
 
 ## 3. Key insights (after ≥4 interviews)
 1.
