@@ -18,36 +18,41 @@ Luca's requests, in order: "the map hasn't fixed on the website as well the anim
 | 4 | `f2d8655` **The original website** | The 5 Nov restore (`13cfadc`, `site/` from `backup/pre-declutter`) brought onto today's `main`: the map with pins, arcs, the home pulse and tooltips; the hero glow and gradient wordmark, the sector marquee, every hover and scroll effect. Kept from after 5 Nov: "How it decides", metadata, keyboard access, the lazy map (adapted), Vercel, the CI checks. The phone: the original dock with the app's five tabs, the Win/loss row, Profile, Settings. Fixes to the original: the AT code, the reduced-motion overflow, the clipped count tile, three axe findings. Gates: token files frozen with `shared/tokens.css` byte-identical, declutter scan on the app only, the website's 33 contrast pairs, the motion/keyboard check in `npm run audit` (items 139–141) | `site/**`, `shared/build-tokens.js`, `shared/check-contrast.js`, `tests/declutter-scan.js`, `tests/preflight.js` | No |
 | 5 | `09894f1` | `CLAUDE.md` §0, §3, §11 items 139–142; README, `ARCHITECTURE.md`, `docs/START_HERE.md`, `docs/FIGMA.md` | docs | No |
 | 6 | `77fe1cb` | Two axe findings caused by commit 4's own changes: the phone's scrollable tab panel is a tab stop; the Menu button keeps its name on phones | `site/` | No |
-| 7 | this commit | This report | docs | No |
+| 7 | `9699225` | This report (first version) | docs | No |
+| 8 | `458e169` | Fixes from the adversarial review: the count tiles' width, the phone poster, the phone's tab scroll and focus, the dock's first render, the contact sheet, `check-contrast.js`, stale docs (item 143) | `site/`, `shared/check-contrast.js`, `tests/preflight.js`, docs | No |
+| 9 | this commit | This report's final gate table | docs | No |
 
 Not changed: `engine.js`, `data.js`, `ai.js`, `insights.js`, `app.js`, `styles.css`, `shared/tokens.css`, `shared/tokens.json`, the demo numbers (Hohenau 25 → 90 → 100; 1 Go · 2 Maybe · 3 No-go; 777 pages in 4 languages), `.github/`, `release/v1-workshop`, `backup/*`.
 
 ## Verification per gate
 
-Run in this container. WebKit cannot be installed here (the Playwright CDN and its Microsoft mirror are blocked), so the iPhone 13 and iPhone SE rows are Chromium device emulation and every Safari statement is inspection only. Baseline: the same preflight on `main` (`eae8b40`) and on `d6a46e5` (the first pass) was all green.
+Run in this container. WebKit cannot be installed here (the Playwright CDN and its Microsoft mirror are blocked), so the iPhone 13 and iPhone SE rows are Chromium device emulation and every Safari statement is inspection only. Baseline: the same preflight on `main` (`eae8b40`) and on the first pass (`d6a46e5`) was all green.
 
-| Gate | `f2d8655` (the restore) | `77fe1cb` (after the axe fixes) |
+| Gate | `f2d8655` (the restore) | `458e169` (final, after the review) |
 |---|---|---|
-| `node tests/engine.test.js` (24), `insights.test.js`, `data-check.js`, `docs-check.js`, `demo-golden.test.js` (11 pins), `engine-invariants.test.js` (3,000 cases), `no-live-ai-check.js` | ok | site-only change since |
-| `node tests/declutter-scan.js` (static, now the app's two stylesheets) | 0 | site-only change since |
-| `node shared/check-contrast.js` (the app's 46 pairs, unchanged, + the website's 33) | 79 pairs, 0 failures | site-only change since |
-| generated tokens (`shared/tokens.css` byte-identical) and decision model in sync | ok | site-only change since |
-| `node site/scripts/sync-shared.mjs --check` (engine, data, insights, fonts) | ok | site-only change since |
-| `node tests/vercel-dist.test.js` | ok | site-only change since |
-| `node tests/browser-tests.js` (`tests.html`, file:// + HTTP) | ok | app unchanged |
-| `node tests/smoke.js` 390×844 (dark, light, reduced motion, declutter scan on every app screen) | ok | app unchanged |
-| `SMOKE_DEVICE="iPhone 13"` / `"iPhone SE"` | ok / ok | app unchanged |
-| `cd site && npm run check` (lint, typecheck, build) | ok | ok (lint, typecheck, build) |
+| `node tests/engine.test.js` (24), `insights.test.js`, `data-check.js`, `docs-check.js`, `demo-golden.test.js` (11 pins), `engine-invariants.test.js` (3,000 cases), `no-live-ai-check.js` | ok | ok |
+| `node tests/declutter-scan.js` (static, the app's two stylesheets) | 0 | 0 |
+| `node shared/check-contrast.js` (the app's 46 pairs, rows identical to `main`, + the website's 33) | 79 pairs, 0 failures | 79 pairs, 0 failures (fails if the site tokens go missing) |
+| generated tokens (`shared/tokens.css` byte-identical) and decision model in sync | ok | ok |
+| `node site/scripts/sync-shared.mjs --check` (engine, data, insights, fonts) | ok | ok |
+| `node tests/vercel-dist.test.js` | ok | ok |
+| `node tests/browser-tests.js` (`tests.html`, file:// + HTTP) | ok | ok |
+| `node tests/smoke.js` 390×844 (dark, light, reduced motion, declutter scan on every app screen) | ok | ok |
+| `SMOKE_DEVICE="iPhone 13"` / `"iPhone SE"` | ok / ok | ok / ok |
+| `cd site && npm run check` (lint, typecheck, build) | ok | ok |
 | `npm run audit` → `how-check.cjs` ("How it decides": demo path, keyboard, 44 px, metadata) | ok | ok |
-| `npm run audit` → `a11y-motion.cjs` (reduced motion, menu, five-tab phone, lazy map, AT code, exact counts) | ok, 25 of 25 | ok, 25 of 25 |
-| `npm run audit` → Lighthouse ≥ 95, median of 3 | perf 98–99, a11y 95, best practices 100, SEO 100 | `/` perf 98 / 99, `/how` 99 / 99; a11y, best practices, SEO 100 (dark / light) |
-| `npm run audit` → axe 0 violations (`/`, `/how`, dark and light, 1280 and 390 px) | **FAIL**: `/` scrollable-region-focusable (the phone panel), button-name at 390 px (the Menu button) | 0 violations on all 8 |
+| `npm run audit` → `a11y-motion.cjs` (reduced motion, menu, five-tab phone, lazy map, AT code, exact counts) | 25 of 25 | 25 of 25 |
+| `npm run audit` → Lighthouse ≥ 95, median of 3 | perf 98–99, a11y 95 | perf 99 / 99 (`/`), 99 / 99 (`/how`), dark / light; a11y, best practices, SEO 100 |
+| `npm run audit` → axe 0 violations (`/`, `/how`, dark and light, 1280 and 390 px) | **FAIL** on `/`: scrollable-region-focusable (phone panel), button-name at 390 px (Menu) | 0 on all 8 |
+| `npm run preflight` | 1 gate failed (axe) | **All gates green** |
 | `git diff origin/main` over the app's served files and `.github/` | empty | empty |
-| CI `check` on the branch push | see the pull request | see the pull request |
+| CI `check` on the branch pushes | green (`09894f1`, `77fe1cb`) | see the pull request |
+
+**Adversarial review** (item 143): three reviewers on `09894f1` (parity with the original side by side in a browser; breaking the phone and the map; repository integrity and these claims), every finding re-tested by three independent refuters. 18 findings survived (9 distinct issues), 6 were refuted. All nine are fixed in `77fe1cb` and `458e169` and re-checked in the browser: tiles 58 px or wider and unclipped at 1440, 390 and 320 px; the phone poster's play button overlaps no headline, label or chip from 320 to 480 px; a tab opens at its top after another tab was scrolled; "Edit on Company" leaves focus on the Company tab; the dock's server markup equals the hydrated layout (296 px dock, 106 px active tab); the contact sheet runs through against the current app.
 
 ## Decisions taken alone
 
-All in `CLAUDE.md` §11. Items 134–138 are the first pass (decluttered site); items 139–142 the restore, which supersedes 134, 135 and the visual part of 136.
+All in `CLAUDE.md` §11. Items 134–138 are the first pass (decluttered site); items 139–143 the restore and its review, which supersedes 134, 135 and the visual part of 136.
 
 - **139** The original website, cherry-picked from the 5 Nov restore onto today's `main` after a browser check of both the restore and the true original: every animation on the original works and its map re-scores with the engine. Later work is kept, the lazy map is adapted to the original frame, the token files are frozen with the app's `shared/tokens.css` byte-identical, the declutter scan covers the app only, and the website gets its own contrast pairs and its reduced-motion and keyboard check in `npm run audit`.
 - **140** The original dock carries the app's five tabs: it measures itself so every tab stays at least 44 px, the active tab shows its label where it fits, and the phone screen scrolls when a tab is taller than it.
@@ -55,6 +60,7 @@ All in `CLAUDE.md` §11. Items 134–138 are the first pass (decluttered site); 
 - **142** Left as the original renders, for the team: six token names the stylesheet uses but never defines (body copy and meta text render white, the phone's cards have no fill), and a few smaller quirks listed there.
 - **137** (stands) Every app screenshot and the storyboard re-made from the five-tab app.
 - **138(a)** (stands) All 31 app states match `SKELETON.md`; no app byte was changed on a guess.
+- **143** An adversarial review before the pull request (three lenses, three refuters per finding): nine distinct issues confirmed and fixed, six findings refuted.
 
 ## Caveats
 
@@ -74,5 +80,5 @@ SMOKE_URL=https://pioche8.github.io/ESCP-2627DT-C1/ node tests/smoke.js
 ## Rollback
 
 - **This pull request after it merges:** GitHub → the pull request → Revert (a pull request of its own, through CI). No app byte changes, so the live demo is unaffected either way.
-- **Only the website back to the decluttered version, keeping the app screenshots:** `git revert 77fe1cb 09894f1 f2d8655` on a branch (the commit before the restore, `d6a46e5`, passed every gate).
+- **Only the website back to the decluttered version, keeping the app screenshots:** `git revert 458e169 77fe1cb 09894f1 f2d8655` on a branch (the commit before the restore, `d6a46e5`, passed every gate).
 - **Everything, app and site, to the frozen workshop build:** `git push --force-with-lease origin release/v1-workshop:main`. Do not move `release/v1-workshop`.
