@@ -230,6 +230,8 @@ async function run(scheme) {
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company counts move to 2 : 2 : 2');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
   await page.evaluate(() => window.scrollTo(0, 0)); // show the re-score card
+  // scan the settled card: on a slow runner the 700 ms morph can still be running here (radius between the switch's and 8 px)
+  await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
   await scan('company-rescore'); await shot('company-rescore');
 
   // Feed after the change
