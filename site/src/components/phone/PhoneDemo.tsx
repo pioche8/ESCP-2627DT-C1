@@ -59,7 +59,7 @@ export function PhoneDemo() {
       <div className="phone" role="group" aria-label="TenderScout app demo">
         <div className="phone-screen">
           <div className="notch" aria-hidden="true" />
-          <div className="pscreen" role="tabpanel" id="phone-panel" aria-labelledby={`dock-tab-${tab}`}>
+          <div className="pscreen" role="tabpanel" id="phone-panel" aria-labelledby={`dock-tab-${tab}`} tabIndex={0}>
             {tab === 0 && (
               <>
                 <div className="phead">
