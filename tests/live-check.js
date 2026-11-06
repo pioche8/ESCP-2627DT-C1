@@ -20,7 +20,7 @@ const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const BASE = (process.argv[2] || 'https://pioche8.github.io/ESCP-2627DT-C1/').replace(/\/?$/, '/');
-const FILES = ['index.html', 'engine.js', 'app.js', 'data.js', 'ai.js', 'styles.css', 'shared/tokens.css'];
+const FILES = ['index.html', 'engine.js', 'app.js', 'data.js', 'ai.js', 'insights.js', 'styles.css', 'shared/tokens.css'];
 
 function get(url, follow) {
   return new Promise((resolve, reject) => {

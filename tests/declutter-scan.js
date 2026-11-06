@@ -79,7 +79,8 @@ function domScanScript() {
         if (cs.fontStyle !== 'normal') add('italic', el, cs.fontStyle);
         if (/mono|plex|menlo|courier|sfmono/i.test(cs.fontFamily) && !/Material Symbols/.test(cs.fontFamily)) add('monospace', el, cs.fontFamily.slice(0, 40));
         if (/^\d{2}\s*[\/—–-]\s*\S/.test(txt) || /^0\d$/.test(txt)) add('section numbering', el, txt);
-        const caps = txt.match(/[A-Za-z]{3,}/g) || [];
+        // Acronyms are allowed (CLAUDE.md §11 item 62: ISO, VCA, CPV, EU, AI), so "ISO 9001, ISO 27001" is not shouting.
+        const caps = (txt.match(/[A-Za-z]{3,}/g) || []).filter((w) => ['ISO', 'VCA', 'CPV'].indexOf(w) === -1);
         if (caps.length >= 2 && caps.every((w) => w === w.toUpperCase())) add('all-caps text', el, txt);
         if (CODE.test(txt)) add('code name in visible text', el, txt);
         if (alpha(cs.color) < 1) add('alpha text colour', el, cs.color);
