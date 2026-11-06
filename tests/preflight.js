@@ -26,6 +26,7 @@ const GATES = [
   { name: 'Engine tests (24)', cmd: 'node tests/engine.test.js' },
   { name: 'Win/loss insights tests (insights.js)', cmd: 'node tests/insights.test.js' },
   { name: 'Data check (data.js against what engine.js and app.js read)', cmd: 'node tests/data-check.js' },
+  { name: 'Docs check (routes, story checks, interview citations)', cmd: 'node tests/docs-check.js' },
   { name: 'Demo pins (Hohenau 25 → 90 → 100, storage key, reset)', cmd: 'node tests/demo-golden.test.js' },
   { name: 'Engine invariants (seeded property test)', cmd: 'node tests/engine-invariants.test.js' },
   { name: 'No live AI and no keys (no site server route, no key-shaped string)', cmd: 'node tests/no-live-ai-check.js' },

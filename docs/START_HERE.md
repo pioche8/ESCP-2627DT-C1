@@ -59,6 +59,7 @@ The node-only gates, if you want them one by one (they run in CI on every push):
 node tests/engine.test.js        # 24 tests (plus yours) must pass
 node tests/insights.test.js      # 12 tests: the Win/loss insights arithmetic and its demo numbers (38 %, 6.8 %)
 node tests/data-check.js         # data.js has every field engine.js and app.js read, ids unique, dates ISO, citations inside the document
+node tests/docs-check.js         # every route and tab of app.js is in docs/NAVIGATION.md and SKELETON.md, every check a story names exists word for word, no interview or quote cited that evidence.md does not log
 node tests/demo-golden.test.js   # the live demo's numbers (Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go, 777 pages); see §5.4 before you move them
 node tests/engine-invariants.test.js  # seeded property test of the engine rules
 node tests/declutter-scan.js     # 0 findings in the five stylesheets
