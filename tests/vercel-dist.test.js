@@ -49,10 +49,16 @@ test('the app project config: no framework, build into dist/, ignore step on the
   assert.ok(/vercel-app-dist\.js/.test(v.buildCommand), 'buildCommand runs the dist script');
   ['index.html', 'app.js', 'engine.js', 'data.js', 'ai.js', 'insights.js', 'styles.css', 'shared', 'fonts', 'assets', 'vercel.json'].forEach((p) => assert.ok(v.ignoreCommand.split(/\s+/).includes(p), 'ignoreCommand watches ' + p));
 });
-test('the site project config: Next.js, ignore step on site/ and the shared sources it syncs', () => {
+test('the site project config: Next.js, ignore step on site/ (it builds from its committed, CI-checked copies)', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'site/vercel.json'), 'utf8'));
   assert.strictEqual(v.framework, 'nextjs');
-  ['.', '../shared', '../engine.js', '../data.js', '../fonts'].forEach((p) => assert.ok(v.ignoreCommand.split(/\s+/).includes(p), 'ignoreCommand watches ' + p));
+  assert.ok(/ -- \.$/.test(v.ignoreCommand), 'ignoreCommand watches site/ itself');
+});
+test('both commands fit the Vercel API limit (256 characters)', () => {
+  [path.join(ROOT, 'vercel.json'), path.join(ROOT, 'site/vercel.json')].forEach((f) => {
+    const v = JSON.parse(fs.readFileSync(f, 'utf8'));
+    ['buildCommand', 'ignoreCommand', 'installCommand'].forEach((k) => { if (v[k]) assert.ok(v[k].length <= 256, path.relative(ROOT, f) + ' ' + k + ' is ' + v[k].length + ' characters'); });
+  });
 });
 test('dist/ is ignored by git', () => {
   assert.ok(/^\/?dist\/?$/m.test(fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8')));

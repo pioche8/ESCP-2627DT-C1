@@ -19,8 +19,9 @@ const copyOf = (src) => '/* Copied verbatim from ../' + src + ' by scripts/sync-
 // `node site/scripts/sync-shared.mjs --check` (CI): writes nothing, exits 1 if a committed copy differs from what this
 // script would write, so a Vercel build that uses the committed copies cannot disagree with the app (ADR-0001).
 if (process.argv.includes('--check')) {
-  const stale = COPIES.filter(([src, dst]) => !fs.existsSync(out(dst)) || fs.readFileSync(out(dst), 'utf8') !== copyOf(src)).map(([, dst]) => 'site/' + dst);
-  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs and data.cjs equal ../engine.js and ../data.js');
+  const stale = COPIES.filter(([src, dst]) => !fs.existsSync(out(dst)) || fs.readFileSync(out(dst), 'utf8') !== copyOf(src)).map(([, dst]) => 'site/' + dst)
+    .concat(fs.readdirSync(app('fonts')).filter((f) => /\.woff2$/.test(f) && (!fs.existsSync(out('src/fonts/' + f)) || !fs.readFileSync(out('src/fonts/' + f)).equals(fs.readFileSync(app('fonts/' + f))))).map((f) => 'site/src/fonts/' + f));
+  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs and src/fonts equal the app\'s engine.js, data.js and fonts/');
   process.exit(stale.length ? 1 : 0);
 }
 
