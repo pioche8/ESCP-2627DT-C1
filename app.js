@@ -926,6 +926,7 @@
 
   var curKey = null, scrollPos = {}, firstRender = true;
   function render(force) {
+    if (crashed) return; // the error screen stays until Restart
     var r = parse();
     if (!S.onboarded && ['onb', 'company', 'settings'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
     var key = r.name === 'detail' ? 'detail:' + r.id : r.name + (r.step ? ':' + r.step : '');
@@ -1062,6 +1063,35 @@
     S.saved[id] = stage; enteringId = id; save(); haptic('select'); render(true);
   }
 
+  // ---------- error fallback (5 Nov 2026) ----------
+  // An uncaught error or an unhandled rejection replaces the screen with one plain message and a Restart button; the
+  // error itself goes to the console. Restart reloads the app on its home route. tenderscout.v2 is not touched, so the
+  // profile, answers, saved and skipped tenders survive.
+  var crashed = false;
+  function crash(err) {
+    try { console.error('TenderScout: unexpected error', err); } catch (e1) { /* no console */ }
+    if (crashed) return;
+    crashed = true;
+    try {
+      clearTimeout(sheetTimer); sheetKey = null;
+      $sheet.classList.remove('open'); $sheet.hidden = true; $sheet.innerHTML = '';
+      document.documentElement.classList.remove('sheet-open');
+      $screen.inert = false; $tabs.inert = false; $tabs.innerHTML = ''; $toast.innerHTML = '';
+      $screen.className = '';
+      $screen.innerHTML = '<div class="screen">' + navRow() +
+        emptyState('Something went wrong', 'Your profile, answers and saved tenders are kept.',
+          '<button class="btn btn-primary" data-act="restart">Restart</button>') + '</div>';
+      document.title = 'TenderScout';
+    } catch (e2) { /* the DOM itself is broken; the handler below still restarts */ }
+  }
+  function restart() {
+    var home = S.onboarded ? '#/feed' : '#/welcome/1';
+    location.replace(location.pathname + location.search + home);
+    location.reload();
+  }
+  window.addEventListener('error', function (e) { crash(e && (e.error || e.message)); });
+  window.addEventListener('unhandledrejection', function (e) { crash(e && e.reason); });
+
   // ---------- events ----------
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-go],[data-act],[data-filter],[data-confirm],[data-ask],[data-skip],[data-stage],[data-unskip],[data-cert],[data-lang],[data-ref]');
@@ -1087,6 +1117,7 @@
     if (d.ref) { if (S.profile.references + (+d.ref) < 0) return; applyLever('ref', function (p) { p.references = p.references + (+d.ref); }, el.closest('.stepper') || el); return; }
     switch (d.act) {
       case 'back': back(); break;
+      case 'restart': restart(); break;
       case 'draft': draft(); break;
       case 'finish': S.onboarded = true; save(); go('#/feed'); break;
       case 'save':
