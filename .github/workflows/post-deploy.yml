@@ -1,0 +1,171 @@
+# Post-deploy checks on GitHub's runner, which can reach github.io and *.vercel.app (the build containers cannot).
+# docs/adr/0003-vercel-from-github-actions.md point 7; replaces the "run from a laptop" commands of the pass-2 report.
+#   pages  after every successful "pages build and deployment" run of main: tests/live-check.js (the deployed files equal
+#          the deployed commit, byte for byte, and ?demo=reset,fast survives the directory redirect) and the smoke test
+#          against https://pioche8.github.io/ESCP-2627DT-C1/
+#   app    after a production deploy of escp-2627dt-c1 (called by vercel.yml): live-check, smoke, and 404 on /tests/smoke.js,
+#          /docs/, /CLAUDE.md and /site/ (only the allowlisted app files are public)
+#   site   after a production deploy of escp-2627dt-c1-site: sitemap.xml names the real domain (not localhost), the home page
+#          loads without a Vercel login, Lighthouse ≥ 95 on / and /how (median of 3) and axe 0 (site/scripts/audit.cjs)
+# workflow_dispatch runs any of them by hand (Actions → post-deploy → Run workflow).
+name: post-deploy
+
+on:
+  workflow_run:
+    workflows: ['pages build and deployment']
+    types: [completed]
+  workflow_call:
+    inputs:
+      app_url:
+        type: string
+        default: ''
+      site_url:
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: Check GitHub Pages (https://pioche8.github.io/ESCP-2627DT-C1/)
+        type: boolean
+        default: true
+      app_url:
+        description: Vercel app URL to check, e.g. https://escp-2627dt-c1.vercel.app/ (empty = skip)
+        type: string
+        default: ''
+      site_url:
+        description: Vercel site URL to check, e.g. https://escp-2627dt-c1-site.vercel.app (empty = skip)
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  PLAYWRIGHT_VERSION: 1.63.0
+  PAGES_URL: https://pioche8.github.io/ESCP-2627DT-C1/
+
+jobs:
+  pages:
+    name: GitHub Pages (live-check + smoke)
+    if: (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') || (github.event_name == 'workflow_dispatch' && inputs.pages)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.x
+      - name: The live files equal this commit (retried while the CDN catches up)
+        run: |
+          for i in 1 2 3 4 5 6; do
+            node tests/live-check.js "$PAGES_URL" && exit 0
+            echo "attempt $i of 6: not yet identical, waiting 30 s"; sleep 30
+          done
+          exit 1
+      - name: Install Playwright and Chromium
+        run: |
+          npm i --no-save --no-audit --no-fund playwright@${PLAYWRIGHT_VERSION}
+          npx playwright install --with-deps chromium
+      - name: Smoke test against the live URL
+        run: SMOKE_URL="$PAGES_URL" node tests/smoke.js live-shots
+      - name: Screenshots (on failure)
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: post-deploy-pages
+          path: live-shots/
+          retention-days: 7
+
+  app:
+    name: Vercel app (live-check + smoke + 404s)
+    if: inputs.app_url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_URL: ${{ inputs.app_url }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.x
+      - name: The live files equal this commit
+        run: |
+          for i in 1 2 3; do
+            node tests/live-check.js "$APP_URL" && exit 0
+            echo "attempt $i of 3: not yet identical, waiting 20 s"; sleep 20
+          done
+          exit 1
+      - name: Only the app files are public (404 on tests, docs, CLAUDE.md, site)
+        run: |
+          base="${APP_URL%/}"; bad=0
+          for p in tests/smoke.js docs/ CLAUDE.md site/; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "$base/$p")
+            if [ "$code" = "404" ]; then echo "ok   /$p → 404"; else echo "FAIL /$p → $code (expected 404)"; bad=1; fi
+          done
+          exit $bad
+      - name: Install Playwright and Chromium
+        run: |
+          npm i --no-save --no-audit --no-fund playwright@${PLAYWRIGHT_VERSION}
+          npx playwright install --with-deps chromium
+      - name: Smoke test against the live URL
+        run: SMOKE_URL="$APP_URL" node tests/smoke.js live-shots
+      - name: Screenshots (on failure)
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: post-deploy-app
+          path: live-shots/
+          retention-days: 7
+
+  site:
+    name: Vercel site (sitemap, public home page, Lighthouse)
+    if: inputs.site_url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SITE: ${{ inputs.site_url }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: sitemap.xml names the real domain, not localhost
+        run: |
+          base="${SITE%/}"
+          map=$(curl -fsS "$base/sitemap.xml")
+          echo "$map"
+          echo "$map" | grep -q "<loc>$base/</loc>" || { echo "FAIL sitemap.xml does not list $base/ (SITE_URL in vercel.yml must equal the production domain)"; exit 1; }
+          if echo "$map" | grep -q localhost; then echo "FAIL sitemap.xml still names localhost"; exit 1; fi
+          echo "ok   sitemap.xml lists $base/"
+      - name: The home page loads without a Vercel login
+        run: |
+          base="${SITE%/}"
+          out=$(curl -sS -L -o home.html -w '%{http_code} %{url_effective}' "$base/")
+          echo "$out"
+          code=${out%% *}; final=${out#* }
+          [ "$code" = "200" ] || { echo "FAIL the home page answered $code (Deployment Protection may cover production: project → Settings → Deployment Protection → Standard Protection)"; exit 1; }
+          case "$final" in "$base"*) ;; *) echo "FAIL redirected to $final (a login page?)"; exit 1 ;; esac
+          grep -q 'TenderScout' home.html || { echo "FAIL the page does not mention TenderScout"; exit 1; }
+          echo "ok   $base/ answers 200 without a login"
+      - name: Install the site's dev dependencies, Playwright and Chromium
+        run: |
+          (cd site && npm ci --no-audit --no-fund)
+          npm i --no-save --no-audit --no-fund playwright@${PLAYWRIGHT_VERSION}
+          npx playwright install --with-deps chromium
+      - name: Lighthouse ≥ 95 on / and /how (median of 3, dark + light) and axe 0
+        working-directory: site
+        run: |
+          export CHROME_PATH=$(node -e "console.log(require('playwright').chromium.executablePath())")
+          AUDIT_URL="$SITE" node scripts/audit.cjs
+      - name: Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: post-deploy-lighthouse
+          path: site/lighthouse/
+          retention-days: 14
+          if-no-files-found: ignore

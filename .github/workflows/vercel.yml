@@ -1,0 +1,181 @@
+# Vercel, deployed from this repository (docs/adr/0003-vercel-from-github-actions.md; steps for Luca in docs/DEPLOY.md §0).
+#   push to main       → production deploy of the projects whose files changed (the paths of each vercel.json ignoreCommand)
+#   pull request       → preview deploys of the changed projects, listed in one pull-request comment that is updated
+#   workflow_dispatch  → both projects: production from main, previews from any other branch
+# Projects: escp-2627dt-c1 (the app: scripts/vercel-app-dist.js → dist/) and escp-2627dt-c1-site (Next.js in site/), created
+# by scripts/vercel-deploy.js on the first run if they do not exist. After a production deploy, post-deploy.yml checks the
+# live URLs on this runner.
+# Secrets: VERCEL_TOKEN and VERCEL_ORG_ID only. Without them (or with the repository variable VERCEL_DEPLOY=off) the plan job
+# prints one notice and nothing else runs: the workflow stays green.
+name: vercel
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  VERCEL_CLI_VERSION: 64.7.0
+  VERCEL_TELEMETRY_DISABLED: '1'
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      enabled: ${{ steps.gate.outputs.enabled }}
+      target: ${{ steps.gate.outputs.target }}
+      projects: ${{ steps.changed.outputs.projects }}
+    steps:
+      - name: Secrets present and the workflow switched on?
+        id: gate
+        env:
+          HAS_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+          HAS_ORG: ${{ secrets.VERCEL_ORG_ID != '' }}
+          SWITCH: ${{ vars.VERCEL_DEPLOY }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          if [ "$SWITCH" = "off" ]; then
+            echo "::notice title=Vercel deploy switched off::The repository variable VERCEL_DEPLOY is 'off', so nothing is deployed (docs/adr/0003-vercel-from-github-actions.md)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$FORK" = "true" ]; then
+            echo "::notice title=Vercel deploy skipped::Pull requests from forks get no preview deploy (no secrets)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$HAS_TOKEN" != "true" ] || [ "$HAS_ORG" != "true" ]; then
+            echo "::notice title=Vercel deploy skipped::VERCEL_TOKEN or VERCEL_ORG_ID is not set as a repository secret, so nothing is deployed. Add both as described in docs/DEPLOY.md §0, then run this workflow (Actions → vercel → Run workflow)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$EVENT" = "pull_request" ] || { [ "$EVENT" = "workflow_dispatch" ] && [ "$REF" != "refs/heads/main" ]; }; then target=preview; else target=production; fi
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "target=$target" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        if: steps.gate.outputs.enabled == 'true'
+        with:
+          fetch-depth: 0
+      - name: Which projects changed
+        id: changed
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          EVENT: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          case "$EVENT" in
+            workflow_dispatch) node scripts/vercel-changed.js all ;;
+            pull_request) node scripts/vercel-changed.js "$(git merge-base "$PR_BASE" HEAD 2>/dev/null || echo "$PR_BASE")" HEAD ;;
+            *) node scripts/vercel-changed.js "$PUSH_BEFORE" HEAD ;;
+          esac
+
+  app:
+    name: deploy escp-2627dt-c1 (app)
+    needs: plan
+    if: needs.plan.outputs.enabled == 'true' && contains(needs.plan.outputs.projects, 'app')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+      domain: ${{ steps.deploy.outputs.domain }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.x
+      - name: Vercel CLI ${{ env.VERCEL_CLI_VERSION }}
+        run: npm i -g --no-audit --no-fund vercel@${VERCEL_CLI_VERSION}
+      - name: pull → build → deploy --prebuilt (${{ needs.plan.outputs.target }})
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: node scripts/vercel-deploy.js app "${{ needs.plan.outputs.target }}"
+
+  site:
+    name: deploy escp-2627dt-c1-site (site)
+    needs: plan
+    if: needs.plan.outputs.enabled == 'true' && contains(needs.plan.outputs.projects, 'site')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SITE_URL: https://escp-2627dt-c1-site.vercel.app
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+      domain: ${{ steps.deploy.outputs.domain }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Vercel CLI ${{ env.VERCEL_CLI_VERSION }}
+        run: npm i -g --no-audit --no-fund vercel@${VERCEL_CLI_VERSION}
+      - name: Site dependencies
+        run: npm ci --no-audit --no-fund
+        working-directory: site
+      - name: pull → build → deploy --prebuilt (${{ needs.plan.outputs.target }})
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: node scripts/vercel-deploy.js site "${{ needs.plan.outputs.target }}"
+
+  comment:
+    name: preview URLs on the pull request
+    needs: [plan, app, site]
+    if: always() && github.event_name == 'pull_request' && needs.plan.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      pull-requests: write
+    steps:
+      - name: One comment, updated in place
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          APP_RESULT: ${{ needs.app.result }}
+          APP_URL: ${{ needs.app.outputs.url }}
+          SITE_RESULT: ${{ needs.site.result }}
+          SITE_URL_OUT: ${{ needs.site.outputs.url }}
+        run: |
+          line() { # name result url
+            case "$2" in
+              success) echo "| $1 | ready | $3 |" ;;
+              skipped) echo "| $1 | no change in its files, not deployed | |" ;;
+              *) echo "| $1 | $2, see the run | |" ;;
+            esac
+          }
+          marker='<!-- vercel-actions-preview -->'
+          body="$marker
+          **Vercel previews** for ${SHA:0:7} ([run]($RUN)). Preview URLs ask for a Vercel login: they are for the team, not for sharing.
+
+          | Project | State | Preview |
+          |---|---|---|
+          $(line 'escp-2627dt-c1 (app)' "$APP_RESULT" "$APP_URL")
+          $(line 'escp-2627dt-c1-site (site)' "$SITE_RESULT" "$SITE_URL_OUT")"
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n 1)
+          if [ -n "$id" ]; then gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" > /dev/null; echo "updated comment $id"
+          else gh api -X POST "repos/$REPO/issues/$PR/comments" -f body="$body" > /dev/null; echo "created the comment"; fi
+
+  live:
+    name: post-deploy checks (production)
+    needs: [plan, app, site]
+    if: always() && needs.plan.outputs.enabled == 'true' && needs.plan.outputs.target == 'production' && (needs.app.result == 'success' || needs.site.result == 'success')
+    uses: ./.github/workflows/post-deploy.yml
+    with:
+      app_url: ${{ needs.app.result == 'success' && format('https://{0}/', needs.app.outputs.domain) || '' }}
+      site_url: ${{ needs.site.result == 'success' && format('https://{0}', needs.site.outputs.domain) || '' }}

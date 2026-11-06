@@ -1,8 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "echo 'tenderscout-app: no dependencies to install'",
+  "installCommand": "echo 'escp-2627dt-c1: no dependencies to install'",
   "buildCommand": "node scripts/vercel-app-dist.js",
   "outputDirectory": "dist",
+  "git": { "deploymentEnabled": false },
   "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- index.html app.js engine.js ai.js data.js insights.js styles.css manifest.webmanifest shared fonts assets vercel.json scripts/vercel-app-dist.js || exit 1"
 }
