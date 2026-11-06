@@ -325,7 +325,7 @@ S2 Flows, IA and user stories (issue 15; the deployed app bytes do not change):
 (not merged yet: see the pull request for issue 15)
 
 S5 ADR-0002, a real tender read by a real model (issue 18; the deployed app bytes do not change):
-(not merged yet: see the pull request for issue 18)
+127. **The real-model tender reader is recorded, not built** ([ADR-0002](docs/adr/0002-real-tender-reader.md), status Proposed). It would break §7.2 (no live AI calls), and nothing of it could be run or verified from a build session (TED and a model key unreachable, the Vercel projects not created), so a route that is off and untested would prove nothing. The ADR fixes where it would live (a site route, never the app), the flag and a Production-only key with a spend cap, `tests/data-check.js` as the contract (no `validateTender()` in `engine.js`, which would change the engine's bytes, its hash in the generated decision model and the site's copies for nothing), the preconditions (the team and the lecturer on §7.2, an escaping audit of the raw `t.id` / `t.photo` interpolation in `app.js`) and the question for 11 Nov. Until then `tests/no-live-ai-check.js` (CI `check`, preflight, `npm test`) fails on any server route under `site/src/app/` and on any key-shaped string (`sk-…`, 32 characters or more, not inside a longer word such as "desk-research") in a tracked file; its self-test proves it catches a key and ignores look-alikes.
 
 S3 Interview kit, what each answer feeds (issue 16; the deployed app bytes do not change):
 (not merged yet: see the pull request for issue 16)
