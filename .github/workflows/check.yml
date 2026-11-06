@@ -29,6 +29,8 @@ jobs:
         run: node tests/demo-golden.test.js
       - name: Engine invariants (seeded property test)
         run: node tests/engine-invariants.test.js
+      - name: No live AI and no keys (CLAUDE.md §7.2, ADR-0002)
+        run: node tests/no-live-ai-check.js
       - name: Declutter scan (static, five stylesheets)
         run: node tests/declutter-scan.js
       - name: WCAG AA audit of shared/tokens.json
