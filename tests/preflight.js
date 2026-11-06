@@ -33,6 +33,8 @@ const GATES = [
   { name: 'WCAG AA audit of shared/tokens.json', cmd: 'node shared/check-contrast.js' },
   { name: 'Generated token files match shared/tokens.json', cmd: 'node shared/build-tokens.js && git diff --exit-code --stat -- shared/tokens.css site/src/styles/tokens.css site/src/generated/tokens.ts' },
   { name: 'Generated decision model matches engine.js and data.js', cmd: 'node shared/how-it-decides.js && git diff --exit-code --stat -- site/src/generated/how-it-decides.json docs/HOW_IT_DECIDES.md' },
+  { name: 'Site copies of engine.js and data.js are current', cmd: 'node site/scripts/sync-shared.mjs --check' },
+  { name: 'Vercel app build: the app files only, byte-identical', cmd: 'node tests/vercel-dist.test.js' },
   { name: 'tests.html in Chromium (file:// and HTTP)', cmd: 'node tests/browser-tests.js', browser: true },
   { name: 'Smoke 390×844 (dark + light + reduced motion, declutter scan on every screen)', cmd: 'node tests/smoke.js', browser: true },
   { name: 'Smoke iPhone 13', cmd: 'SMOKE_DEVICE="iPhone 13" node tests/smoke.js', browser: true },
