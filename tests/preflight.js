@@ -30,7 +30,7 @@ const GATES = [
   { name: 'Demo pins (Hohenau 25 → 90 → 100, storage key, reset)', cmd: 'node tests/demo-golden.test.js' },
   { name: 'Engine invariants (seeded property test)', cmd: 'node tests/engine-invariants.test.js' },
   { name: 'No live AI and no keys (no site server route, no key-shaped string)', cmd: 'node tests/no-live-ai-check.js' },
-  { name: 'Declutter scan (static, five stylesheets)', cmd: 'node tests/declutter-scan.js' },
+  { name: 'Declutter scan (static, the app\'s two stylesheets)', cmd: 'node tests/declutter-scan.js' },
   { name: 'WCAG AA audit of shared/tokens.json', cmd: 'node shared/check-contrast.js' },
   { name: 'Generated token files match shared/tokens.json', cmd: 'node shared/build-tokens.js && git diff --exit-code --stat -- shared/tokens.css site/src/styles/tokens.css site/src/generated/tokens.ts' },
   { name: 'Generated decision model matches engine.js and data.js', cmd: 'node shared/how-it-decides.js && git diff --exit-code --stat -- site/src/generated/how-it-decides.json docs/HOW_IT_DECIDES.md' },

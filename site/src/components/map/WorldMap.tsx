@@ -1,22 +1,28 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { geoArea, geoConicConformal, geoPath, type GeoProjection } from 'd3-geo';
+import { geoConicConformal, geoGraticule, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
-import type { Feature, FeatureCollection, Geometry, Polygon } from 'geojson';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import world from 'world-atlas/countries-110m.json';
-import { COUNTRIES, Engine, PROFILE, counts, evaluateAll, profileWith } from '@/data/app';
-import { C, VERDICT } from '@/components/ui/VerdictShape';
-import { Counter } from '@/components/ui/Counter';
+import { Engine, PROFILE, evaluateOne, profileWith, type TenderView } from '@/data/app';
+import { VERDICT, verdictLabel } from '@/components/ui/VerdictShape';
+import tokens from '@/generated/tokens';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 
-// The countries come from data.js: home = the profile's countries (DE, AT), abroad = the other countries the tenders are
-// in (ES, NL, FR). ISO 3166-1 numeric ids are the world atlas's keys; the table covers every country engine.js names.
-const ISO_NUM: Record<string, string> = { DE: '276', AT: '040', ES: '724', NL: '528', FR: '250', IT: '380', PL: '616', BE: '056' };
-const HOME = PROFILE.countries;
-const ABROAD = COUNTRIES.filter((c) => !HOME.includes(c));
-const SHOWN = [...HOME, ...ABROAD].filter((c) => ISO_NUM[c]);
-const CODE_BY_ID = new Map(SHOWN.map((c) => [ISO_NUM[c], c] as const));
+const M = tokens.color.site.map;
+const HOME: [number, number] = [12.37, 51.34]; // Leipzig
+const HOME_IDS = ['276', '040'], CROSS_IDS = ['724', '528', '250']; // DE AT · ES NL FR (ISO 3166-1 numeric, as in world-atlas)
+const PINS: { id: string; name: string; cc: string; at: [number, number]; lab: [number, number, 'start' | 'end'] }[] = [
+  { id: 'ell-schools', name: 'Ellerbach', cc: 'DE', at: [11.1, 50.55], lab: [-14, 4, 'end'] },
+  { id: 'hoh-security', name: 'Hohenau', cc: 'DE', at: [12.9, 48.75], lab: [14, -2, 'start'] },
+  { id: 'kal-fibre', name: 'Kaltbrunn', cc: 'AT', at: [13.6, 47.35], lab: [14, 10, 'start'] },
+  { id: 'vli-libraries', name: 'Vlietdam', cc: 'NL', at: [4.6, 52.05], lab: [-14, 4, 'end'] },
+  { id: 'mor-support', name: 'Morlanne', cc: 'FR', at: [-0.5, 43.45], lab: [14, 4, 'start'] },
+  { id: 'val-dc', name: 'Valdemora', cc: 'ES', at: [-3.9, 40.35], lab: [14, 4, 'start'] },
+];
+// AT sits in Tyrol since 6 Nov 2026: at 16.1 / 46.85 Kaltbrunn's pin label covered it at every width (CLAUDE.md §11 item 141).
+const LABELS: [string, number, number, 'h' | 'c'][] = [['DE', 9.3, 52.2, 'h'], ['AT', 11.6, 47.05, 'h'], ['NL', 5.7, 52.85, 'c'], ['FR', 2.4, 46.9, 'c'], ['ES', -5.4, 41.9, 'c']];
 
 type Country = Feature<Geometry, Record<string, unknown>> & { id?: string | number };
 function mainland(f: Country): Country {
@@ -24,135 +30,115 @@ function mainland(f: Country): Country {
   const polys = f.geometry.coordinates.filter((p) => p[0].some(([lon, lat]) => lon > -20 && lon < 45 && lat > 34)); // Europe only (no overseas territories)
   return { ...f, geometry: { type: 'MultiPolygon', coordinates: polys } };
 }
-/** The country's largest polygon, so a label sits on the mainland (not between France and Corsica). No variable here is
- *  called `ring`: Tailwind reads that word in any source file as its box-shadow class and adds it to the site's CSS. */
-function largest(f: Country): Feature<Polygon> {
-  const g = f.geometry;
-  const parts = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
-  const polys = parts.map((coordinates): Feature<Polygon> => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates } }));
-  return polys.reduce((a, b) => (geoArea(b) > geoArea(a) ? b : a));
-}
 const topo = world as unknown as Topology<{ countries: GeometryCollection }>;
 const WORLD: Country[] = (feature(topo, topo.objects.countries) as FeatureCollection<Geometry>).features.map((f) => mainland(f as Country));
-const FOCUS = WORLD.filter((f) => CODE_BY_ID.has(String(f.id)));
-const LABEL_AT = FOCUS.map((f) => ({ cc: CODE_BY_ID.get(String(f.id))!, poly: largest(f) }));
-
-/** Where the horizontal line through (x, y) enters and leaves the projected polygon around x. */
-const LABEL_W = 28; // two capitals at 13 px bold plus 4 px each side
-function spanAt(proj: GeoProjection, poly: Feature<Polygon>, x: number, y: number): [number, number] {
-  let left = -Infinity, right = Infinity;
-  for (const loop of poly.geometry.coordinates) {
-    const pts = loop.map((p) => proj(p as [number, number]) ?? [x, y]);
-    for (let i = 1; i < pts.length; i++) {
-      const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
-      if ((ay <= y) === (by <= y)) continue;
-      const cx = ax + ((y - ay) * (bx - ax)) / (by - ay);
-      if (cx <= x) left = Math.max(left, cx); else right = Math.min(right, cx);
-    }
-  }
-  return [left, right];
-}
-const names = (cs: string[]) => { const n = cs.map(Engine.countryName); return n.length < 2 ? n.join('') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
-
-/** Fill delays (ms). On arrival the countries light up one after another, home first; on a switch the countries abroad
- *  follow each other in the same order. Solid colours only (declutter rules); instant under reduced motion. */
-const INTRO_STEP = 140, SWITCH_STEP = 90;
+const graticule = geoGraticule().step([5, 5])();
 
 /**
- * "Where you bid": filled countries (where you bid in brand, the rest in bg) with a code on each of the five. Under the
- * map, the cross-border switch re-scores the tenders with the real decision rules and the counts count to the new values.
- * Motion: the first time the map is half in view, the countries fill in one by one and the codes fade in; on a switch the
- * countries abroad fill or empty in turn.
+ * "Where you bid": the five countries, Leipzig as home, curved dashed arcs to six buyer pins (one shape per verdict), a
+ * cross-border toggle that re-scores Spain, the Netherlands and France with the real engine, and a tooltip per pin.
+ * d3-geo projects, React renders the SVG; world-atlas (Natural Earth 110m) is bundled from npm, nothing is fetched at runtime.
  */
 export function WorldMap() {
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const [cross, setCross] = useState(PROFILE.crossBorder);
+  const [cross, setCross] = useState(true);
+  const [tip, setTip] = useState<string | null>(null);
   const reduce = useReducedMotion();
-  const [seen, setSeen] = useState(false); // false until the map has come into view: the countries wait unlit
-  const [settled, setSettled] = useState(false); // the arrival sequence is over: switch delays apply from then on
   useEffect(() => {
     const el = box.current!;
     const ro = new ResizeObserver(([e]) => setSize({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  useEffect(() => {
-    if (seen) return;
-    const el = box.current!;
-    if (!('IntersectionObserver' in window)) { const t = setTimeout(() => setSeen(true), 0); return () => clearTimeout(t); }
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); io.disconnect(); } }, { threshold: 0.4 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [seen]);
-  useEffect(() => {
-    if (!seen || settled) return;
-    const t = setTimeout(() => setSettled(true), reduce ? 0 : INTRO_STEP * SHOWN.length + 700);
-    return () => clearTimeout(t);
-  }, [seen, settled, reduce]);
-  const views = useMemo(() => evaluateAll(profileWith({ crossBorder: cross })).filter((v) => v.verdict !== 'closed'), [cross]);
-  const n = counts(views);
+  const profile = useMemo(() => profileWith({ crossBorder: cross }), [cross]);
+  const pins = useMemo(() => PINS.map((p) => ({ ...p, v: evaluateOne(p.id, profile) })), [profile]);
+  const n = useMemo(() => { const c = { go: 0, maybe: 0, nogo: 0 }; pins.forEach((p) => { if (p.v.verdict !== 'closed') c[p.v.verdict]++; }); return c; }, [pins]);
 
-  const { w, h } = size;
+  const { w, h } = size, wide = w > 640;
   const geo = useMemo(() => {
     if (!w || !h) return null;
-    const pad = w < 600 ? 20 : 32;
     const proj = geoConicConformal().parallels([40, 56]).rotate([-6, 0]);
-    proj.fitExtent([[pad, pad], [w - pad, h - pad]], { type: 'FeatureCollection', features: FOCUS });
+    const focus = WORLD.filter((f) => HOME_IDS.includes(String(f.id)) || CROSS_IDS.includes(String(f.id)));
+    proj.fitExtent([[wide ? 300 : 24, wide ? 36 : 230], [w - (wide ? 36 : 64), h - 30]], { type: 'FeatureCollection', features: focus });
     const path = geoPath(proj);
-    // A code goes on its country; where the country is narrower than the code at that height (the Netherlands on a
-    // phone) it goes just west of it, on the sea, in a text colour instead of the fill's.
-    const labels = LABEL_AT.map(({ cc, poly }) => {
-      const [x, y] = path.centroid(poly), [left, right] = spanAt(proj, poly, x, y);
-      return right - left < LABEL_W ? { cc, x: left - 4, y, inside: false } : { cc, x, y, inside: true };
-    });
-    return { path, labels };
-  }, [w, h]);
-  const lit = seen || reduce;
-  const bids = (cc: string | undefined) => lit && !!cc && (HOME.includes(cc) || (cross && ABROAD.includes(cc)));
-  const where = cross ? SHOWN : HOME;
-  const delay = (cc: string | undefined) => {
-    if (!cc || reduce) return undefined;
-    const ms = settled ? Math.max(0, ABROAD.indexOf(cc)) * SWITCH_STEP : SHOWN.indexOf(cc) * INTRO_STEP;
-    return `${ms}ms`;
-  };
-  const summary = `${views.length} tenders: ${n.go} ${VERDICT.go.label}, ${n.maybe} ${VERDICT.maybe.label}, ${n.nogo} ${VERDICT.nogo.label}`;
+    return { proj, path, home: proj(HOME)! };
+  }, [w, h, wide]);
+  const isOn = (f: Country) => HOME_IDS.includes(String(f.id)) || (cross && CROSS_IDS.includes(String(f.id)));
+  const tipPin = pins.find((p) => p.id === tip);
+  const tipXY = tipPin && geo ? geo.proj(tipPin.at)! : null;
 
   return (
-    <>
-      <div className="map-frame">
-        <div ref={box} className="map">
-          {geo && (
-            <svg className="map-svg" width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Map: you bid in ${names(where)}.`}>
-              <g>
-                {WORLD.map((f, i) => {
-                  const cc = CODE_BY_ID.get(String(f.id));
-                  return <path key={i} d={geo.path(f) ?? undefined} className={cc ? 'map-land' : undefined} style={{ fill: bids(cc) ? C.brand : C.bg, transitionDelay: delay(cc) }} stroke={C.surface} strokeWidth={1} strokeLinejoin="round" />;
-                })}
+    <div ref={box} className="map" aria-label="Map of where you bid">
+      {geo && (
+        <svg className="map-svg" width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="group" aria-label={`Map of Germany, Austria, Spain, the Netherlands and France with ${pins.length} tenders: ${n.go} Go, ${n.maybe} Maybe, ${n.nogo} No-go.`}>
+          <defs>
+            <radialGradient id="map-glow"><stop offset="0%" stopColor={tokens.color.site.sea} stopOpacity=".35" /><stop offset="100%" stopColor={tokens.color.site.sea} stopOpacity="0" /></radialGradient>
+          </defs>
+          <circle cx={geo.home[0]} cy={geo.home[1]} r={Math.min(w, h) * 0.55} fill="url(#map-glow)" />
+          <path d={geo.path(graticule) ?? undefined} fill="none" stroke={M.graticule} strokeWidth={1} />
+          <g>
+            {WORLD.map((f, i) => (
+              <path key={i} d={geo.path(f) ?? undefined}
+                fill={HOME_IDS.includes(String(f.id)) ? M.home : isOn(f) ? M.cross : CROSS_IDS.includes(String(f.id)) ? M.crossOff : M.land}
+                stroke={isOn(f) ? M.onStroke : M.landStroke} strokeWidth={isOn(f) ? 1 : 0.6} strokeLinejoin="round" />
+            ))}
+          </g>
+          <g aria-hidden="true">
+            {LABELS.map(([cc, lon, lat, kind]) => { const [x, y] = geo.proj([lon, lat])!; return <text key={cc} x={x} y={y} textAnchor="middle" fill={kind === 'h' || cross ? M.label : M.labelOff} className="map-cc">{cc}</text>; })}
+          </g>
+          <g aria-hidden="true">
+            {pins.map((p) => {
+              const [x, y] = geo.proj(p.at)!, [hx, hy] = geo.home, dx = x - hx, dy = y - hy, d = Math.hypot(dx, dy) || 1;
+              const cx = (hx + x) / 2 + (dy / d) * d * 0.2, cy = (hy + y) / 2 - (dx / d) * d * 0.2;
+              return <path key={p.id} className={reduce ? undefined : 'arc'} d={`M${hx},${hy} Q${cx},${cy} ${x},${y}`} fill="none" stroke={p.v.verdict === 'nogo' ? M.arcNogo : M.arcGo} strokeWidth={1.4} strokeLinecap="round" strokeDasharray="1 6" />;
+            })}
+          </g>
+          <g transform={`translate(${geo.home[0]},${geo.home[1]})`} aria-hidden="true">
+            {!reduce && <circle className="pulse" r={6} fill={tokens.color.site.sky} />}
+            <circle r={7} fill={tokens.color.site.sky} stroke={M.bg} strokeWidth={3} />
+            <text x={13} y={-10} fill={tokens.color.site.skyLight} stroke={M.bg} strokeWidth={4} paintOrder="stroke" className="map-home-label">You · Leipzig</text>
+          </g>
+          {pins.map((p) => {
+            const [x, y] = geo.proj(p.at)!, v = p.v.verdict === 'closed' ? 'nogo' : p.v.verdict, col = VERDICT[v], [lx, ly, anchor] = p.lab;
+            return (
+              <g key={p.id} className="pin" transform={`translate(${x},${y})`} tabIndex={0} role="button"
+                aria-label={`${p.name} ${verdictLabel(p.v.verdict)} · ${p.v.score}. ${p.v.title}, ${p.v.buyer} (${p.cc}). ${p.v.why}`}
+                onMouseEnter={() => setTip(p.id)} onMouseLeave={() => setTip(null)} onFocus={() => setTip(p.id)} onBlur={() => setTip(null)}>
+                <circle r={20} fill="transparent" />
+                <g className="pin-shape" fill={'solidSmall' in col ? col.solidSmall : col.solid} stroke={M.bg} strokeWidth={2.5}>
+                  {v === 'go' ? <circle r={8} /> : v === 'maybe' ? <path d="M0,-9.5 L9.5,7 L-9.5,7Z" /> : <rect x={-7} y={-7} width={14} height={14} rx={1.5} />}
+                </g>
+                <text x={lx} y={ly - 6} textAnchor={anchor} stroke={M.bg} strokeWidth={4} paintOrder="stroke" aria-hidden="true">
+                  <tspan fill={tokens.color.site.textSoft} className="map-pin-name">{p.name}</tspan>{' '}
+                  <tspan x={lx} dy={14} fill={col.onDark} className="map-pin-v">{verdictLabel(p.v.verdict)} · {p.v.score}</tspan>
+                </text>
               </g>
-              <g aria-hidden="true">
-                {geo.labels.map(({ cc, x, y, inside }) => (
-                  <text key={cc} x={x} y={y} textAnchor={inside ? 'middle' : 'end'} dominantBaseline="central" className={`map-cc${lit ? ' on' : ''}`} style={{ fill: bids(cc) ? (inside ? C.bg : C.ink) : C.muted, transitionDelay: delay(cc) }}>{cc}</text>
-                ))}
-              </g>
-            </svg>
-          )}
+            );
+          })}
+        </svg>
+      )}
+      <div className="map-panel">
+        <div><div className="map-title">Where you bid</div><div className="map-home">HOME · LEIPZIG, DE</div></div>
+        <button type="button" role="switch" aria-checked={cross} className="map-row" onClick={() => setCross((v) => !v)}>
+          <span>Bid outside {PROFILE.countries.map(Engine.countryName).join(' and ')}</span>
+          <span className={`sw${cross ? ' on' : ''}`} aria-hidden="true"><i className="sw-knob" /></span>
+        </button>
+        <div className="map-counts" aria-live="polite">
+          {(['go', 'maybe', 'nogo'] as const).map((k) => (
+            <div key={k} style={{ flex: Math.max(n[k], 0.6), background: VERDICT[k].solid, color: VERDICT[k].on }}><b>{n[k]}</b>{VERDICT[k].label}</div>
+          ))}
         </div>
       </div>
-      <div className="map-panel">
-        <button type="button" role="switch" aria-checked={cross} className="map-row" onClick={() => setCross((v) => !v)}>
-          <span className={`sw${cross ? ' on' : ''}`} aria-hidden="true"><i className="sw-knob" /></span>
-          <span>Bid outside {names(HOME)}</span>
-        </button>
-        <p className="map-counts">
-          <span className="sr-only" aria-live="polite">{summary}</span>
-          <span aria-hidden="true">
-            {views.length} tenders: {(['go', 'maybe', 'nogo'] as const).map((k, i) => (
-              <span key={k}><span style={{ color: C[k], fontWeight: 800 }}><Counter value={n[k]} /> {VERDICT[k].label}</span>{i < 2 ? ', ' : ''}</span>
-            ))}
-          </span>
-        </p>
-      </div>
-    </>
+      {tipPin && tipXY && (
+        <div className="map-tip on" role="tooltip" style={{ left: Math.min(Math.max(tipXY[0], 125), w - 125), top: tipXY[1] }}>
+          <div className="tip-b">{tipPin.v.title}</div>
+          <div className="tip-s"><span className={`flag flag-${tipPin.cc}`} aria-hidden="true" />{tipPin.v.buyer}</div>
+          <div className="tip-v"><em style={{ background: VERDICT[tipPin.v.verdict === 'closed' ? 'nogo' : tipPin.v.verdict].solid, color: VERDICT[tipPin.v.verdict === 'closed' ? 'nogo' : tipPin.v.verdict].on }}>{verdictLabel(tipPin.v.verdict)} · {tipPin.v.score}</em>{tipPin.v.why}</div>
+        </div>
+      )}
+      <div className="map-credit">Natural Earth · world-atlas</div>
+    </div>
   );
 }
+export type { TenderView };

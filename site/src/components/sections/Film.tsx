@@ -1,25 +1,34 @@
-import { FILM_URL } from '@/data/copy';
-import { Photo } from '@/components/ui/Photo';
-import { Button } from '@/components/ui/Buttons';
+import Image from 'next/image';
+import { FILM_URL, chapters } from '@/data/copy';
+import { Icon } from '@/components/ui/Icon';
+import { SectionLabel } from '@/components/ui/Primitives';
+import { WaveButton } from '@/components/ui/Buttons';
 
-/** The film: a 16:9 photo block that opens the MP4, with the line and the button beside it, not on it. */
+/** 16:9 poster with a blue tint, pulsing play button and chapter chips. Hover zooms the photo, fills the bar and scales the button. */
 export function Film() {
   return (
-    <section id="film" className="section" aria-labelledby="film-h">
-      <div className="wrap film-inner">
+    <section id="film" className="film" aria-labelledby="film-h">
+      <div className="wrap-full film-inner">
         <div className="sec-row">
           <div className="sec-head">
+            <SectionLabel n="08">THE FILM</SectionLabel>
             <h2 id="film-h" className="h2">See it in 45 seconds.</h2>
           </div>
-          <Button href={FILM_URL} size="lg" external>Watch the film</Button>
+          <WaveButton href={FILM_URL} icon="play_arrow" size="lg" external>Watch the film</WaveButton>
         </div>
-        <a href={FILM_URL} target="_blank" rel="noopener noreferrer" className="poster" aria-label="Watch the 45-second launch film (MP4, opens in a new tab)">
-          <Photo src="/assets/harbor-dusk.jpg" sizes="(min-width: 1280px) 1200px, 100vw" className="poster" />
+        <a href={FILM_URL} target="_blank" rel="noopener noreferrer" className="poster">
+          <span className="sr-only">Watch the 45-second launch film (MP4, opens in a new tab). </span>
+          <Image src="/assets/harbor-dusk.jpg" alt="" fill sizes="(min-width: 1280px) 1280px, 100vw" className="poster-img" />
+          <div className="poster-tint" aria-hidden="true" />
+          <div className="poster-glow" aria-hidden="true" />
+          <div className="poster-label"><span className="dot" aria-hidden="true" />LAUNCH FILM · 0:45 · 1920 × 1080</div>
+          <div className="poster-play" aria-hidden="true"><span className="ping" /><span className="play"><Icon name="play_arrow" size={56} fill /></span></div>
+          <div className="poster-foot">
+            <p className="poster-title">Every night, we read every new EU tender.</p>
+            <div className="poster-bar" aria-hidden="true"><div /></div>
+            <div className="chapters">{chapters.map(([t, n]) => <span key={t} className="chapter"><span>{t}</span>{n}</span>)}</div>
+          </div>
         </a>
-        <div className="film-foot">
-          <p className="poster-title">Every night, we read every new EU tender.</p>
-          <span className="body">Launch film, 0:45</span>
-        </div>
       </div>
     </section>
   );

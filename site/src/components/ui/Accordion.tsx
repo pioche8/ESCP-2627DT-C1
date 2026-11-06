@@ -5,7 +5,7 @@ import { EASE } from '@/lib/motion';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { Icon } from './Icon';
 
-/** One item open at a time; the answer grows from 0 to auto and the + rotates 45°. */
+/** One item open at a time; the answer grows with grid-template-rows 0fr → 1fr and the + rotates 45°. */
 export function Accordion({ items, defaultOpen = 0 }: { items: { q: string; a: string }[]; defaultOpen?: number }) {
   const [open, setOpen] = useState(defaultOpen);
   const reduce = useReducedMotion();
