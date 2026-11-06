@@ -1,6 +1,7 @@
 # WebKit, Safari's engine, on GitHub's runners (pass 3, CLAUDE.md §11 item 147). The build containers cannot install
 # WebKit (item 75); these runners can. Runs tests/smoke.js with Playwright WebKit on the iPhone 13 and iPhone SE profiles,
-# each in dark, light and reduced motion (plus the error fallback and the test-session log), and keeps every screenshot.
+# each in dark, light and reduced motion (plus the error fallback and the test-session log), served over HTTP from the
+# checkout (SMOKE_SERVE=1, as the phone loads it from Pages), and keeps every screenshot.
 #
 # Informational for now: a failing check prints a warning and the failing lines in the job summary, and the job stays
 # green, so it never blocks a merge (the ruleset's required checks are `check` and `smoke`, .github/ruleset-main.json).
@@ -67,6 +68,7 @@ jobs:
         env:
           SMOKE_BROWSER: webkit
           SMOKE_DEVICE: ${{ matrix.device }}
+          SMOKE_SERVE: '1' # over HTTP like the phone: under file:// WebKit refuses the manifest (CORS) and hides error messages
         run: node tests/smoke.js webkit-shots 2>&1 | tee webkit-smoke.log
       - name: Summary (informational)
         if: always()

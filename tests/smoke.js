@@ -4,6 +4,8 @@
  *
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
+ *   SMOKE_SERVE=1 node tests/smoke.js             (serve this checkout over HTTP on a free local port: what a phone gets from Pages, minus TLS;
+ *                                                 the WebKit CI job uses it, because WebKit refuses the manifest over file://)
  *   SMOKE_ONLY=light node tests/smoke.js          (one scheme while developing)
  *   SMOKE_BROWSER=webkit SMOKE_DEVICE="iPhone 13" node tests/smoke.js   (Safari engine with a Playwright device profile; also "iPhone SE")
  *   MONKEY=1 node tests/smoke.js                  (adds tests/monkey.js: a seeded 10-minute random walk per profile; CI never sets it)
@@ -26,7 +28,7 @@ try { playwright = require('playwright'); } catch (e) { console.error('Playwrigh
 const { scanCss, scanDom } = require('./declutter-scan');
 
 const ROOT = path.resolve(__dirname, '..');
-const BASE = process.env.SMOKE_URL || 'file://' + ROOT + '/index.html';
+let BASE = process.env.SMOKE_URL || 'file://' + ROOT + '/index.html'; // SMOKE_SERVE=1 replaces it with a local HTTP URL before the first section
 const OUT = path.resolve(process.argv[2] || path.join(ROOT, 'screenshots'));
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -62,7 +64,17 @@ async function run(scheme) {
   const token = (name) => page.evaluate((k) => getComputedStyle(document.documentElement).getPropertyValue(k).trim(), name);
   const rgb = (hex) => { const h = hex.replace('#', ''); return 'rgb(' + [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ') + ')'; };
   const scanned = [];
-  const scan = async (name) => { const v = await scanDom(page); scanned.push(...v.map((x) => name + ': ' + x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : ''))); };
+  const overflowing = [];
+  // Every scanned screen also checks that no control's label is wider than the control (pass 3: "We don't meet it" spilled
+  // out of its button at 320 px once the line was answered, in Chromium and WebKit alike; no check measured it).
+  const labelsFit = async (name) => {
+    const o = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, [role="tab"], [role="switch"], [role="radio"]')).filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && el.innerText.trim() !== '' && getComputedStyle(el).visibility !== 'hidden' && el.scrollWidth > el.clientWidth + 1; // labelled controls only: a switch's 44 px hit area overflows on purpose
+    }).map((el) => (el.getAttribute('data-act') || el.getAttribute('data-confirm') || el.tagName.toLowerCase()) + ' "' + el.innerText.trim().slice(0, 30) + '" ' + el.scrollWidth + ' > ' + el.clientWidth + ' px'));
+    overflowing.push(...o.map((x) => name + ': ' + x));
+  };
+  const scan = async (name) => { const v = await scanDom(page); scanned.push(...v.map((x) => name + ': ' + x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : ''))); await labelsFit(name); };
 
   // 01–03 Onboarding
   await page.goto(url('demo=reset&theme=' + scheme));
@@ -415,6 +427,7 @@ async function run(scheme) {
   console.log('  info elements under 44 px on Company (box only): ' + JSON.stringify(small));
 
   check(scanned.length === 0, 'declutter scan: none of the 18 patterns on any screen' + (scanned.length ? ':\n       ' + scanned.join('\n       ') : ''));
+  check(overflowing.length === 0, 'every control\'s label fits inside the control on every scanned screen (' + VW + ' px)' + (overflowing.length ? ':\n       ' + overflowing.join('\n       ') : ''));
   check(problems.length === 0, 'no console errors, page errors or failed requests' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
   await browser.close();
 }
@@ -570,7 +583,23 @@ async function testSessionLog() {
   await browser.close();
 }
 
+// SMOKE_SERVE=1: the checkout over HTTP on 127.0.0.1 (the process exits at the end, which closes it).
+function serveRoot() {
+  const http = require('http');
+  const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+  return new Promise((resolve) => {
+    const srv = http.createServer((req, res) => {
+      const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0].replace(/^\//, '') || 'index.html'));
+      if (!p.startsWith(ROOT) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); res.end(); return; }
+      res.writeHead(200, { 'Content-Type': MIME[path.extname(p)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+      fs.createReadStream(p).pipe(res);
+    });
+    srv.listen(0, '127.0.0.1', () => resolve(srv));
+  });
+}
+
 (async () => {
+  if (process.env.SMOKE_SERVE && !process.env.SMOKE_URL) BASE = 'http://127.0.0.1:' + (await serveRoot()).address().port + '/';
   const appCss = ['styles.css', 'shared/tokens.css'].flatMap(scanCss);
   console.log('== static CSS scan (styles.css, shared/tokens.css)');
   check(appCss.length === 0, 'no declutter pattern in the app stylesheets' + (appCss.length ? ':\n       ' + appCss.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));

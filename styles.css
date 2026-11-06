@@ -171,6 +171,7 @@ html.sheet-open { overflow:hidden; }
 }
 .tabs [aria-checked="true"], .tabs [aria-selected="true"] { color:var(--c-brand); font-weight:700; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:8px; }
 .tabs.filter { margin:0 16px; }
+@media (max-width: 359px) { .tabs.filter button { gap:4px; padding:0 2px; } } /* 320 px: "▲ Maybe 2" was 2 px wider than its quarter (pass 3) */
 .tabs.stage button { font-size:14px; }
 .tabs button[disabled] { cursor:not-allowed; color:var(--c-muted); }
 
@@ -328,6 +329,9 @@ html.sheet-open { overflow:hidden; }
 .sheet-foot .row-btns { display:flex; gap:12px; }
 .sheet-foot .row-btns > * { flex:1 1 0; min-width:0; }
 .sheet-foot .row-btns > .grow-2 { flex-grow:2; }
+/* answered: "We meet it" is the primary and takes the rest of the row, "We don't meet it" keeps its label's width (as a third
+   of the row it touched both edges at 390 px and spilled out of its button at 320 px; pass 3 WebKit visual audit) */
+.sheet-foot .row-btns.pair > .btn-secondary:not(.btn-check) { flex:0 0 auto; }
 
 /* ---------- morning notification (simulated lock screen, once a day; app.js morningHTML) ----------
    The phone's lock screen in the app's own colours: the ground, the clock in ink, the notification as a flat surface
