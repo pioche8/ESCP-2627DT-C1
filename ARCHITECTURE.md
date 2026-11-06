@@ -23,8 +23,8 @@ flowchart LR
     tj["shared/tokens.json<br/>nine colours per scheme, type, 8 px radius, easing, durations"]
     bt["shared/build-tokens.js"]
     tcss["shared/tokens.css"]
-    scss["site/src/styles/tokens.css (Tailwind @theme)<br/>site/src/generated/tokens.ts"]
-    tj --> bt --> tcss & scss
+    scss["site/src/styles/tokens.css (Tailwind @theme)<br/>site/src/generated/tokens.ts<br/>frozen 3 Nov originals, edited by hand"]
+    tj --> bt --> tcss
     tcss --> styles["styles.css (components only)"] --> appjs
   end
   subgraph site["Website (Next.js, site/, not deployed)"]
@@ -93,7 +93,7 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 
 ## 5. Design tokens: one source, two products
 
-`shared/tokens.json` is the only place colours, type, the one 8 px radius, easing and durations are written: nine solid colours per scheme (background, surface, ink, muted, brand and the four verdict colours), one typeface. `node shared/build-tokens.js` emits `shared/tokens.css` for the app, `site/src/styles/tokens.css` (a Tailwind v4 `@theme` block) and `site/src/generated/tokens.ts` for the website. `styles.css` contains components only and no hand-typed colour. `node shared/check-contrast.js` audits every text/background pair in both schemes against WCAG AA; `tests/declutter-scan.js` proves the absence of the eighteen banned patterns (gradients, shadows, borders, pills, uppercase, italics, mono, eyebrows, numbering, code names in visible text, …) both in the stylesheets and in every rendered screen. Verdicts are never colour alone: shape + word everywhere (● Go, ▲ Maybe, ■ No-go, ◆ Needs your check).
+`shared/tokens.json` is the only place colours, type, the one 8 px radius, easing and durations are written: nine solid colours per scheme (background, surface, ink, muted, brand and the four verdict colours), one typeface. `node shared/build-tokens.js` emits `shared/tokens.css` for the app. Since 6 Nov the website keeps its original 3 Nov design and its own frozen token files, `site/src/styles/tokens.css` (a Tailwind v4 `@theme` block) and `site/src/generated/tokens.ts` (`CLAUDE.md` §11 item 139). `styles.css` contains components only and no hand-typed colour. `node shared/check-contrast.js` audits every app text/background pair in both schemes against WCAG AA, and the website's 33 original pairs from its frozen tokens; `tests/declutter-scan.js` proves the absence of the eighteen banned patterns (gradients, shadows, borders, pills, uppercase, italics, mono, eyebrows, numbering, code names in visible text, …) both in the app's stylesheets and in every rendered app screen (the website is out of its scope since 6 Nov). Verdicts are never colour alone: shape + word everywhere (● Go, ▲ Maybe, ■ No-go, ◆ Needs your check).
 
 ## 6. The website shares the code
 
@@ -110,7 +110,7 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 | `tests/docs-check.js` | every route `parse()` accepts and every tab appear in `docs/NAVIGATION.md` and `SKELETON.md`; every check a user story or flow names exists word for word; no interview is cited and no participant is quoted in `docs/design/` unless `evidence.md` logs it | node, CI `check` |
 | `tests/no-live-ai-check.js` | no server route under `site/src/app/` and no key-shaped string in a tracked file (§7.2; [ADR-0002](docs/adr/0002-real-tender-reader.md)) | node, CI `check` |
 | `tests/vercel-dist.test.js`, `site/scripts/sync-shared.mjs --check` | the Vercel app build is exactly the app files, byte-identical, every reference resolves; the site's copies of `engine.js`, `data.js` and the fonts equal the app's ([ADR-0001](docs/adr/0001-vercel-hosting.md)) | node, CI `check` |
-| `tests/declutter-scan.js` | the eighteen patterns are absent from the five stylesheets | node, CI `check` |
+| `tests/declutter-scan.js` | the eighteen patterns are absent from the app's two stylesheets (the website is out of scope since 6 Nov) | node, CI `check` |
 | `shared/check-contrast.js` | WCAG AA on every pair, both schemes | node, CI `check` |
 | generated files in sync | tokens and the decision model match their sources | CI `check` |
 | `tests/smoke.js` | the full click-through at 390×844 (and the iPhone 13 / SE profiles) in dark, light and reduced motion, with the declutter scan on every screen | Playwright + Chromium; CI `smoke` (390×844) |

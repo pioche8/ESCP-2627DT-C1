@@ -58,8 +58,8 @@ audit) generates:
 | Output | Used by | Shape |
 |---|---|---|
 | `shared/tokens.css` | the app (`index.html` loads it before `styles.css`) | `:root, [data-scheme="dark"] { --c-bg: #02040A; … }`, `[data-scheme="light"] { … }`, plus `--font-ui`, `--r: 8px`, `--ease-*`, `--dur-*`, `--app-*` layout values, `--safe-top` / `--safe-bottom` |
-| `site/src/styles/tokens.css` | the website (Tailwind v4 `@theme`) | `--color-ts-bg`, `--radius-base`, `--text-ts-*`, `--breakpoint-*`, `--ease-*` |
-| `site/src/generated/tokens.ts` | the website's TypeScript | `export const tokens = { … } as const` |
+
+Since 6 Nov 2026 the website is back to its original 3 Nov design and keeps its own frozen `site/src/styles/tokens.css` and `site/src/generated/tokens.ts`, which the build no longer writes (`CLAUDE.md` §11 item 139). Figma mirrors the app's tokens.
 | `.design-cache/tenderscout.md` | the design-drift lock (gitignored) | token summary |
 
 The structure (abridged):
@@ -181,14 +181,14 @@ sets "Status", "Score tile" and "Button" to `VerdictShape` + label, `VerdictTile
   applied on `.screen`, `.vhead`, the tab bar, the action bar, the sheet footer, the toast and the Welcome form.
 - **Motion:** tokens `--ease-*` / `--dur-*` (`design/MOTION.md`): entrance pop 480 ms, sheet 320 ms, the switch →
   re-score morph 700 ms, and count-ups.
-- **Verified:** `tests/declutter-scan.js` (static CSS and rendered DOM), `shared/check-contrast.js` (AA, 46 pairs),
+- **Verified:** `tests/declutter-scan.js` (static CSS and rendered DOM), `shared/check-contrast.js` (AA: the app's 46 pairs, the website's 33 since 6 Nov),
   `tests/smoke.js` (390 × 844, iPhone 13 / SE, dark, light and reduced motion).
 
 ### 2.7 Project structure
 
 ```
 index.html  styles.css  app.js  engine.js  data.js  ai.js     the app (classic scripts, no build)
-shared/     tokens.json → build-tokens.js → tokens.css (+ site copies); check-contrast.js; how-it-decides.js
+shared/     tokens.json → build-tokens.js → tokens.css (the website keeps frozen 3 Nov copies); check-contrast.js; how-it-decides.js
 fonts/      assets/img/                                        vendored fonts and photos
 tests/      engine, data, golden and invariant tests; smoke.js; declutter-scan.js; preflight.js; demo-record.js
 site/       Next.js website (src/app, src/components/{ui,sections,phone,how}, src/generated, public/assets)
