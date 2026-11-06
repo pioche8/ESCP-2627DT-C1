@@ -2,6 +2,8 @@
 
 What content TenderScout needs, where the truth for each piece lives, and who produces it. The last column of each table says what a real version built on TED would need beyond the prototype (`CLAUDE.md` §10: no real tender ingestion and no live AI calls in the prototype; this file only lists them).
 
+**Real structure, fictional examples:** the fields, rules and copy come from the code; every example value is demo data from `data.js` ([`ARCHITECTURE.md` §9](../../ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)).
+
 **Who produces each piece (the "Owner" column):**
 - **AI-read:** a language model reads it from the tender pack or the firm's website. In the prototype it is pre-written, fictional data in `data.js`, played back by `ai.js` with a delay and labelled "Simulated AI".
 - **Engine:** `engine.js` computes it from the AI-read fields and the profile. Deterministic and tested (rules in [`CLAUDE.md` §4](../../CLAUDE.md#4-engine-rules-do-not-change-behaviour-tests-lock-these), the model in [`docs/HOW_IT_DECIDES.md`](../HOW_IT_DECIDES.md)).

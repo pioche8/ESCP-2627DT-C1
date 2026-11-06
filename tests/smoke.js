@@ -11,9 +11,9 @@
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
  * "comparable qualification" sheet (Escape / scrim / Back close it) → "We meet it" →
  * Ask this tender → Company → ISO 27001 → re-score "Landkreis Hohenau: No-go → Go" →
- * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → About.
+ * feed → skip the Dutch libraries tender with a reason → save a tender → Bids → Settings.
  * Plus: ISO 27001 alone says "No-go → Maybe", closed (?today=), empty Bids, offline, not found, deep link, the appearance
- * switch on About (persisted), and under prefers-reduced-motion the instant reveal and count-up and no morph.
+ * switch on Settings (persisted), and under prefers-reduced-motion the instant reveal and count-up and no morph.
  * Every screen is scanned (tests/declutter-scan.js) for the 18 declutter patterns: negative tracking, uppercase, italics,
  * gradients, grain, monospace, borders, shadows, radius over 8 px, alpha colours, eyebrows, numbering, all-caps text,
  * pills / chips / tags / badges and code names in visible text. Fails on any console error, page error or failed request.
@@ -107,7 +107,7 @@ async function run(scheme) {
   check(bar && Math.round(bar.width) === VW && Math.round(bar.height) >= 60 && Math.round(bar.y + bar.height) === VH, 'the tab bar is a full-width 60 px bar at the bottom of the ' + VW + '×' + VH + ' viewport');
   check(await css('.tabbar a[aria-current="page"]', 'color') === rgb(await token('--c-brand')) && await css('.tabbar a[aria-current="page"]', 'fontWeight') === '700' && (await css('.tabbar a[aria-current="page"] .ms', 'fontVariationSettings')).includes('"FILL" 1'), 'active tab = brand colour + filled icon + bolder label');
   check(await page.locator('.tcard img').count() === 0 && await page.locator('.tcard .flag, .tcard .orig, .tcard .why').count() === 0, 'cards carry no photo, flag, original title or reason');
-  // Header appearance toggle: one tap flips the scheme, the next tap flips it back; About keeps System / Light / Dark
+  // Header appearance toggle: one tap flips the scheme, the next tap flips it back; Settings keeps System / Light / Dark
   const otherScheme = scheme === 'dark' ? 'light' : 'dark';
   const tgl = page.locator('.nav [data-act="theme-toggle"]');
   const tglBox = await tgl.boundingBox();
@@ -169,6 +169,9 @@ async function run(scheme) {
   check((await page.locator('a.req .cite').first().innerText()) === 'Vergabeunterlagen, p. 12, §3.1', 'citation as regular text "Vergabeunterlagen, p. 12, §3.1"');
   const cta = await page.locator('a.req[href="#/t/hoh-security/req/r3"] .req-cta').boundingBox();
   check(cta && cta.height >= 44 && (await page.locator('a.req[href="#/t/hoh-security/req/r3"] .req-cta').innerText()).startsWith('Check') && await page.locator('a.req .req-cta').count() === 1, 'the "Needs your check" line shows a 44 px "Check" call to action, the other lines do not');
+  check(await page.locator('a.req[href="#/t/hoh-security/req/r3"] .status .shape.diamond').count() === 1 && await page.locator('.shape:not(.circle):not(.tri):not(.square):not(.diamond)').count() === 0, 'the "Needs your check" line carries the ◆ diamond, and every shape has a kind');
+  const photoBox = await page.locator('.detail-photo').boundingBox();
+  check(photoBox && Math.round(photoBox.x) === 16 && Math.round(photoBox.x + photoBox.width) === VW - 16, 'the tender photo keeps the 16 px gutter on both sides (' + (photoBox ? Math.round(photoBox.x) + '–' + Math.round(photoBox.x + photoBox.width) : 'missing') + ' of ' + VW + ')');
   await scan('detail-nogo'); await shot('detail-nogo'); await shot('detail-nogo-full', true);
   const reqSel = 'a.req[href="#/t/hoh-security/req/r3"]';
   await page.click(reqSel); await waitSheet(true);
@@ -275,28 +278,53 @@ async function run(scheme) {
   check((await text('.screen')).includes('All companies and tenders are fictional'), 'fictional line on Bids');
   await scan('bids'); await shot('bids');
 
-  // 10 About
-  await page.click('.nav button[data-go="#/about"]');
+  // 08b Win/loss insights (a page of Bids, 5 Nov 2026): insights.js on the fictional past bids, pinned in tests/insights.test.js
+  check((await text('.insights-link')).includes('8 of 21 won · 38% in the last 12 months'), 'Bids links to Win/loss insights with the win rate');
+  await page.click('.insights-link');
+  await page.waitForSelector('.kpis');
+  const wl = await text('.screen');
+  check(wl.includes('38%') && wl.includes('8 of 21 won') && wl.includes('€2.3M') && wl.includes('6.8%'), 'Win/loss tiles: 38 %, 8 of 21 won, €2.3M, 6.8 % above the winner');
+  check((await page.locator('.area-row .area-name').allInnerTexts()).join(' | ') === 'Telecom equipment | IT services | Installation | Construction work', 'win rate by area, best first');
+  check(wl.includes('You lose most often on price: 6 of 13 lost bids, on average 6.8% above the winner.'), 'why you lost: price first, with the average gap to the winner');
+  check(wl.includes('fictional') && wl.includes('not AI'), 'Win/loss says the past bids are fictional and the numbers are not AI');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Bids', 'Win/loss keeps Bids active in the tab bar');
+  await scan('insights'); await shot('insights'); await shot('insights-full', true);
+  await page.click('button[data-act="back"]');
+  await page.waitForSelector('.bids-head');
+  check(page.url().endsWith('#/bids'), 'Back from Win/loss returns to Bids');
+
+  // 10 Settings (the 4th tab; was About): the header ⓘ and the old #/about link both open it
+  check(await page.locator('.tabbar a').count() === 5 && (await page.locator('.tabbar a span:not(.ms)').allInnerTexts()).join(' ') === 'Feed Bids Company Profile Settings', 'five tabs: Feed, Bids, Company, Profile, Settings');
+  await page.click('.tabbar a[href="#/profile"]');
+  await page.waitForSelector('.profile-card');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Profile' && (await text('.screen')).includes('Nordlicht Netzwerk GmbH') && await page.locator('.screen [data-go="#/company"].btn-block').count() === 1, 'Profile tab: the company profile and Edit on Company');
+  await scan('profile'); await shot('profile');
+  check(await page.locator('.nav button[data-go="#/settings"]').count() === 1, 'the header ⓘ opens Settings');
+  await page.click('.tabbar a[href="#/settings"]');
   await page.waitForSelector('.about-row');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Settings' && !(await page.locator('.screen [data-act="back"]').count()), 'Settings is a tab: active in the tab bar, no Back button');
   const about = await text('.screen');
+  check(about.includes('Appearance') && about.includes('Reset demo') && about.includes('About this prototype'), 'Settings has Appearance, Demo and About this prototype');
   check(about.includes('AI output is simulated') && about.includes('real code') && about.includes('All data is fictional') && about.includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
   check(!/engine\.js|ai\.js|data\.js|README|\?demo=/.test(about), 'About names no files or dev notes');
   check(!(await page.locator('[data-act="palette"]').count()), 'no palette switch (Brand only)');
-  await scan('about'); await shot('about');
+  await scan('settings'); await shot('settings');
   // Appearance switch (persisted)
   const other = scheme === 'dark' ? 'light' : 'dark';
   await page.click('[data-act="theme"][data-value="' + other + '"]');
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === other, 'appearance switch applies data-scheme=' + other);
   await load('', '#/about');
   await page.waitForSelector('.about-row');
+  check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Settings', 'the old #/about deep link opens the Settings tab');
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === other && await page.locator('[data-act="theme"][data-value="' + other + '"][aria-checked="true"]').count() === 1, 'appearance persists across a reload');
-  await shot('about-' + other);
+  await shot('settings-' + other);
   await page.click('[data-act="theme"][data-value="' + scheme + '"]');
 
   // Deep link after onboarding
   await load('', '#/t/kal-fibre');
   await page.waitForSelector('.vhead.v-maybe', { timeout: 8000 });
   check((await text('.vhead')).includes('No knock-outs, but 2 risks: short by 1 reference, mandatory site visit.'), 'deep link #/t/kal-fibre works (Maybe)');
+  check((await text('.comp-level')).startsWith('Fair chance') && (await text('.screen')).includes('Likely bidders') && (await text('.screen')).includes('Similar past awards'), 'Competition section: chance to win, likely bidders, similar past awards');
   await scan('detail-maybe'); await shot('detail-maybe');
 
   // Closed state (test-only ?today=)
@@ -325,6 +353,12 @@ async function run(scheme) {
   await load('', '#/bids');
   await page.waitForSelector('text=No bids yet');
   await scan('bids-empty'); await shot('bids-empty');
+  check(await page.locator('.insights-link').count() === 1, 'the Win/loss link shows on an empty Bids too (past results are history)');
+  await load('', '#/insights');
+  await page.waitForSelector('.kpis');
+  await page.click('button[data-act="back"]');
+  await page.waitForSelector('.bids-head');
+  check(page.url().endsWith('#/bids'), 'deep link #/insights: Back lands on Bids');
   await load('', '#/company');
   await page.waitForSelector('.co-head');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Landkreis Hohenau becomes Maybe'), 'without the answer the hint says Maybe');
@@ -344,6 +378,32 @@ async function run(scheme) {
   await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
   const readMs = Date.now() - t0;
   check(readMs < 1200 && await page.locator('.vhead .ai').count() === 1, 'fast mode: the tender is read in ' + readMs + ' ms with the "Simulated AI" label in place');
+
+  // iPhone home-screen insets (viewport-fit=cover, 47 px top / 34 px bottom): the top inset is applied once
+  const inset = await ctx.newPage();
+  await inset.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = ':root{--safe-top:47px !important;--safe-bottom:34px !important}'; document.head.appendChild(s); }); });
+  await inset.goto(url('demo=fast', '#/feed')); await inset.waitForSelector('.feed-list');
+  const feedNav = await inset.locator('.nav').first().boundingBox();
+  const insetBar = await inset.locator('.tabbar').boundingBox();
+  await inset.goto(url('demo=fast', '#/t/ell-schools')); await inset.waitForSelector('.vhead.v-go', { timeout: 8000 });
+  const backRow = await inset.locator('.vhead-nav').first().boundingBox();
+  check(feedNav && Math.round(feedNav.y) === 47 && backRow && Math.round(backRow.y) === 53 && insetBar && Math.round(insetBar.height) === 94, 'with iPhone insets the Feed header starts at 47 px, the tender back row at ' + (backRow ? Math.round(backRow.y) : '?') + ' px (47 + 6, inset applied once) and the tab bar is 60 + 34 px');
+  await inset.close();
+  // Morning notification (simulated lock screen, once a day; CLAUDE.md §11 item 120)
+  await load('', '#/feed'); await page.waitForSelector('.feed-list');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: not shown again on the day a fresh state was written');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.notifiedOn = '2026-11-04'; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await load('', '#/feed'); await page.waitForSelector('.lockscreen');
+  check(await page.locator('.lockscreen[role="dialog"][aria-modal="true"]').count() === 1 && (await text('.lockscreen')).includes('Simulated notification') && (await text('.lockscreen')).includes('Thursday 5 November'), 'morning notification: first Feed open of a new day shows the simulated lock screen (dialog, "Simulated notification", the date)');
+  check((await page.locator('.notif').innerText()).replace(/\s+/g, ' ').includes('TenderScout now 1 Go 2 Maybe 3 No-go') && await page.locator('.notif .shape').count() === 3, 'morning notification: "1 Go · 2 Maybe · 3 No-go" from the engine, each with its shape');
+  await scan('morning-notification'); await shot('morning-notification');
+  await page.click('.notif'); await page.waitForTimeout(100);
+  check(!(await page.locator('.lockscreen').count()) && page.url().endsWith('#/feed'), 'morning notification: tapping it opens the Feed');
+  await load('', '#/feed'); await page.waitForSelector('.feed-list');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: once a day (a reload the same day does not show it again)');
+  await load('', '#/about'); await page.click('[data-act="morning"]'); await page.waitForSelector('.lockscreen');
+  await page.keyboard.press('Escape');
+  check(!(await page.locator('.lockscreen').count()), 'morning notification: About replays it and Escape closes it');
 
   // Touch targets: interactive elements smaller than 44 px (pseudo-element hit areas are not measured here)
   const small = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, input, [role="switch"]'))
