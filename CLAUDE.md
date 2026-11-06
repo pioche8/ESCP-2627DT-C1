@@ -328,7 +328,7 @@ S5 ADR-0002, a real tender read by a real model (issue 18; the deployed app byte
 (not merged yet: see the pull request for issue 18)
 
 S3 Interview kit, what each answer feeds (issue 16; the deployed app bytes do not change):
-(not merged yet: see the pull request for issue 16)
+128. **The interview kit says what each answer feeds, and nothing more** (`docs/INTERVIEW_KIT.md` §8): one row per question with the hypothesis it tests and the field it fills in T8 (traceability), T9 (persona, HMW) and T10 (journey), no answers and no survey values (S1 stays in `evidence.md` §1b), no persona or journey file. A status column with S1's signals was proposed and dropped: from n = 1 it would pre-write T9. The follow-up call with S1 starts with questions 9 (H3) and 6, 10, 12, 13 (H4), and counts only once logged as an interview. On the same branch the smoke test's declutter scan of the Company re-score card waits until the morph has settled: CI caught the card mid-animation once (radius 8.7 px and the 15 px ghost), a race between a fixed 700 ms wait and a 700 ms animation that started late on a slow runner, already on `main` and unrelated to the docs (no app bytes).
 
 S4 Export-only test-session log (issue 17; the deployed app bytes change):
 (not merged yet: see the pull request for issue 17)
