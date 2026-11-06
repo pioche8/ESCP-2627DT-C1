@@ -8,6 +8,8 @@
  * tender.photo (added 3 Nov, ignored by engine.js) = file name in assets/img/ for the card band, Bids thumbnail
  * and detail header. Two tenders have no photo yet and show a document placeholder instead.
  * SECTORS (added 3 Nov, display only) = the 45 EU CPV divisions, shared with the marketing website.
+ * PAST_BIDS (added 5 Nov, read by insights.js, ignored by engine.js) = the company's fictional bid results of the
+ * last 12 months, for the Win/loss screen.
  */
 (function (root) {
   'use strict';
@@ -171,6 +173,104 @@
   // the two-digit prefix of tender.cpv with PROFILE.cpv. Codes and short names follow the EU Common Procurement Vocabulary.
   var SECTORS = [['03', 'Agriculture & forestry'], ['09', 'Fuel & energy'], ['14', 'Mining & metals'], ['15', 'Food & drink'], ['16', 'Farm machinery'], ['18', 'Clothing & footwear'], ['19', 'Textiles & plastics'], ['22', 'Printing'], ['24', 'Chemicals'], ['30', 'Office & computing'], ['31', 'Electrical & lighting'], ['32', 'Telecom equipment'], ['33', 'Medical & pharma'], ['34', 'Vehicles & transport'], ['35', 'Security & defence'], ['37', 'Sport & games'], ['38', 'Lab & precision'], ['39', 'Furniture'], ['41', 'Water supply'], ['42', 'Industrial machinery'], ['43', 'Construction machinery'], ['44', 'Building materials'], ['45', 'Construction work'], ['48', 'Software'], ['50', 'Repair & maintenance'], ['51', 'Installation'], ['55', 'Hotels & catering'], ['60', 'Transport services'], ['63', 'Logistics & travel'], ['64', 'Postal & telecom'], ['65', 'Utilities'], ['66', 'Finance & insurance'], ['70', 'Real estate'], ['71', 'Architecture & engineering'], ['72', 'IT services'], ['73', 'Research & development'], ['75', 'Public administration'], ['76', 'Oil & gas services'], ['77', 'Landscaping'], ['79', 'Business services'], ['80', 'Education & training'], ['85', 'Health & social care'], ['90', 'Cleaning & environment'], ['92', 'Culture & sport'], ['98', 'Community services']];
 
-  root.DEMO = { DEMO_TODAY: DEMO_TODAY, PROFILE: PROFILE, TENDERS: TENDERS, CERT_OPTIONS: CERT_OPTIONS, SECTORS: SECTORS };
+  // Competition per tender (display only; the engine never reads it, so no score or verdict changes). In the product
+  // the AI would read past award notices for similar contracts; here every rival, award and number is invented.
+  // past: similar earlier awards (winner = a rival's id). rivals: who is likely to bid, with their comparable references.
+  var COMPETITION = {
+    'ell-schools': {
+      past: [
+        { title: 'Wi-Fi for 8 secondary schools', buyer: 'Stadt Ellerbach', year: 2024, winner: 'velte', bidders: 4, value: 310000 },
+        { title: 'Network cabling, town hall annex', buyer: 'Stadt Ellerbach', year: 2023, winner: 'saalekom', bidders: 3, value: 140000 },
+        { title: 'School network upgrade', buyer: 'Gemeinde Rothfeld', year: 2025, winner: 'ostmark', bidders: 4, value: 520000 }
+      ],
+      rivals: [
+        { id: 'velte', name: 'Velte Netztechnik (fictional)', refs: 4 },
+        { id: 'saalekom', name: 'Saalekom Systeme (fictional)', refs: 3 },
+        { id: 'ostmark', name: 'Ostmark Datennetz (fictional)', refs: 2 }
+      ]
+    },
+    'hoh-security': {
+      past: [
+        { title: 'Security audit, county IT', buyer: 'Landkreis Hohenau', year: 2024, winner: 'pruefwerk', bidders: 7, value: 80000 },
+        { title: 'Penetration test, district offices', buyer: 'Landkreis Altmühlen', year: 2025, winner: 'pruefwerk', bidders: 6, value: 65000 },
+        { title: 'ISMS set-up and audit', buyer: 'Stadt Weißbach', year: 2025, winner: 'kernschutz', bidders: 6, value: 110000 }
+      ],
+      rivals: [
+        { id: 'pruefwerk', name: 'Prüfwerk IT-Sicherheit (fictional)', refs: 12 },
+        { id: 'kernschutz', name: 'Kernschutz Consulting (fictional)', refs: 6 }
+      ]
+    },
+    'val-dc': {
+      past: [
+        { title: 'Data centre cabling, lot 1', buyer: 'Universidad de Valdemora', year: 2024, winner: 'cableval', bidders: 5, value: 290000 },
+        { title: 'Server room re-cabling', buyer: 'Hospital de Sorbanes', year: 2025, winner: 'redesmeseta', bidders: 4, value: 180000 }
+      ],
+      rivals: [
+        { id: 'cableval', name: 'Cableval Instalaciones (fictional)', refs: 6 },
+        { id: 'redesmeseta', name: 'Redes Meseta (fictional)', refs: 5 }
+      ]
+    },
+    'kal-fibre': {
+      past: [
+        { title: 'Fibre rollout, phase 1', buyer: 'Stadtwerke Kaltbrunn', year: 2024, winner: 'alpenfaser', bidders: 3, value: 950000 },
+        { title: 'FTTB for business park', buyer: 'Gemeinde Lindau am See', year: 2025, winner: 'alpenfaser', bidders: 2, value: 600000 },
+        { title: 'Fibre backbone, water plant', buyer: 'Stadtwerke Kaltbrunn', year: 2023, winner: 'donaunetz', bidders: 3, value: 420000 }
+      ],
+      rivals: [
+        { id: 'alpenfaser', name: 'Alpenfaser Bau (fictional)', refs: 15 },
+        { id: 'donaunetz', name: 'Donaunetz Technik (fictional)', refs: 7 }
+      ]
+    },
+    'vli-libraries': {
+      past: [
+        { title: 'Wi-Fi for town hall and museum', buyer: 'Gemeente Vlietdam', year: 2024, winner: 'polderlink', bidders: 5, value: 160000 },
+        { title: 'Public Wi-Fi, 6 libraries', buyer: 'Gemeente Ruysdorp', year: 2025, winner: 'netwerkhuis', bidders: 6, value: 175000 }
+      ],
+      rivals: [
+        { id: 'polderlink', name: 'Polderlink Netwerken (fictional)', refs: 8 },
+        { id: 'netwerkhuis', name: 'Het Netwerkhuis (fictional)', refs: 5 }
+      ]
+    },
+    'mor-support': {
+      past: [
+        { title: 'IT support framework (3 years)', buyer: 'Centre Hospitalier de Morlanne', year: 2022, winner: 'infogestion', bidders: 4, value: 1800000 },
+        { title: 'Helpdesk and field support', buyer: 'CHU de Varennes', year: 2024, winner: 'infogestion', bidders: 5, value: 2100000 }
+      ],
+      rivals: [
+        { id: 'infogestion', name: 'Infogestion Santé (fictional)', refs: 20 },
+        { id: 'servinord', name: 'Servinord Informatique (fictional)', refs: 9 }
+      ]
+    }
+  };
+
+  // Past bids of the demo company over the last 12 months (added 5 Nov 2026, read by insights.js for the Win/loss screen,
+  // ignored by engine.js). ALL FICTIONAL: buyers, titles, prices and outcomes are invented, not interview evidence.
+  // cpv = the CPV division (area); ourPrice = the price we bid; winnerPrice = the winning price from the award notice
+  // (lost bids; null when the notice gives none); reason = the owner's debrief note: price | quality | reference | unknown.
+  var PAST_BIDS = [
+    { id: 'pb-01', submitted: '2025-11-20', cpv: '72', title: 'IT support for 9 district offices', buyer: 'Landkreis Weißenau (fictional)', country: 'DE', ourPrice: 184000, outcome: 'won' },
+    { id: 'pb-02', submitted: '2025-12-11', cpv: '51', title: 'Wi-Fi installation in the town library', buyer: 'Stadt Rabenfeld (fictional)', country: 'DE', ourPrice: 268000, outcome: 'lost', winnerPrice: 253000, reason: 'price' },
+    { id: 'pb-03', submitted: '2026-01-08', cpv: '32', title: 'Network switches for the vocational college', buyer: 'Berufsschulzentrum Ostmark (fictional)', country: 'DE', ourPrice: 96500, outcome: 'won' },
+    { id: 'pb-04', submitted: '2026-01-22', cpv: '45', title: 'Cable ducts for the new fire station', buyer: 'Gemeinde Lindtal (fictional)', country: 'AT', ourPrice: 410000, outcome: 'lost', winnerPrice: 398000, reason: 'reference' },
+    { id: 'pb-05', submitted: '2026-02-05', cpv: '72', title: 'Service desk for the job centre', buyer: 'Jobcenter Saalegrund (fictional)', country: 'DE', ourPrice: 132000, outcome: 'lost', winnerPrice: 139500, reason: 'quality' },
+    { id: 'pb-06', submitted: '2026-02-19', cpv: '51', title: 'Access points for 6 secondary schools', buyer: 'Stadt Kirchhain am See (fictional)', country: 'DE', ourPrice: 312000, outcome: 'won' },
+    { id: 'pb-07', submitted: '2026-03-05', cpv: '72', title: 'Server room maintenance, 3 years', buyer: 'Stadtwerke Mühlbach (fictional)', country: 'DE', ourPrice: 214400, outcome: 'lost', winnerPrice: 200000, reason: 'price' },
+    { id: 'pb-08', submitted: '2026-03-19', cpv: '45', title: 'Fibre trench works for a business park', buyer: 'Gemeinde Hollerau (fictional)', country: 'AT', ourPrice: 142800, outcome: 'won' },
+    { id: 'pb-09', submitted: '2026-04-02', cpv: '32', title: 'Video intercom for town halls', buyer: 'Marktgemeinde Seewinkel (fictional)', country: 'AT', ourPrice: 92650, outcome: 'lost', winnerPrice: 85000, reason: 'price' },
+    { id: 'pb-10', submitted: '2026-04-16', cpv: '51', title: 'Campus Wi-Fi upgrade', buyer: 'Hochschule Elbtal (fictional)', country: 'DE', ourPrice: 176000, outcome: 'lost', winnerPrice: 181000, reason: 'quality' },
+    { id: 'pb-11', submitted: '2026-04-30', cpv: '72', title: 'Managed network for 14 schools, 4 years', buyer: 'Landkreis Weißenau (fictional)', country: 'DE', ourPrice: 455000, outcome: 'won' },
+    { id: 'pb-12', submitted: '2026-05-14', cpv: '45', title: 'Street cabinet installation', buyer: 'Stadt Rabenfeld (fictional)', country: 'DE', ourPrice: 333600, outcome: 'lost', winnerPrice: 300000, reason: 'price' },
+    { id: 'pb-13', submitted: '2026-05-28', cpv: '51', title: 'Structured cabling for the town hall annex', buyer: 'Stadt Grünwalde (fictional)', country: 'DE', ourPrice: 238000, outcome: 'won' },
+    { id: 'pb-14', submitted: '2026-06-11', cpv: '72', title: 'Hospital network operations', buyer: 'Klinikum Auental (fictional)', country: 'DE', ourPrice: 520000, outcome: 'lost', winnerPrice: 495000, reason: 'reference' },
+    { id: 'pb-15', submitted: '2026-06-25', cpv: '32', title: 'Radio links for water pumping stations', buyer: 'Wasserverband Oberes Tal (fictional)', country: 'DE', ourPrice: 71400, outcome: 'won' },
+    { id: 'pb-16', submitted: '2026-07-09', cpv: '51', title: 'Wi-Fi for 4 youth centres', buyer: 'Stadt Kirchhain am See (fictional)', country: 'DE', ourPrice: 125280, outcome: 'lost', winnerPrice: 120000, reason: 'price' },
+    { id: 'pb-17', submitted: '2026-07-23', cpv: '72', title: 'IT security audit support', buyer: 'Stadt Grünwalde (fictional)', country: 'DE', ourPrice: 98000, outcome: 'lost', winnerPrice: 94500, reason: 'quality' },
+    { id: 'pb-18', submitted: '2026-08-06', cpv: '45', title: 'Duct network for an industrial estate', buyer: 'Gemeinde Lindtal (fictional)', country: 'AT', ourPrice: 610000, outcome: 'lost', winnerPrice: 640000, reason: 'quality' },
+    { id: 'pb-19', submitted: '2026-08-20', cpv: '72', title: 'Network modernisation for 3 town halls', buyer: 'Stadt Rabenfeld (fictional)', country: 'DE', ourPrice: 820000, outcome: 'won' },
+    { id: 'pb-20', submitted: '2026-09-10', cpv: '32', title: 'Telephone system for the library', buyer: 'Stadt Ostbrück (fictional)', country: 'DE', ourPrice: 51550, outcome: 'lost', winnerPrice: 50000, reason: 'price' },
+    { id: 'pb-21', submitted: '2026-10-01', cpv: '51', title: 'Wi-Fi in 5 sports halls', buyer: 'Gemeinde Hollerau (fictional)', country: 'AT', ourPrice: 205000, outcome: 'lost', winnerPrice: null, reason: 'unknown' }
+  ];
+
+  root.DEMO = { DEMO_TODAY: DEMO_TODAY, PROFILE: PROFILE, TENDERS: TENDERS, CERT_OPTIONS: CERT_OPTIONS, SECTORS: SECTORS, COMPETITION: COMPETITION, PAST_BIDS: PAST_BIDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.DEMO;
 })(this);

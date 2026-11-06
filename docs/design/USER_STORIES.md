@@ -2,6 +2,8 @@
 
 > **These stories come from the brief, not from interviews.** They are derived from [`BRIEF.md`](../../BRIEF.md) → "Solution" (features 1–5) and [`docs/NAVIGATION.md`](../NAVIGATION.md) → screens and flows 1–4, plus Skip and the About / AI disclosure. No interview is logged in [`evidence.md`](../../evidence.md) yet, so no story cites one. The tag on each story says which hypothesis it serves ([`evidence.md` §0](../../evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell)). It does not say the hypothesis holds. Interview links get added to each story after T1 ([`docs/START_HERE.md`](../START_HERE.md) §6).
 >
+> **Real behaviour, fictional examples:** the routes, rules and tests are the prototype's code; every name and number in the examples is demo data from `data.js` ([`ARCHITECTURE.md` §9](../../ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)).
+>
 > The acceptance criteria describe behaviour the prototype already has. Each one names the screen or route and the check that locks it. "Not locked by a test" means the behaviour exists but no gate checks it. The numbers (6 tenders, Landkreis Hohenau 25 → 90 → 100) come from the fictional demo data in `data.js`.
 
 Every story has the same user: the owner of a 5–50 person firm that sells to the public sector and has no bid manager ([`BRIEF.md`](../../BRIEF.md) → "User"). There is no persona yet; that is T9 and waits for interviews.

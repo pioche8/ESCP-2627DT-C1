@@ -4,13 +4,13 @@
  * engine.js decides every verdict; this file only renders and stores state. */
 (function () {
   'use strict';
-  var E = window.Engine, D = window.DEMO, AI = window.AI;
-  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme (and a palette field kept for shape stability)
+  var E = window.Engine, D = window.DEMO, AI = window.AI, I = window.Insights;
+  var KEY = 'tenderscout.v2';          // v2: skipped = { id: { reasons: [], at } }, plus theme (and a palette field kept for shape stability), plus notifiedOn (5 Nov, additive)
   var STAGES = ['Deciding', 'Bidding', 'Submitted'];
   var SKIP_REASONS = ['Too big for us', 'Missing a certificate', 'Wrong region', 'Not enough time', 'Price-only', 'Other'];
   var LANG_OPTIONS = ['de', 'en', 'es', 'fr', 'nl'];
   var V = E.VERDICT_LABEL;             // go → 'Go', maybe → 'Maybe', nogo → 'No-go', closed → 'Closed'
-  var SHAPE = { go: 'circle', maybe: 'tri', nogo: 'square' };
+  var SHAPE = { go: 'circle', maybe: 'tri', nogo: 'square', check: 'diamond' };   // check = ◆ Needs your check (status lines)
   // Requirement status → colour, shape and label. UI only: engine.js keeps pass/risk/fail/review.
   var STATUS = {
     fail:   { v: 'nogo',  shape: 'square',  label: 'Fails' },
@@ -33,8 +33,10 @@
   // ---------- state ----------
   var mem = null; // in-memory fallback when storage is blocked
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  // notifiedOn = the day the morning notification last showed. A fresh state counts as notified today, so it first shows
+  // on the next day the app is opened (in the prototype "today" is fixed, so use ?demo=morning or About to see it).
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand' };
+    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand', notifiedOn: TODAY };
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -45,12 +47,19 @@
   function save() { dirty = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } }
   var S = load();
   if (THEMES.indexOf(themeParam) !== -1) { S.theme = themeParam; save(); }
-  var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both
+  var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both · ?demo=morning shows the morning notification once
   if (demoFlags.indexOf('reset') !== -1) {
     S = fresh(); if (THEMES.indexOf(themeParam) !== -1) S.theme = themeParam; save();
     if (demoFlags.indexOf('fast') !== -1) params.set('demo', 'fast'); else params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
+  }
+  if (demoFlags.indexOf('morning') !== -1) { // demo: play this morning's notification once, then drop the flag so a reload does not replay it
+    S.notifiedOn = ''; save();
+    var mf = demoFlags.filter(function (x) { return x && x !== 'morning'; });
+    if (mf.length) params.set('demo', mf.join(',')); else params.delete('demo');
+    var mqs = params.toString();
+    history.replaceState(null, '', location.pathname + (mqs ? '?' + mqs : '') + (location.hash || '#/feed'));
   }
 
   // session-only UI state
@@ -67,9 +76,9 @@
   // ---------- DOM ----------
   var $app = document.getElementById('app');
   $app.innerHTML = '<div id="screen"></div><div id="tabbar-root"></div><div id="sheet-root" class="sheet-root" hidden></div>' +
-    '<div id="toast-root" class="toast-root" role="status" aria-live="polite"></div>';
+    '<div id="toast-root" class="toast-root" role="status" aria-live="polite"></div><div id="notify-root" class="notify-root" hidden></div>';
   var $screen = document.getElementById('screen'), $tabs = document.getElementById('tabbar-root'),
-      $sheet = document.getElementById('sheet-root'), $toast = document.getElementById('toast-root');
+      $sheet = document.getElementById('sheet-root'), $toast = document.getElementById('toast-root'), $notify = document.getElementById('notify-root');
 
   // ---------- helpers ----------
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -132,15 +141,15 @@
   function navRow(right) {
     return '<div class="nav"><span class="wordmark">TenderScout</span>' + (right || '') + '</div>';
   }
-  function infoBtn() { return '<button class="icon-btn" data-go="#/about" aria-label="About this prototype">' + icon('info', 's22') + '</button>'; }
-  // Light / dark in one tap from the header (About → Appearance keeps the three-way choice incl. System).
+  function infoBtn() { return '<button class="icon-btn" data-go="#/settings" aria-label="Settings and about this prototype">' + icon('info', 's22') + '</button>'; }
+  // Light / dark in one tap from the header (Settings → Appearance keeps the three-way choice incl. System).
   function themeBtn() {
     var next = effectiveScheme() === 'dark' ? 'light' : 'dark';
     return '<button class="icon-btn" data-act="theme-toggle" aria-label="Switch to ' + next + ' mode" title="Switch to ' + next + ' mode">' + icon('contrast', 's22') + '</button>';
   }
   function backBtn() { return '<button class="icon-btn" data-act="back" aria-label="Back">' + icon('chevron_left', 's22') + '</button>'; }
   // The bottom tab bar: full width, icon + label; the active tab is brand-coloured with a filled icon and a bolder label.
-  var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company']];
+  var TABS = [['feed', '#/feed', 'radar', 'Feed'], ['bids', '#/bids', 'bookmarks', 'Bids'], ['company', '#/company', 'domain', 'Company'], ['profile', '#/profile', 'badge', 'Profile'], ['settings', '#/settings', 'tune', 'Settings']];
   function setTabs(active) {
     if (!active) { $tabs.innerHTML = ''; return; }
     if (!$tabs.querySelector('.tabbar')) {
@@ -212,21 +221,38 @@
   // ---------- 03 Check your profile ----------
   function checkProfile() {
     var p = S.profile;
-    var kv = function (k, v) { return '<div class="kv"><p class="k">' + k + '</p><p class="v">' + esc(v) + '</p></div>'; };
     return '<div class="screen has-bar">' +
       '<div class="nav back-nav">' + backBtn() + '<span class="spacer"></span>' + ai() + '<span style="width:12px"></span></div>' +
       '<div class="gutter"><h1 class="screen-title" tabindex="-1">Check your profile</h1>' +
       '<p class="sub">Drafted from ' + esc(S.website || p.website || 'your website') + '. Fix anything that’s off.</p></div>' +
-      '<section class="card profile-card" aria-label="Drafted company profile">' +
+      profileCard(p, 'Drafted company profile', true) +
+      '</div>' +
+      '<div class="action-bar"><button class="btn btn-secondary" data-go="#/company">Edit</button><button class="btn btn-primary" data-act="finish">Looks right</button></div>';
+  }
+
+  // The company profile card: on Check your profile (with the AI's sources) and on the Profile tab (without them).
+  function profileCard(p, label, withSources) {
+    var kv = function (k, v) { return '<div class="kv"><p class="k">' + k + '</p><p class="v">' + esc(v) + '</p></div>'; };
+    return '<section class="card profile-card" aria-label="' + label + '">' +
         '<div><p class="co-name">' + esc(p.name) + '</p><p class="meta-text">' + esc(p.city) + '</p></div>' +
         '<div class="stat-row"><div><b>' + p.staff + '</b><span>Staff</span></div><div><b>' + money(p.turnover) + '</b><span>Turnover</span></div><div><b>' + p.references + '</b><span>References</span></div></div>' +
         kv('Sectors', p.sectorsLabel.join(', ')) +
         kv('Certificates', p.certifications.length ? p.certifications.join(', ') : 'None yet') +
         kv('Bid languages', p.languages.map(E.langName).join(', ')) +
         kv('Countries', p.countries.map(E.countryName).join(', ') + (p.crossBorder ? ', cross-border' : '')) +
-        '<p class="meta-text">Sources: ' + esc(S.website || 'nordlicht-netzwerk.example') + ', 18 pages, ' + plural(p.references, 'award notice') + ' (fictional)</p>' +
-      '</section></div>' +
-      '<div class="action-bar"><button class="btn btn-secondary" data-go="#/company">Edit</button><button class="btn btn-primary" data-act="finish">Looks right</button></div>';
+        (withSources ? '<p class="meta-text">Sources: ' + esc(S.website || 'nordlicht-netzwerk.example') + ', 18 pages, ' + plural(p.references, 'award notice') + ' (fictional)</p>' : '') +
+      '</section>';
+  }
+
+  // ---------- Profile (4th tab): the company profile at a glance; changes happen on Company ----------
+  function profile() {
+    return '<div class="screen has-tabs">' +
+      navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
+      '<div class="gutter"><h1 class="screen-title" tabindex="-1">Profile</h1>' +
+      '<p class="sub">What TenderScout checks every tender against.</p></div>' +
+      profileCard(S.profile, 'Company profile', false) +
+      '<div class="about-actions"><button class="btn btn-secondary btn-block" data-go="#/company">Edit on Company</button></div>' +
+      '</div>';
   }
 
   // ---------- 04 Feed ----------
@@ -321,9 +347,49 @@
       '<div class="sec-h"><h2>In short</h2>' + ai() + '</div><p class="in-short reveal">' + words(t.ai.summary) + '</p>' +
       '<div class="sec-h"><h2>Can you qualify?</h2><span class="aside">' + r.count.pass + ' of ' + r.checks.length + ' met</span></div>' +
       '<div class="cards">' + checks.map(function (c) { return reqCard(t, c); }).join('') + '</div>' +
+      competitionHTML(t, r) +
       (qa.length ? '<div class="sec-h"><h2>Ask this tender</h2>' + ai() + '</div><div class="asks" id="asks">' + asksHTML(t) + '</div>' : '') +
       fiction() + '</div>' +
       '<div class="action-bar">' + (closed ? '<p class="bar-note">Closed tenders can’t be saved</p>' : '') + actions + '</div>';
+  }
+  // Competition: who bid on similar contracts and who is likely to bid now (simulated AI reading of past award notices,
+  // fictional data in data.js), plus a rough chance to win from plain rules. Display only: the score and verdict
+  // come from engine.js and are not touched.
+  function chanceToWin(t, r) {
+    var c = D.COMPETITION && D.COMPETITION[t.id]; if (!c) return null;
+    if (r.verdict === 'nogo') return { level: 'Qualify first', odds: '', why: ['You miss a knock-out above, so a bid would be excluded before price or quality count.'] };
+    var counts = c.past.map(function (a) { return a.bidders; });
+    var avg = counts.reduce(function (a, b) { return a + b; }, 0) / counts.length, p = 1 / avg;
+    var lo = Math.min.apply(null, counts), hi = Math.max.apply(null, counts);
+    var why = ['Similar contracts drew ' + (lo === hi ? lo : lo + ' to ' + hi) + ' bidders.'];
+    var wins = {}; c.past.forEach(function (a) { wins[a.winner] = (wins[a.winner] || 0) + 1; });
+    var top = c.rivals.slice().sort(function (a, b) { return (wins[b.id] || 0) - (wins[a.id] || 0); })[0];
+    if ((wins[top.id] || 0) >= 2) { p *= 0.7; why.push(bare(top.name) + ' won ' + wins[top.id] + ' of the last ' + c.past.length + '.'); }
+    var strongest = c.rivals.slice().sort(function (a, b) { return b.refs - a.refs; })[0], mine = S.profile.references;
+    if (mine > strongest.refs) { p *= 1.2; why.push('You have more comparable references (' + mine + ') than any rival.'); }
+    else if (mine < strongest.refs) { p *= 0.8; why.push(bare(strongest.name) + ' has more references (' + strongest.refs + ' vs your ' + mine + ').'); }
+    else why.push('Your references (' + mine + ') match the strongest rival.');
+    if (r.verdict === 'maybe') why.push('Only once you clear the open points above.');
+    return { level: p >= 0.25 ? 'Good chance' : p >= 0.15 ? 'Fair chance' : 'Low chance', odds: 'About 1 in ' + Math.max(2, Math.round(1 / p)), why: why };
+  }
+  function competitionHTML(t, r) {
+    var c = D.COMPETITION && D.COMPETITION[t.id]; if (!c || r.verdict === 'closed') return '';
+    var ch = chanceToWin(t, r);
+    var wins = {}; c.past.forEach(function (a) { wins[a.winner] = (wins[a.winner] || 0) + 1; });
+    var name = function (id) { var x = c.rivals.filter(function (v) { return v.id === id; })[0]; return x ? bare(x.name) : id; };
+    var row = function (title, meta) { return '<div class="row"><div class="txt"><p class="row-label">' + esc(title) + '</p><p class="meta-text">' + esc(meta) + '</p></div></div>'; };
+    return '<div class="sec-h"><h2>Competition</h2>' + ai() + '</div>' +
+      '<div class="group comp-chance">' +
+        '<p class="comp-level">' + esc(ch.level) + (ch.odds ? '<span class="comp-odds"> · ' + esc(ch.odds) + '</span>' : '') + '</p>' +
+        '<ul class="comp-why">' + ch.why.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' +
+        '<p class="meta-text">Rough estimate from past awards with plain rules, not AI. It does not change the score.</p>' +
+      '</div>' +
+      '<p class="label-text comp-h">Likely bidders</p><div class="group">' +
+        c.rivals.map(function (v) { return row(bare(v.name), 'Won ' + (wins[v.id] || 0) + ' of the last ' + c.past.length + ' · ' + plural(v.refs, 'reference')); }).join('') +
+      '</div>' +
+      '<p class="label-text comp-h">Similar past awards</p><div class="group">' +
+        c.past.map(function (a) { return row(a.title, a.buyer + ', ' + a.year + ' · won by ' + name(a.winner) + ' · ' + plural(a.bidders, 'bidder') + ' · ' + money(a.value)); }).join('') +
+      '</div>';
   }
   function fact(k, v, soon) { return '<div class="fact"><p class="k">' + k + '</p><p class="v' + (soon ? ' soon' : '') + '">' + esc(v) + '</p></div>'; }
 
@@ -481,7 +547,57 @@
     }
     return '<div class="screen has-tabs">' + navRow('<span class="spacer"></span>' + themeBtn() + infoBtn()) +
       '<div class="bids-head"><h1 class="screen-title" tabindex="-1">Bids</h1><p class="sub">' + esc(sub) + '</p></div>' +
-      body + fiction() + '</div>';
+      insightsLink() + body + fiction() + '</div>';
+  }
+  // The way into Win/loss insights: past results belong next to the pipeline, so it sits at the top of Bids.
+  function insightsLink() {
+    var s = I.summary(D.PAST_BIDS, TODAY);
+    return '<a class="insights-link" href="#/insights"><span class="txt"><span class="row-label">Win/loss insights</span>' +
+      '<span class="row-sub">' + s.won + ' of ' + s.submitted + ' won · ' + s.winRate + '% in the last 12 months</span></span>' +
+      icon('arrow_forward', 's22') + '</a>';
+  }
+
+  // ---------- 08b Win/loss insights (#/insights) ----------
+  // Win rate by area and why bids were lost, from the company's past bids. insights.js does the arithmetic (no AI);
+  // every past bid is fictional (data.js PAST_BIDS). The tab bar stays, with Bids active: this is a page of Bids.
+  var REASON_HINT = { reference: 'The buyer asked for a reference you did not have', unknown: 'Add the buyer’s feedback when it arrives' };
+  function sectorName(cpv) { var x = D.SECTORS.filter(function (s) { return s[0] === cpv; })[0]; return x ? x[1] : cpv; }
+  function insightsScreen() {
+    var s = I.summary(D.PAST_BIDS, TODAY);
+    var kpi = function (n, k) { return '<div class="kpi"><p class="n">' + esc(n) + '</p><p class="k">' + esc(k) + '</p></div>'; };
+    var areas = s.byArea.map(function (a) {
+      var name = sectorName(a.cpv);
+      return '<li class="area-row"><div class="area-top"><span class="area-name">' + esc(name) + '</span>' +
+        '<span class="area-n">' + a.won + ' of ' + a.total + ' won · ' + a.rate + '%</span></div>' +
+        '<div class="area-bar" aria-hidden="true"><span style="width:' + a.rate + '%"></span></div></li>';
+    }).join('');
+    var reasons = s.reasons.map(function (r) {
+      var sub = r.reason === 'price' && r.avgGap !== null ? r.avgGap + '% above the winner on average'
+        : r.reason === 'quality' && r.cheaper ? 'You were the cheaper bid in ' + r.cheaper + ' of ' + r.count
+        : REASON_HINT[r.reason] || '';
+      return '<div class="row"><div class="txt"><p class="row-label">' + esc(r.label) + '</p>' + (sub ? '<p class="row-sub">' + esc(sub) + '</p>' : '') + '</div>' +
+        '<p class="reason-n">' + r.count + '<span class="sr-only"> ' + (r.count === 1 ? 'bid' : 'bids') + '</span></p></div>';
+    }).join('');
+    var top = s.reasons[0];
+    var note = !top ? '' : top.reason === 'price' && s.priceGap !== null
+      ? 'You lose most often on <b>price</b>: ' + top.count + ' of ' + s.lost + ' lost bids, on average ' + s.priceGap + '% above the winner.'
+      : 'Most lost bids: <b>' + esc(top.label.toLowerCase()) + '</b>, ' + top.count + ' of ' + s.lost + '.';
+    var body = !s.submitted ? emptyState('No results yet', 'Win/loss insights appear once you have submitted bids and the results are out.')
+      : '<div class="kpis">' +
+          kpi(s.winRate + '%', 'Win rate · ' + s.won + ' of ' + s.submitted + ' won') +
+          kpi(money(s.valueWon), 'Contract value won') +
+          kpi(String(s.lost), s.lost === 1 ? 'Bid lost' : 'Bids lost') +
+          kpi(s.priceGap === null ? '–' : s.priceGap + '%', 'Above the winner when you lost on price') +
+        '</div>' +
+        '<div class="sec-h"><h2>Win rate by area</h2><span class="aside">won of submitted</span></div>' +
+        '<ul class="group" aria-label="Win rate by area">' + areas + '</ul>' +
+        (s.lost ? '<div class="sec-h"><h2>Why you lost</h2><span class="aside">' + plural(s.lost, 'bid') + '</span></div>' +
+          '<p class="insight-note">' + note + '</p><div class="group">' + reasons + '</div>' : '');
+    return '<div class="screen has-tabs"><div class="nav back-nav">' + backBtn() + '</div>' +
+      '<div class="bids-head"><h1 class="screen-title" tabindex="-1">Win/loss insights</h1>' +
+      '<p class="sub">' + plural(s.submitted, 'bid') + ' submitted in the last 12 months</p></div>' + body +
+      '<p class="caption insights-foot">In the full product the results come from the EU’s award notices and the reasons from your own debrief notes. The numbers are plain arithmetic, not AI. All past bids, buyers and prices are fictional.</p>' +
+      '</div>';
   }
   var enteringId = null;
   function bidCard(t, r, stage, i) {
@@ -679,26 +795,32 @@
     })(t0);
   }
 
-  // ---------- 10 About ----------
-  function about() {
+  // ---------- 10 Settings (the 4th tab; was About, reachable from the header ⓘ and #/about) ----------
+  function settings() {
     var seg = function (k, label) { return '<button role="radio" aria-checked="' + (S.theme === k) + '" data-act="theme" data-value="' + k + '">' + label + '</button>'; };
     var row = function (title, text, extra) {
       return '<div class="about-row"><h3>' + title + (extra || '') + '</h3><p>' + text + '</p></div>';
     };
-    return '<div class="screen">' +
-      '<div class="nav back-nav">' + backBtn() + '</div>' +
-      '<div class="about-intro"><h1 class="screen-title" tabindex="-1">About TenderScout</h1>' +
-      '<p>A university prototype (ESCP Digital Product Design, 2026). TenderScout is a working name.</p></div>' +
-      '<div class="group" style="margin-top:20px">' +
+    // Before onboarding there is no tab bar, so the screen keeps its Back button; after it, it is a tab like the others.
+    return '<div class="screen' + (S.onboarded ? ' has-tabs' : '') + '">' +
+      (S.onboarded ? navRow() : '<div class="nav back-nav">' + backBtn() + '</div>') +
+      '<div class="about-intro"><h1 class="screen-title" tabindex="-1">Settings</h1></div>' +
+      '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
+        '<p class="label-text" id="lbl-theme">Light or dark</p><div class="tabs" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
+      '<div class="sec-h"><h2>Morning notification</h2></div><div class="group notify-row">' +
+        '<p>Once a day, after the overnight read, TenderScout tells you how many new tenders you qualify for. In this prototype it is shown inside the app, not sent to your phone.</p>' +
+        '<button class="btn btn-secondary btn-block" data-act="morning">Show this morning’s notification</button></div>' +
+      '<div class="sec-h"><h2>Demo</h2></div>' +
+      '<div class="about-actions settings-demo"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
+      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
+      '<div class="sec-h"><h2>About this prototype</h2></div>' +
+      '<div class="about-intro"><p>A university prototype (ESCP Digital Product Design, 2026). TenderScout is a working name.</p></div>' +
+      '<div class="group" style="margin-top:12px">' +
         row('AI output is simulated', 'Reading tenders, translating, answering questions and drafting your profile are played back from pre-written output. No model is called, there are no keys, and no data leaves your phone.', ai()) +
         row('The decision logic is real code', 'The qualification check, score and Go / Maybe / No-go verdict run live in tested rules, not in the AI.') +
         row('All data is fictional', 'Every company, buyer, tender, page number and quote is invented. None of it is interview evidence.') +
         row('Built with AI assistance', 'Claude (Anthropic) helped build the prototype. The team ran the interviews and made the product decisions.') +
       '</div>' +
-      '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
-        '<p class="label-text" id="lbl-theme">Light or dark</p><div class="tabs" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
-      '<div class="about-actions"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
-      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
       '</div>';
   }
   function notFound() {
@@ -706,6 +828,57 @@
       '<h1 class="sr-only" tabindex="-1">Not found</h1>' +
       emptyState('Page not found', 'That link matches no screen in TenderScout.', '<button class="btn btn-primary" data-go="#/feed">Open Feed</button>') + '</div>';
   }
+
+  // ---------- morning notification (simulated) ----------
+  // Once a day, after the overnight read, a lock-screen notification gives the day's counts: Go (you qualify),
+  // Maybe (something small is missing) and No-go (you don't qualify). Counts come from engine.js through openCounts().
+  // Simulated: shown inside the app as a lock screen; no push, no service worker, nothing leaves the phone.
+  var LONG_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var NOTIFY_TIME = '7:00';   // the notification goes out once the overnight read is done
+  var notifyShown = false, notifyFocus = null;
+  function longDate(iso) { var d = new Date(iso + 'T00:00:00Z'); return LONG_DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()]; }
+  function morningHTML() {
+    var c = openCounts(), n = c.go + c.maybe + c.nogo;
+    var item = function (v, label) { return '<span class="n-count v-' + v + '">' + shape(SHAPE[v]) + c[v] + ' ' + label + '</span>'; };
+    var spoken = 'TenderScout, now. ' + plural(n, 'new tender') + ' read overnight: ' + c.go + ' you qualify for (Go), ' +
+      c.maybe + ' missing something small (Maybe), ' + c.nogo + ' you don’t qualify for (No-go). Open the Feed.';
+    return '<div class="lockscreen" role="dialog" aria-modal="true" aria-labelledby="ls-time" data-act="notify-close">' +
+      '<div class="ls-top" data-stop><p class="ls-sim">Simulated notification</p>' +
+        '<button class="icon-btn ls-close" data-act="notify-close" aria-label="Close notification">' + icon('close', 's22') + '</button></div>' +
+      '<div class="ls-clock" data-stop><p class="ls-date">' + esc(longDate(TODAY)) + '</p><p class="ls-time" id="ls-time" tabindex="-1" aria-label="' + esc(longDate(TODAY)) + ', ' + NOTIFY_TIME + '">' + NOTIFY_TIME + '</p></div>' +
+      '<button class="notif" data-act="notify-open" aria-label="' + esc(spoken) + '">' +
+        '<span class="notif-icon" aria-hidden="true">' + icon('radar', 's24') + '</span>' +
+        '<span class="notif-body" aria-hidden="true"><span class="notif-head"><b>TenderScout</b><span class="notif-when">now</span></span>' +
+          '<span class="notif-counts">' + item('go', 'Go') + item('maybe', 'Maybe') + item('nogo', 'No-go') + '</span></span>' +
+      '</button>' +
+      '<p class="caption ls-foot" data-stop>Tap the notification to open your Feed · all tenders are fictional</p>' +
+    '</div>';
+  }
+  function showMorning() {
+    if (notifyShown) return;
+    notifyShown = true;
+    S.notifiedOn = TODAY; save();
+    notifyFocus = document.activeElement;
+    $notify.innerHTML = morningHTML(); $notify.hidden = false;
+    $screen.inert = true; $tabs.inert = true; $sheet.inert = true;
+    document.documentElement.classList.add('sheet-open');
+    void $notify.offsetHeight;
+    $notify.classList.add('open');
+    var t = document.getElementById('ls-time'); if (t) t.focus({ preventScroll: true });
+  }
+  function hideMorning(then) {
+    if (!notifyShown) return;
+    notifyShown = false;
+    $notify.classList.remove('open'); $notify.hidden = true; $notify.innerHTML = '';
+    $screen.inert = false; $tabs.inert = false; $sheet.inert = false;
+    if (!sheetKey) document.documentElement.classList.remove('sheet-open');
+    if (then) { then(); return; }
+    if (notifyFocus && document.body.contains(notifyFocus)) notifyFocus.focus({ preventScroll: true });
+    notifyFocus = null;
+  }
+  // Due once per day: onboarded, on the Feed, and not yet shown today. Not with the test-only ?today= (Closed state checks).
+  function morningDue(r) { return S.onboarded && r.name === 'feed' && S.notifiedOn !== TODAY && !params.get('today'); }
 
   // ---------- router ----------
   function parse() {
@@ -718,7 +891,8 @@
       if (h.length === 2) return { name: 'detail', id: h[1] };
       return { name: 'notfound' };
     }
-    if (h.length === 1 && ['feed', 'bids', 'company', 'about'].indexOf(h[0]) !== -1) return { name: h[0] };
+    if (h.length === 1 && (h[0] === 'about' || h[0] === 'settings')) return { name: 'settings' }; // #/about stays a working deep link
+    if (h.length === 1 && ['feed', 'bids', 'company', 'profile', 'insights'].indexOf(h[0]) !== -1) return { name: h[0] };
     return { name: 'notfound' };
   }
   // History bookkeeping, so in-app Back, sheet close and Skip go *back* instead of stacking new entries.
@@ -744,6 +918,7 @@
     var r = parse(), prev = stack[stack.length - 2];
     if (r.name === 'detail') { if (prev === '#/feed' || prev === '#/bids') backTo(prev, 1); else replaceTo('#/feed'); return; }
     if (r.name === 'onb' && r.step === 3) { backTo('#/welcome/1', 1); return; }
+    if (r.name === 'insights') { if (prev === '#/bids') backTo('#/bids', 1); else replaceTo('#/bids'); return; } // a page of Bids
     if (stack.length > 1) { pendingPops = 1; history.back(); return; }
     replaceTo(S.onboarded ? '#/feed' : '#/welcome/1');
   }
@@ -753,7 +928,7 @@
   function render(force) {
     if (crashed) return; // the error screen stays until Restart
     var r = parse();
-    if (!S.onboarded && ['onb', 'company', 'about'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
+    if (!S.onboarded && ['onb', 'company', 'settings'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
     var key = r.name === 'detail' ? 'detail:' + r.id : r.name + (r.step ? ':' + r.step : '');
     var isNew = key !== curKey;
     if (force || dirty || isNew) {
@@ -764,8 +939,10 @@
         case 'feed': html = feed(); break;
         case 'detail': html = detail(r.id); break;
         case 'bids': html = bids(); break;
+        case 'insights': html = insightsScreen(); break;
         case 'company': html = company(); break;
-        case 'about': html = about(); break;
+        case 'profile': html = profile(); break;
+        case 'settings': html = settings(); break;
         default: html = notFound();
       }
       var top = wasPop && scrollPos[key] ? scrollPos[key] : 0;
@@ -774,8 +951,8 @@
       $screen.classList.toggle('entering', isNew && top === 0);
       $screen.innerHTML = html;
       dirty = false; curKey = key;
-      var tabbed = S.onboarded && ['feed', 'bids', 'company'].indexOf(r.name) !== -1;
-      setTabs(tabbed ? r.name : null);
+      var tabbed = S.onboarded && ['feed', 'bids', 'company', 'profile', 'settings', 'insights'].indexOf(r.name) !== -1;
+      setTabs(tabbed ? (r.name === 'insights' ? 'bids' : r.name) : null); // Win/loss insights is a page of Bids
       $toast.style.setProperty('--toast-offset', (tabbed ? 76 : $screen.querySelector('.action-bar') ? 96 : 24) + 'px');
       if (isNew) {
         window.scrollTo(0, top);
@@ -785,6 +962,7 @@
       afterRender(r);
     }
     syncSheet(r);
+    if (morningDue(r)) showMorning();
     var h1t = $screen.querySelector('h1');
     document.title = (h1t ? h1t.textContent + ' · ' : '') + 'TenderScout';
     firstRender = false;
@@ -919,6 +1097,7 @@
     var el = e.target.closest('[data-go],[data-act],[data-filter],[data-confirm],[data-ask],[data-skip],[data-stage],[data-unskip],[data-cert],[data-lang],[data-ref]');
     if (!el) return;
     var d = el.dataset;
+    if (d.act === 'notify-close' && el.classList.contains('lockscreen') && e.target.closest('[data-stop],.notif')) return; // a tap on the clock or caption keeps it open
     if (d.act === 'close-sheet') { var stop = e.target.closest('[data-stop]'); if (stop && el.contains(stop)) return; } // click inside the sheet
     if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
     if (d.go) { e.preventDefault(); go(d.go); return; }
@@ -947,6 +1126,9 @@
         break;
       case 'xb': applyLever('xb', function (p) { p.crossBorder = !p.crossBorder; }, el); break;
       case 'close-sheet': closeSheet(); break;
+      case 'morning': notifyShown = false; showMorning(); break;
+      case 'notify-close': hideMorning(); break;
+      case 'notify-open': hideMorning(function () { S.filter = 'all'; save(); if (parse().name === 'feed') render(true); else go('#/feed'); }); break;
       case 'skip-confirm': skipConfirm(d.id); break;
       case 'toast-action': var fn = toastFn; hideToast(); if (fn) fn(); break;
       case 'theme': S.theme = d.value; save(); applyTheme(); render(true); break;
@@ -989,6 +1171,7 @@
     }
   });
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && notifyShown) { e.preventDefault(); hideMorning(); return; }
     if (e.key === 'Escape' && sheetKey) { e.preventDefault(); closeSheet(); return; }
     if (e.key === 'Enter' && e.target.dataset && e.target.dataset.field === 'turnover') { e.target.blur(); return; }
     // Arrow keys move between options in radio groups (filter, stage, appearance)
