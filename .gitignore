@@ -8,3 +8,6 @@ node_modules/
 
 # design/figma/capture.js + make-batches.js output (regenerated; never imported as a picture of a screen)
 design/figma/out/
+
+# Vercel app build output (scripts/vercel-app-dist.js, docs/adr/0001-vercel-hosting.md)
+dist/
