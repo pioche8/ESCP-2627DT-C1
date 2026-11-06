@@ -1,0 +1,135 @@
+# WebKit, Safari's engine, on GitHub's runners (pass 3, CLAUDE.md §11 item 147). The build containers cannot install
+# WebKit (item 75); these runners can. Runs tests/smoke.js with Playwright WebKit on the iPhone 13 and iPhone SE profiles,
+# each in dark, light and reduced motion (plus the error fallback and the test-session log), and keeps every screenshot.
+#
+# Informational for now: a failing check prints a warning and the failing lines in the job summary, and the job stays
+# green, so it never blocks a merge (the ruleset's required checks are `check` and `smoke`, .github/ruleset-main.json).
+# To make it a gate: delete `continue-on-error` on the smoke step and the `exit 0` in the summary step, then add the two
+# job names to the ruleset.
+#
+# Screenshots: always uploaded as the artifact webkit-<device> (14 days). A pull request that carries the label
+# `webkit-frames` also gets them pushed, as 600 px JPEGs, to a new branch ci/webkit-frames-<run id> (the `frames` job), for
+# reviewers who cannot download artifacts (the build containers cannot: the artifact store is blocked by their proxy).
+# Delete that branch once read. Nothing is ever pushed to the pull request's own branch.
+name: webkit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webkit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: webkit (${{ matrix.device }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: iPhone 13
+            slug: iphone13
+          - device: iPhone SE
+            slug: iphonese
+    env:
+      PLAYWRIGHT_VERSION: 1.63.0
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.x
+      - name: Install Playwright (no package-lock, nothing saved)
+        run: npm i --no-save --no-audit --no-fund playwright@${PLAYWRIGHT_VERSION}
+      - name: Cache the WebKit build
+        id: browser-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-webkit-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
+      - name: Download WebKit (cache miss only)
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install webkit
+      - name: WebKit system libraries
+        run: npx playwright install-deps webkit
+      - name: Smoke test in WebKit, ${{ matrix.device }} (dark + light + reduced motion)
+        id: smoke
+        continue-on-error: true
+        shell: bash
+        env:
+          SMOKE_BROWSER: webkit
+          SMOKE_DEVICE: ${{ matrix.device }}
+        run: node tests/smoke.js webkit-shots 2>&1 | tee webkit-smoke.log
+      - name: Summary (informational)
+        if: always()
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.smoke.outcome }}
+          DEVICE: ${{ matrix.device }}
+        run: |
+          fails=$(grep -c '^ *FAIL' webkit-smoke.log || true)
+          shots=$(ls webkit-shots/*.png 2>/dev/null | wc -l)
+          {
+            echo "### WebKit · $DEVICE · $OUTCOME"
+            echo
+            echo "$fails failing line(s), $shots screenshot(s) (artifact webkit-${{ matrix.slug }})."
+            if [ "$fails" != "0" ]; then echo; echo '```'; grep '^ *FAIL' webkit-smoke.log | cut -c1-300; echo '```'; fi
+            echo; echo '```'; tail -n 3 webkit-smoke.log; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "::warning title=WebKit smoke, $DEVICE (informational)::$fails failing line(s); see the job summary and the artifact webkit-${{ matrix.slug }}"
+          fi
+          exit 0
+      - name: Screenshots and log
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: webkit-${{ matrix.slug }}
+          path: |
+            webkit-shots/
+            webkit-smoke.log
+          retention-days: 14
+          if-no-files-found: warn
+
+  frames:
+    name: webkit frames to a branch (label webkit-frames)
+    needs: smoke
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'webkit-frames')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          pattern: webkit-*
+          path: frames
+      - name: 600 px JPEGs, pushed to ci/webkit-frames-${{ github.run_id }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          sudo apt-get install -y -qq --no-install-recommends imagemagick > /dev/null
+          out=$(mktemp -d)
+          for dir in frames/webkit-*; do
+            dev=$(basename "$dir"); mkdir -p "$out/$dev"
+            cp "$dir/webkit-smoke.log" "$out/$dev/" 2>/dev/null || true
+            for f in "$dir"/webkit-shots/*.png; do [ -e "$f" ] || continue; convert "$f" -resize '600x>' -quality 72 "$out/$dev/$(basename "${f%.png}").jpg"; done
+          done
+          printf 'WebKit frames of %s (run %s), pushed by .github/workflows/webkit.yml. Delete this branch once read.\n' "$HEAD_SHA" "$GITHUB_RUN_ID" > "$out/README.txt"
+          cd "$out"
+          git init -q -b frames
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -q -m "WebKit frames of $HEAD_SHA (run $GITHUB_RUN_ID)"
+          git push -q "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "frames:refs/heads/ci/webkit-frames-${GITHUB_RUN_ID}"
+          echo "Pushed $(find . -name '*.jpg' | wc -l) frames to ci/webkit-frames-${GITHUB_RUN_ID}" | tee -a "$GITHUB_STEP_SUMMARY"
