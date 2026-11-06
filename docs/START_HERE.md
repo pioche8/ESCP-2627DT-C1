@@ -61,7 +61,8 @@ node tests/insights.test.js      # 12 tests: the Win/loss insights arithmetic an
 node tests/data-check.js         # data.js has every field engine.js and app.js read, ids unique, dates ISO, citations inside the document
 node tests/docs-check.js         # every route and tab of app.js is in docs/NAVIGATION.md and SKELETON.md, every check a story names exists word for word, no interview or quote cited that evidence.md does not log
 node tests/no-live-ai-check.js    # no server route on the website, no key-shaped string in the repository (CLAUDE.md §7.2, ADR-0002)
-node tests/vercel-dist.test.js   # the Vercel app build is exactly the app files, byte-identical (ADR-0001)
+node tests/vercel-dist.test.js   # the Vercel app build is exactly the app files, byte-identical (ADR-0001); the deploy contract (ADR-0003)
+node tests/section.test.js       # the gates' browser owner: crashes and timeouts named, the browser always closed
 node site/scripts/sync-shared.mjs --check   # the site's copies of engine.js, data.js, insights.js and the fonts equal the app's
 node tests/demo-golden.test.js   # the live demo's numbers (Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go, 777 pages); see §5.4 before you move them
 node tests/engine-invariants.test.js  # seeded property test of the engine rules
@@ -162,4 +163,4 @@ Each task is self-contained. Claim it by opening the branch and saying so in the
 - `node tests/smoke.js` fails on "declutter scan": you used a border, shadow, gradient, radius over 8 px, uppercase, italic or a file name in visible text. The failing line names the element.
 - The Feed shows nothing: you are not onboarded (`?demo=reset` and go through Welcome) or every tender is skipped (Bids → Skipped → Restore).
 - A verdict looks wrong: run `node tests/engine.test.js`; the rules in `CLAUDE.md` §4 are the truth, not the UI.
-- The live site does not match `main`: GitHub → Actions → "pages build and deployment" takes up to 15 minutes; `node tests/live-check.js` tells you when the deployed files equal your checkout.
+- The live site does not match `main`: GitHub → Actions → "pages build and deployment" takes up to 15 minutes; `node tests/live-check.js` tells you when the deployed files equal your checkout, and since pass 3 the `post-deploy` workflow runs it (and the smoke test against the live URL) on GitHub's runner after every Pages deploy.
