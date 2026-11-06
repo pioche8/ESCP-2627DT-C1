@@ -1,7 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Engine, PROFILE, TODAY, counts, evaluateAll, evaluateOne, money, withCert, type Overrides, type TenderView } from '@/data/app';
+import { Engine, PROFILE, TODAY, WINLOSS, WINLOSS_MONTHS, counts, evaluateAll, evaluateOne, money, withCert, type Overrides, type TenderView } from '@/data/app';
 import { Icon } from '@/components/ui/Icon';
 import { Counter } from '@/components/ui/Counter';
 import { SimulatedText } from '@/components/ui/Primitives';
@@ -19,10 +19,22 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const dayLabel = (iso: string) => DAYS[new Date(iso + 'T00:00:00Z').getUTCDay()] + ' ' + Engine.shortDate(iso);
 const tileVerdict = (v: TenderView['verdict']) => (v === 'closed' ? 'nogo' : v);
 
+// The app's five tabs, in the app's order and with its icons (app.js TABS).
+const TABS: [string, string][] = [['radar', 'Feed'], ['bookmarks', 'Bids'], ['domain', 'Company'], ['badge', 'Profile'], ['tune', 'Settings']];
+// Settings → "About this prototype": the app's four statements, shortened for the phone (app.js settings()).
+const ABOUT: [string, string][] = [
+  ['AI output is simulated', 'Reading, translating and answers are played back. No model is called.'],
+  ['The decision logic is real code', 'The check, score and verdict run in tested rules.'],
+  ['All data is fictional', 'Every company, buyer and tender is invented.'],
+  ['Built with AI assistance', 'Claude helped build it. The team made the product decisions.'],
+];
+
 /**
- * A 340 × 700 phone running the app's real decision rules on its demo data. The bottom tab bar switches Feed / Bids /
- * Company. In Company, the ISO 27001 switch re-scores Landkreis Hohenau exactly as the app does: No-go 25 → Maybe 90 (one
- * line still needs the owner's answer) → Go 100 after "We meet it". Feed and Bids update with it.
+ * A 340 × 700 phone running the app's real decision rules on its demo data. The bottom tab bar switches the app's five
+ * tabs: Feed / Bids / Company / Profile / Settings. In Company, the ISO 27001 switch re-scores Landkreis Hohenau exactly
+ * as the app does: No-go 25 → Maybe 90 (one line still needs the owner's answer) → Go 100 after "We meet it". Feed, Bids
+ * and Profile update with it (Profile shows the firm, Company changes it). Bids opens with the app's Win/loss row,
+ * computed by the app's insights.js.
  */
 export function PhoneDemo() {
   const [tab, setTab] = useState(1);
@@ -72,6 +84,10 @@ export function PhoneDemo() {
               <div className="phead">
                 <div><p className="phead-title">Bids</p><p className="phead-sub">{rows.length} saved · next deadline in {nextDeadline} days</p></div>
                 <SimulatedText />
+              </div>
+              <div className="pwl">
+                <div className="prow-text"><p className="pwl-label">Win/loss insights</p><p className="prow-meta">{WINLOSS.won} of {WINLOSS.submitted} won · {WINLOSS.winRate}% in the last {WINLOSS_MONTHS} months</p></div>
+                <Icon name="arrow_forward" size={20} className="pwl-arrow" />
               </div>
               {rows.map((v) => {
                 const tv = tileVerdict(v.verdict), st = stage(v);
@@ -132,6 +148,45 @@ export function PhoneDemo() {
               </div>
             </>
           )}
+          {tab === 3 && (
+            <>
+              <div className="phead">
+                <div><p className="phead-title">Profile</p><p className="phead-sub">What every tender is checked against</p></div>
+              </div>
+              <div className="pcard">
+                <div><p className="pco">{profile.name}</p><p className="prow-meta">{profile.city}</p></div>
+                <div className="pstats">
+                  <div><b>{profile.staff}</b><span>Staff</span></div>
+                  <div><b>{money(profile.turnover)}</b><span>Turnover</span></div>
+                  <div><b>{profile.references}</b><span>References</span></div>
+                </div>
+                <dl className="pkv">
+                  <dt>Sectors</dt><dd>{profile.sectorsLabel.join(', ')}</dd>
+                  <dt>Certificates</dt><dd className={iso ? 'pkv-new' : undefined}>{profile.certifications.length ? profile.certifications.join(', ') : 'None yet'}</dd>
+                  <dt>Bid languages</dt><dd>{profile.languages.map(Engine.langName).join(', ')}</dd>
+                  <dt>Countries</dt><dd>{profile.countries.map(Engine.countryName).join(', ')}{profile.crossBorder ? ', cross-border' : ''}</dd>
+                </dl>
+              </div>
+              <Button tone="secondary" className="pfull" onClick={() => setTab(2)}>Edit on Company</Button>
+            </>
+          )}
+          {tab === 4 && (
+            <>
+              <div className="phead">
+                <div><p className="phead-title">Settings</p></div>
+              </div>
+              <div className="pgroup psettings">
+                <div className="pabout-row"><p className="pline-label">Appearance</p><p className="pline-sub">System, light or dark. This phone shows dark.</p></div>
+                <div className="pabout-row"><p className="pline-label">Morning notification</p><p className="pline-sub">Once a day after the overnight read: how many new tenders you qualify for.</p></div>
+              </div>
+              <p className="pabout-h">About this prototype</p>
+              <div className="pgroup pabout">
+                {ABOUT.map(([t, d]) => (
+                  <div key={t} className="pabout-row"><p className="pline-label">{t}{t.startsWith('AI') && <SimulatedText />}</p><p className="pline-sub">{d}</p></div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         <TabBar tab={tab} onTab={setTab} />
       </div>
@@ -141,11 +196,11 @@ export function PhoneDemo() {
 
 /** Full-width bottom tab bar: icon + label; the active tab is brand-coloured with a filled icon and a bolder label. */
 function TabBar({ tab, onTab }: { tab: number; onTab: (i: number) => void }) {
-  const tabs = [['radar', 'Feed'], ['bookmarks', 'Bids'], ['domain', 'Company']];
+  const tabs = TABS;
   const onKey = (e: React.KeyboardEvent) => {
     if (!/^Arrow(Left|Right)$/.test(e.key)) return;
     e.preventDefault();
-    const n = (tab + (e.key === 'ArrowRight' ? 1 : -1) + 3) % 3;
+    const n = (tab + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
     onTab(n);
     (e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[n])?.focus();
   };

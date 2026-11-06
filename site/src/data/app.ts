@@ -1,6 +1,7 @@
 // The website runs the app's real engine on the app's fictional data (both copied verbatim by scripts/sync-shared.mjs).
 import Engine from '@/generated/engine.cjs';
 import DEMO from '@/generated/data.cjs';
+import Insights from '@/generated/insights.cjs';
 import type { Overrides, Profile, Result, Tender, Verdict } from './types';
 
 export { Engine, DEMO };
@@ -14,6 +15,9 @@ export const LANGUAGES = Array.from(new Set(TENDERS.map((t) => t.language))); //
 export const COUNTRIES = Array.from(new Set(TENDERS.map((t) => t.country)));
 export const SECTORS = DEMO.SECTORS.map(([code, name]) => ({ code, name }));
 export const OWN_SECTORS = new Set(PROFILE.cpv);
+// The app's Bids row: "8 of 21 won · 38% in the last 12 months", from insights.js on the fictional PAST_BIDS (no AI).
+export const WINLOSS = Insights.summary(DEMO.PAST_BIDS, TODAY);
+export const WINLOSS_MONTHS = Insights.WINDOW_MONTHS;
 
 export const bare = (name: string) => name.replace(/\s*\(fictional\)/, '');
 export const money = (n: number) => '€' + Engine.fmt(n);

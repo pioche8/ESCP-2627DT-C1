@@ -30,7 +30,7 @@ flowchart LR
   subgraph site["Website (Next.js, site/, not deployed)"]
     direction TB
     sync["scripts/sync-shared.mjs (prebuild)"]
-    gen["src/generated/engine.cjs · data.cjs<br/>how-it-decides.json"]
+    gen["src/generated/engine.cjs · data.cjs · insights.cjs<br/>how-it-decides.json"]
     pages["/ landing · PhoneDemo · map<br/>/how 'How it decides' + Try the rules"]
     sync --> gen --> pages
     scss --> pages
@@ -97,7 +97,7 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 
 ## 6. The website shares the code
 
-`site/` is a Next.js 16 site, not deployed yet (README → Website). `scripts/sync-shared.mjs`, run by `prebuild`, copies `engine.js` and `data.js` verbatim into `site/src/generated/` as CommonJS, rebuilds the tokens, runs `shared/how-it-decides.js` and re-renders the Open Graph image and icons from the tokens. The landing page's phone demo, the tender cards, the counts and the map all call the real engine on the real demo data, so every number on the site is the app's. `/how` ("How it decides") renders `how-it-decides.json`, which the generator produces by *probing* the engine (running it on controlled inputs and reading the constants back), and its "Try the rules" block runs the engine in the browser. `docs/HOW_IT_DECIDES.md` is the same generator's second output. CI fails if either falls behind the code. On Vercel the committed copies are used, so the site builds on its own (Root Directory = `site`).
+`site/` is a Next.js 16 site, not deployed yet (README → Website). `scripts/sync-shared.mjs`, run by `prebuild`, copies `engine.js`, `data.js` and `insights.js` verbatim into `site/src/generated/` as CommonJS, rebuilds the tokens, runs `shared/how-it-decides.js` and re-renders the Open Graph image and icons from the tokens. The landing page's phone demo (the app's five tabs, with the Bids tab's Win/loss row from `insights.js`), the tender cards, the counts and the map all call the real engine on the real demo data, so every number on the site is the app's. `/how` ("How it decides") renders `how-it-decides.json`, which the generator produces by *probing* the engine (running it on controlled inputs and reading the constants back), and its "Try the rules" block runs the engine in the browser. `docs/HOW_IT_DECIDES.md` is the same generator's second output. CI fails if either falls behind the code. On Vercel the committed copies are used, so the site builds on its own (Root Directory = `site`).
 
 ## 7. Tests and gates
 

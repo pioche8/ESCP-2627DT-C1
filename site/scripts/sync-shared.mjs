@@ -11,8 +11,9 @@ const root = path.resolve(site, '..');
 const app = (p) => path.join(root, p);
 const out = (p) => path.join(site, p);
 
-// The site's verbatim CommonJS copies of the app's engine and demo data (step 2 below writes them; --check compares them).
-const COPIES = [['engine.js', 'src/generated/engine.cjs'], ['data.js', 'src/generated/data.cjs']];
+// The site's verbatim CommonJS copies of the app's engine, demo data and win/loss arithmetic (step 2 below writes them;
+// --check compares them). insights.js since 6 Nov: the phone demo's Bids row shows the app's own Win/loss summary.
+const COPIES = [['engine.js', 'src/generated/engine.cjs'], ['data.js', 'src/generated/data.cjs'], ['insights.js', 'src/generated/insights.cjs']];
 const copyOf = (src) => '/* Copied verbatim from ../' + src + ' by scripts/sync-shared.mjs. Do not edit: change the app file and run `npm run sync`. */\n' +
   fs.readFileSync(app(src), 'utf8').replace(/\}\)\(this\);\s*$/, '})({});'); // CommonJS: `this` may be undefined under a bundler
 
@@ -21,7 +22,7 @@ const copyOf = (src) => '/* Copied verbatim from ../' + src + ' by scripts/sync-
 if (process.argv.includes('--check')) {
   const stale = COPIES.filter(([src, dst]) => !fs.existsSync(out(dst)) || fs.readFileSync(out(dst), 'utf8') !== copyOf(src)).map(([, dst]) => 'site/' + dst)
     .concat(fs.readdirSync(app('fonts')).filter((f) => /\.woff2$/.test(f) && (!fs.existsSync(out('src/fonts/' + f)) || !fs.readFileSync(out('src/fonts/' + f)).equals(fs.readFileSync(app('fonts/' + f))))).map((f) => 'site/src/fonts/' + f));
-  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs and src/fonts equal the app\'s engine.js, data.js and fonts/');
+  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs, insights.cjs and src/fonts equal the app\'s engine.js, data.js, insights.js and fonts/');
   process.exit(stale.length ? 1 : 0);
 }
 
@@ -37,7 +38,7 @@ execFileSync(process.execPath, [app('shared/how-it-decides.js')], { stdio: 'inhe
 // 1c. Open Graph image and icons from the tokens (needs Playwright; keeps the committed files otherwise)
 execFileSync(process.execPath, [path.join(site, 'scripts/brand-images.cjs')], { stdio: 'inherit' });
 
-// 2. the real decision engine and the fictional demo data, verbatim, as CommonJS modules
+// 2. the real decision engine, the fictional demo data and the win/loss arithmetic, verbatim, as CommonJS modules
 fs.mkdirSync(out('src/generated'), { recursive: true });
 for (const [src, dst] of COPIES) fs.writeFileSync(out(dst), copyOf(src));
 
