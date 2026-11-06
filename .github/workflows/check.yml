@@ -1,10 +1,12 @@
 # Runs on every push and pull request. Two jobs, both required on main (repository ruleset, 5 Nov 2026):
 #   check  node only, under a minute: engine tests, win/loss insights tests, data check, docs check (routes, story checks, interview
 #          citations), demo pins, engine invariants, static declutter scan, WCAG AA audit, generated token files in sync, the site's
-#          engine/data copies in sync, the Vercel app build (ADR-0001).
+#          engine/data/insights copies in sync, the Vercel app build and deploy contract (ADR-0001, ADR-0003), the gates'
+#          browser owner (tests/lib/section.js).
 #   smoke  the Playwright click-through in Chromium at 390×844, dark + light + reduced motion, with the declutter scan on
 #          every screen; on pull requests and on pushes to main, browser cached, about three minutes.
-# The iPhone 13 / iPhone SE profiles and the site build stay local: `npm run preflight` (docs/START_HERE.md §4).
+# The iPhone 13 / iPhone SE profiles in WebKit run in webkit.yml (informational); in Chromium, and the site build, they stay
+# local: `npm run preflight` (docs/START_HERE.md §4). Vercel deploys: vercel.yml; live checks: post-deploy.yml.
 name: check
 
 on:
@@ -34,7 +36,7 @@ jobs:
         run: node tests/engine-invariants.test.js
       - name: No live AI and no keys (CLAUDE.md §7.2, ADR-0002)
         run: node tests/no-live-ai-check.js
-      - name: Declutter scan (static, five stylesheets)
+      - name: Declutter scan (static, the app's two stylesheets)
         run: node tests/declutter-scan.js
       - name: WCAG AA audit of shared/tokens.json
         run: node shared/check-contrast.js
@@ -46,10 +48,12 @@ jobs:
         run: |
           node shared/how-it-decides.js
           git diff --exit-code -- site/src/generated/how-it-decides.json docs/HOW_IT_DECIDES.md
-      - name: The site's copies of engine.js and data.js are current (ADR-0001)
+      - name: The site's copies of engine.js, data.js and insights.js are current (ADR-0001)
         run: node site/scripts/sync-shared.mjs --check
       - name: The Vercel app build serves exactly the app files (ADR-0001)
         run: node tests/vercel-dist.test.js
+      - name: The browser owner of the gates (crash, timeout and step reporting; no browser)
+        run: node tests/section.test.js
 
   smoke:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'

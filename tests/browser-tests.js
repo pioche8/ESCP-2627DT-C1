@@ -12,6 +12,7 @@ const http = require('http');
 let playwright;
 try { playwright = require('playwright'); } catch (e) { console.error('Playwright is not installed: npm i --no-save playwright && npx playwright install chromium'); process.exit(2); }
 
+const { section } = require('./lib/section'); // launches, names the step, closes the browser even after a crash
 const ROOT = path.resolve(__dirname, '..');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
 
@@ -30,9 +31,9 @@ function serve() {
 (async () => {
   const srv = await serve();
   const urls = ['file://' + path.join(ROOT, 'tests.html'), 'http://127.0.0.1:' + srv.address().port + '/tests.html'];
-  const browser = await playwright.chromium.launch();
   let failures = 0;
-  for (const url of urls) {
+  const finished = await section('tests.html', async (browser, step) => { for (const url of urls) {
+    step(url.replace(ROOT, '<repo>'));
     const page = await browser.newPage();
     const problems = [];
     page.on('pageerror', (e) => problems.push('pageerror: ' + e.message));
@@ -47,9 +48,9 @@ function serve() {
     if (!good) failures++;
     console.log((good ? 'ok   ' : 'FAIL ') + url.replace(ROOT, '<repo>') + ' · ' + ok + ' ok · ' + summary + (bad.length ? '\n     ' + bad.join('\n     ') : '') + (problems.length ? '\n     ' + problems.join('\n     ') : ''));
     await page.close();
-  }
-  await browser.close();
+  } }, { playwright });
+  if (!finished) failures++;
   srv.close();
   console.log(failures ? 'tests.html: ' + failures + ' run(s) failed' : 'tests.html passes over file:// and HTTP with 0 page errors');
-  process.exitCode = failures ? 1 : 0;
+  process.exit(failures ? 1 : 0); // explicit, like tests/smoke.js: nothing left open can keep the gate waiting
 })();
