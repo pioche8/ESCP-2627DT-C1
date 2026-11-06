@@ -21,7 +21,7 @@ GitHub Pages is not touched by any of this. The demo URL in `BRIEF.md` stays `ht
 8. Project → **Settings → Build and Deployment**:
    - **Root Directory:** `site`; switch **"Include files outside the root directory in the Build Step"** to **off** → Save. (The site then builds from its own committed copies of the engine, the data, the fonts and the tokens, which CI checks against the app on every push.)
    - **Node.js Version:** 22.x → Save.
-   - **Ignored Build Step:** "Custom" → paste the `ignoreCommand` from `site/vercel.json` (`[ -n "$VERCEL_GIT_PREVIOUS_SHA" ] && git diff --quiet "$VERCEL_GIT_PREVIOUS_SHA" HEAD -- .`) → Save. (`site/vercel.json` already sets it; the setting covers commits that predate the file.)
+   - **Ignored Build Step:** "Custom" → paste the `ignoreCommand` from `site/vercel.json` (`[ -n "$VERCEL_GIT_PREVIOUS_SHA" ] && git diff --quiet "$VERCEL_GIT_PREVIOUS_SHA" HEAD -- . || exit 1`) → Save. (`site/vercel.json` already sets it; the setting covers commits that predate the file.)
 9. Project → **Settings → Domains**: note the production domain (normally `tenderscout-site.vercel.app`). Then **Settings → Environment Variables** → Add: Key `SITE_URL`, Value `https://tenderscout-site.vercel.app` (your domain, no trailing slash), Environments **Production** and **Preview** → Save.
 10. **Deployments** → the latest production deployment → ⋯ → **Redeploy** (the value is read at build time; the Open Graph image, canonical links, `sitemap.xml` and `robots.txt` use it).
 11. **Settings → Deployment Protection → Vercel Authentication:** Enabled, **Standard Protection** (production domain public, preview URLs ask for a Vercel login). Never share a preview URL with the lecturer.

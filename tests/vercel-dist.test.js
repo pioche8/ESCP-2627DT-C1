@@ -52,7 +52,10 @@ test('the app project config: no framework, build into dist/, ignore step on the
 test('the site project config: Next.js, ignore step on site/ (it builds from its committed, CI-checked copies)', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'site/vercel.json'), 'utf8'));
   assert.strictEqual(v.framework, 'nextjs');
-  assert.ok(/ -- \.$/.test(v.ignoreCommand), 'ignoreCommand watches site/ itself');
+  assert.ok(/ -- \. \|\| exit 1$/.test(v.ignoreCommand), 'ignoreCommand watches site/ itself');
+});
+test('both ignore steps map every non-zero outcome to 1 (Vercel documents only 0 = skip, 1 = build)', () => {
+  ['vercel.json', 'site/vercel.json'].forEach((f) => assert.ok(/ \|\| exit 1$/.test(JSON.parse(fs.readFileSync(path.join(ROOT, f), 'utf8')).ignoreCommand), f));
 });
 test('both commands fit the Vercel API limit (256 characters)', () => {
   [path.join(ROOT, 'vercel.json'), path.join(ROOT, 'site/vercel.json')].forEach((f) => {

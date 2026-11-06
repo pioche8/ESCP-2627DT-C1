@@ -4,5 +4,5 @@
   "installCommand": "echo 'tenderscout-app: no dependencies to install'",
   "buildCommand": "node scripts/vercel-app-dist.js",
   "outputDirectory": "dist",
-  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- index.html app.js engine.js ai.js data.js insights.js styles.css manifest.webmanifest shared fonts assets vercel.json scripts/vercel-app-dist.js"
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- index.html app.js engine.js ai.js data.js insights.js styles.css manifest.webmanifest shared fonts assets vercel.json scripts/vercel-app-dist.js || exit 1"
 }
