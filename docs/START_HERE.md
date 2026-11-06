@@ -71,6 +71,7 @@ If you changed `app.js`, `styles.css`, `data.js` or `index.html`, run the click-
 node tests/smoke.js                               # 390 × 844, dark + light + reduced motion, screenshots in screenshots/
 SMOKE_DEVICE="iPhone SE" node tests/smoke.js      # the smallest phone in the room
 node tests/browser-tests.js                       # tests.html in Chromium, over file:// and HTTP
+MONKEY_MINUTES=2 node tests/monkey.js             # the off-script monkey (10 min per profile by default; MONKEY_SEED= replays a walk)
 ```
 
 CI runs the 390 × 844 smoke test too (the "smoke" job, on pull requests and on pushes to `main`); the iPhone 13 / SE profiles and the site build stay local, in `npm run preflight`.
