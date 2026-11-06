@@ -574,11 +574,13 @@ async function testSessionLog() {
   check(appCss.length === 0, 'no declutter pattern in the app stylesheets' + (appCss.length ? ':\n       ' + appCss.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));
   const schemes = ['dark', 'light'].filter((s) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === s);
   try { for (const s of schemes) await run(s); await reducedMotion(); await errorFallback(); await testSessionLog(); }
-  catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
+  catch (e) { failures++; console.error('\nFAIL crashed: ' + (e && e.stack || e)); } // "FAIL" so tests/preflight.js shows the line
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }
-    catch (e) { failures++; console.error('\nMonkey crashed: ' + (e && e.stack || e)); }
+    catch (e) { failures++; console.error('\nFAIL monkey crashed: ' + (e && e.stack || e)); }
   }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);
-  process.exitCode = failures ? 1 : 0;
+  // Exit explicitly: after a crash the section's browser is never closed, and its open pipe would keep node, and the
+  // preflight gate around it, waiting forever (the iPhone hangs of 5 and 6 Nov: the run had finished, the process had not).
+  process.exit(failures ? 1 : 0);
 })();
