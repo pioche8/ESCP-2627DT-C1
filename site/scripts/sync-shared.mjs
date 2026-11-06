@@ -11,6 +11,20 @@ const root = path.resolve(site, '..');
 const app = (p) => path.join(root, p);
 const out = (p) => path.join(site, p);
 
+// The site's verbatim CommonJS copies of the app's engine and demo data (step 2 below writes them; --check compares them).
+const COPIES = [['engine.js', 'src/generated/engine.cjs'], ['data.js', 'src/generated/data.cjs']];
+const copyOf = (src) => '/* Copied verbatim from ../' + src + ' by scripts/sync-shared.mjs. Do not edit: change the app file and run `npm run sync`. */\n' +
+  fs.readFileSync(app(src), 'utf8').replace(/\}\)\(this\);\s*$/, '})({});'); // CommonJS: `this` may be undefined under a bundler
+
+// `node site/scripts/sync-shared.mjs --check` (CI): writes nothing, exits 1 if a committed copy differs from what this
+// script would write, so a Vercel build that uses the committed copies cannot disagree with the app (ADR-0001).
+if (process.argv.includes('--check')) {
+  const stale = COPIES.filter(([src, dst]) => !fs.existsSync(out(dst)) || fs.readFileSync(out(dst), 'utf8') !== copyOf(src)).map(([, dst]) => 'site/' + dst)
+    .concat(fs.readdirSync(app('fonts')).filter((f) => /\.woff2$/.test(f) && (!fs.existsSync(out('src/fonts/' + f)) || !fs.readFileSync(out('src/fonts/' + f)).equals(fs.readFileSync(app('fonts/' + f))))).map((f) => 'site/src/fonts/' + f));
+  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs and src/fonts equal the app\'s engine.js, data.js and fonts/');
+  process.exit(stale.length ? 1 : 0);
+}
+
 if (!fs.existsSync(app('shared/tokens.json')) || !fs.existsSync(app('engine.js'))) {
   console.log('sync-shared: app sources not found beside site/ — using the committed copies in src/generated, src/fonts and public/assets');
   process.exit(0);
@@ -25,10 +39,7 @@ execFileSync(process.execPath, [path.join(site, 'scripts/brand-images.cjs')], { 
 
 // 2. the real decision engine and the fictional demo data, verbatim, as CommonJS modules
 fs.mkdirSync(out('src/generated'), { recursive: true });
-for (const [src, dst] of [['engine.js', 'src/generated/engine.cjs'], ['data.js', 'src/generated/data.cjs']]) {
-  const code = fs.readFileSync(app(src), 'utf8').replace(/\}\)\(this\);\s*$/, '})({});'); // CommonJS: `this` may be undefined under a bundler
-  fs.writeFileSync(out(dst), '/* Copied verbatim from ../' + src + ' by scripts/sync-shared.mjs. Do not edit: change the app file and run `npm run sync`. */\n' + code);
-}
+for (const [src, dst] of COPIES) fs.writeFileSync(out(dst), copyOf(src));
 
 // 3. fonts (the same vendored files as the app, so both render identically)
 fs.mkdirSync(out('src/fonts'), { recursive: true });
