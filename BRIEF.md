@@ -10,6 +10,7 @@ Public buyers in the EU spend about **€2 trillion a year, roughly 14% of EU GD
 - In 2021, **42% of contracts drew a single bid**, nearly double the 2011 level.
 - The **average number of bids fell from about 6 to 3** per procedure.
 - Firms say they are losing interest because of **"too much bureaucracy"**. The auditors name administrative burden and restrictive or tailor-made criteria as root causes.
+
 — European Court of Auditors, Special Report 28/2023
 
 For a firm with 5–50 staff, the cost sits **before** the bid. Someone has to open a 50–200 page tender pack, often in another language, to learn on page 23 that the minimum turnover is €5M, or that a certificate they don't hold is mandatory. Most owners skip tenders on gut feel, or spend an evening reading one they were never eligible for.
@@ -18,7 +19,9 @@ ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skip
 
 ## User
 **Primary: owner or managing director of a 5–50 person firm that sells to the public sector.** Sectors: IT services, network installation, building trades, facility services, engineering, consulting, translation. No bid manager on staff. Decides on the phone, between jobs.
+
 **Secondary:** the one person in a mid-size firm (50–250) who "does the tenders" alongside a day job.
+
 **Not the user:** large firms with bid teams. They already buy Altura, Tendium or Mercell.
 
 ## Solution
@@ -32,6 +35,7 @@ ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skip
 > Every target in this section is an **ASSUMPTION (untested)**. They are the numbers we would test against, not results. The evidence in [`evidence.md`](evidence.md) sets the real thresholds once interviews are logged. Real or fictional, figure by figure: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 **North-star metric: qualification checks completed per firm per week.** A check counts as completed when the owner records a decision on a tender they opened: saved it to Bids, or skipped it (with or without a reason). This tracks the value TenderScout promises, a decision on "can we even bid on this?" backed by the page that proves it. It does not track attention. Opening the app, scrolling the Feed or reading a summary without deciding gives the firm nothing. More completed checks per week means screening got cheaper (H1) and the answer was good enough to act on (H2).
+
 Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The only survey answer so far (S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews), n = 1, not gate evidence), read 3–5 tenders in a whole year. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
 
 **Supporting metrics**, each tied to something the prototype already does:
@@ -68,6 +72,7 @@ The **decision** (knock-out, score, verdict) is deliberately **plain, tested cod
 | **Mercell, DTAD, Patterno, Auftrag One** | Tender databases and alerts, some with AI matching | Broad | Discovery, not qualification |
 
 **Concession line for the pitch:** "Tender search is solved, and AI bid writing is funded (Altura raised €8M). What's missing is the 60-second answer for a 20-person firm: *can we even bid on this?*"
+
 Whether that gap is real is the main thing the interviews have to prove (see the gate in `evidence.md`).
 
 ## Business model (ASSUMPTION, not tested)
