@@ -71,19 +71,19 @@ Mom-Test rules: ask what they **did last time**, not what they *would* do. Don't
 ## 6. Note template (copy one per interview into evidence.md)
 ```
 ### Interview [#] · [role] · [sector] · [company size] · [country] · [date] · interviewer: [name]
-Consent: quote anonymously yes/no · recorded yes/no
-Public-sector share of revenue:
-Last tender story (what actually happened):
-Time spent screening one tender:
-Tenders seen / screened / bid per month:
-Knock-out surprise ever? (what, cost):
-Foreign-language tenders?:
-Current tools / paid for:
-Biggest pain (their words):
-Quotes (verbatim, max 3):
+- Consent: quote anonymously yes/no · recorded yes/no
+- Public-sector share of revenue:
+- Last tender story (what actually happened):
+- Time spent screening one tender:
+- Tenders seen / screened / bid per month:
+- Knock-out surprise ever? (what, cost):
+- Foreign-language tenders?:
+- Current tools / paid for:
+- Biggest pain (their words):
+- Quotes (verbatim, max 3):
   - "..."
-Gate scoring:  Pain = yes/no (why)   Wedge = yes/no (why)
-Surprises / what we got wrong:
+- Gate scoring:  Pain = yes/no (why)   Wedge = yes/no (why)
+- Surprises / what we got wrong:
 ```
 
 ## 7. Logistics

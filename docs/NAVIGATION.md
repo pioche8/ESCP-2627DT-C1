@@ -95,34 +95,40 @@ flowchart TD
 - **Offline.** With no network (or the test-only `?offline=1`) the Feed and the tender show "Offline. Showing last night’s results." and keep working on the stored results. Proof: the smoke path loads `?offline=1#/feed` and waits for the banner; no named check.
 
 **Flow 1: Morning triage (target under 60 s)**
+
 Morning notification or open the app → Feed (the counts are the filter tabs) → tap the Go card → scan the qualification check (all ● Meets) → Save to Bids. The button turns into "In Bids · Deciding" and a toast offers "View".
 - **Closed tender:** on the deadline day or later a tender is Closed with score 0, its header says "The deadline passed on …", Save is disabled with "Closed tenders can’t be saved" and the Competition section is hidden. Seen with the test-only `?today=2026-12-23`. Proof: engine `past deadline is closed with score 0`, smoke `closed header`, `Save disabled with the lock line` and `closed cards use solid tokens, not opacity`.
 - **A filter with no match:** "No Go tenders tonight." with "Show all". Not locked by a test.
 - **Empty Feed:** with every tender skipped, "Nothing new tonight" with "Widen your profile" (→ Company). Not locked by a test.
 
 **Flow 2: Resolve an unclear line**
+
 Detail → the ◆ "Needs your check" line sorts right after any fails → tap → sheet shows the original sentence, translation and page → "We meet it" → the sheet closes, the verdict recalculates, and a toast says "Answer saved · now …" with Undo.
 - **Leave without answering:** Back, Escape or a tap on the scrim close the sheet to the tender. Proof: smoke `Back closes the sheet to the detail`, `Escape closes the sheet` and `scrim tap closes the sheet`.
 - **Change your mind:** Undo in the toast, or "Undo" next to "You answered" on the sheet. Not locked by a test.
 - **A link that no longer matches:** an unknown requirement id opens the tender instead; an unknown tender id shows Not found (and its sheet links open the Feed). Not locked by a test.
 
 **Flow 3: Learn what's blocking you**
+
 Detail shows ■ Fails · "ISO 27001 information security" → Company tab (or Profile → "Edit on Company") → the hint under ISO 27001 says what turning it on would do → toggle → the re-score card shows "Landkreis Hohenau · No-go → Go" and the counts count up. The hint is honest: if the "comparable qualification" line is still unanswered, it says Hohenau only becomes **Maybe**, and the re-score card shows No-go → Maybe. On the next Feed visit the changed card's score tile pulses once.
 - **ISO 27001 alone:** No-go → Maybe, not Go. Proof: smoke `without the answer the hint says Maybe` and `ISO 27001 alone: re-score card says No-go → Maybe`, golden `ISO 27001 alone moves Hohenau to Maybe 90 (the honest intermediate state)`.
 - **Before onboarding:** Company (from "Edit" on Check your profile) has no tab bar and ends with "Save and see my feed". Not locked by a test.
 
 **Flow 4: Skip with reasons**
+
 Detail → Skip → pick reasons (optional) → Skip tender → back to the Feed, the card collapses out, and a toast says "Skipped. Reason saved." with Undo. The tender shows under Bids → Skipped with its reasons. Restore puts it in Deciding.
 - **Cancel:** Cancel, Back, Escape or the scrim close the sheet and nothing is skipped. Not locked by a test.
 - **Skip everything:** the Feed shows "Nothing new tonight" (Flow 1). Not locked by a test.
 
 **Flow 5: Win/loss insights**
+
 Bids → the "Win/loss insights" row ("8 of 21 won · 38% in the last 12 months") → `#/insights`: the four figures, win rate by area and why bids were lost → ‹ Back → Bids. The tab bar stays with Bids active throughout. Proof: smoke `Bids links to Win/loss insights with the win rate`, `Win/loss keeps Bids active in the tab bar` and `Back from Win/loss returns to Bids`.
 - **Deep link:** `#/insights` opened directly still goes ‹ Back to Bids. Proof: smoke `deep link #/insights: Back lands on Bids`.
 - **Empty Bids:** with nothing saved or skipped, Bids shows the Win/loss row, then "No bids yet" with "Open Feed". Proof: the smoke path waits for "No bids yet", then smoke `the Win/loss link shows on an empty Bids too (past results are history)`.
 - **No past bids:** "No results yet". Not reachable with the demo data; the arithmetic for an empty list is locked by insights `empty input: zeros, no division by zero, nulls where nothing can be computed`.
 
 **Flow 6: Check what TenderScout assumes about the firm**
+
 Profile tab → the profile card (staff, turnover, references, sectors, certificates, bid languages, countries) → "Edit on Company" → Company (Flow 3) → back on Profile the card shows the change. Proof: smoke `five tabs: Feed, Bids, Company, Profile, Settings` and `Profile tab: the company profile and Edit on Company`. That Profile shows a change made on Company is not locked by a test.
 
 ## Deep linking and back behaviour

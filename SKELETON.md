@@ -121,6 +121,7 @@ The whole card is the link. Empty states replace the cards: "Nothing new tonight
 [action]    | Skip | Save to Bids |
 ```
 Bar variants: saved → `| Skip | In Bids · Deciding |`; skipped → `| Restore | Save to Bids |`; closed → the note "Closed tenders can't be saved" above `| Skip | Save to Bids (disabled) |`.
+
 First open per session: the verdict block is replaced by "Reading 64 pages (German)…", "p. N of 64", a progress bar and three steps, and the body by placeholder bars; the action bar is already there.
 Competition (5 Nov): the bidders and past awards stand for a simulated AI reading of past award notices (fictional, `data.js` `COMPETITION`), so the section heading carries "Simulated AI". The chance line is plain rules in `app.js` (`chanceToWin`): one over the average number of bidders on the similar awards, lower when one rival won two or more of them, higher or lower by the firm's references against the strongest rival's. It reads Good, Fair or Low chance with "About 1 in N", says "Qualify first" on a No-go, and adds "Only once you clear the open points above." on a Maybe. It never changes the score or the verdict.
 
