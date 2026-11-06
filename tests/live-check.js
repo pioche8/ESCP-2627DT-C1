@@ -3,6 +3,8 @@
  *
  *   node tests/live-check.js                                      (checks https://pioche8.github.io/ESCP-2627DT-C1/)
  *   node tests/live-check.js https://<user>.github.io/<repo>/     (another deployment)
+ *   node tests/live-check.js https://<project>.vercel.app/        (the Vercel app project, ADR-0001: a domain root has no
+ *                                                                 directory redirect, so that check is skipped there)
  *
  * Downloads the deployed index.html, engine.js, app.js, data.js, ai.js, styles.css and shared/tokens.css and compares
  * each byte for byte (SHA-256) with the local files, so you know the live URL serves the commit you have checked out.
@@ -20,7 +22,9 @@ const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const BASE = (process.argv[2] || 'https://pioche8.github.io/ESCP-2627DT-C1/').replace(/\/?$/, '/');
-const FILES = ['index.html', 'engine.js', 'app.js', 'data.js', 'ai.js', 'insights.js', 'styles.css', 'shared/tokens.css'];
+const FILES = ['index.html', 'engine.js', 'app.js', 'data.js', 'ai.js', 'insights.js', 'styles.css', 'shared/tokens.css']
+  .concat(['manifest.webmanifest'].filter((f) => fs.existsSync(path.join(ROOT, f)))); // the home-screen manifest, once merged
+const AT_ROOT = new URL(BASE).pathname === '/'; // e.g. a Vercel production domain
 
 function get(url, follow) {
   return new Promise((resolve, reject) => {
@@ -50,7 +54,8 @@ const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
       (r.headers['last-modified'] ? ' · served ' + r.headers['last-modified'] : ''));
   }
   const noSlash = BASE.replace(/\/$/, '') + '?demo=reset,fast';
-  try {
+  if (AT_ROOT) console.log('  skip redirect · ' + BASE + ' is a domain root, there is no directory redirect to keep the query through');
+  else try {
     const r = await get(noSlash, false);
     const loc = r.headers.location || '';
     const ok = r.status >= 300 && r.status < 400 && /[?&]demo=reset,fast/.test(loc);
