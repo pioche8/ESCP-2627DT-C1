@@ -248,6 +248,9 @@ Read only: Profile shows the firm, Company changes it. The card is the one on Ch
 [section]   Demo
 [action]    Reset demo                                       full width, red text, asks to confirm
 [caption]   Clears your profile, answers, saved and skipped tenders.
+[group]     For a moderated test on this phone. Not analytics: nothing is sent, and Reset demo clears it.
+[action]    Copy test-session log                            secondary, full width → toast "Copied · N decisions on this phone"
+[text]      (only after a copy that failed) the log as selectable text, inside the same group
 [section]   About this prototype
 [intro]     A university prototype (ESCP Digital Product Design, 2026).
 [rows]      AI output is simulated (Simulated AI)

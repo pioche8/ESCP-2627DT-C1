@@ -487,17 +487,102 @@ async function errorFallback() {
   await browser.close();
 }
 
+// Test-session log (6 Nov 2026, pass 2, S4): export-only; cleared by ?demo=reset and Reset demo; each tender counted once;
+// no seconds under ?demo=fast; the toast reports what happened (copied, or the log shown as text); no count elsewhere.
+async function testSessionLog() {
+  console.log('\n== test-session log · ' + BROWSER + (DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '') + ' · ' + BASE);
+  const browser = await playwright[BROWSER].launch();
+  const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
+  const page = await ctx.newPage();
+  const problems = [];
+  watch(page, problems);
+  page.on('dialog', (d) => d.accept());
+  const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('tenderscout.v2')); } catch (e) { return null; } });
+  const sheet = async (open) => { await page.waitForFunction((o) => !!document.querySelector('#sheet-root.open') === o, open); await page.waitForTimeout(360); };
+  const toastText = () => page.locator('#toast-root').innerText();
+  const go = async (hash) => { await page.evaluate((h) => { location.hash = h; }, hash); await page.waitForTimeout(250); };
+  await page.goto(BASE + '?demo=reset,fast&theme=dark');
+  await page.waitForSelector('.welcome');
+  let st = await stored();
+  check(st && Array.isArray(st.log) && st.log.length === 0, 'test log: ?demo=reset leaves it empty');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await page.goto('about:blank'); await page.goto(BASE + '?demo=fast#/feed');
+  await page.waitForSelector('.feed-list');
+  // a Go tender saved; the Dutch libraries skipped, undone, skipped again; Hohenau's unclear line answered
+  await page.click('a.tcard[href="#/t/ell-schools"]'); await page.waitForSelector('.vhead.v-go', { timeout: 8000 });
+  await page.click('button[data-act="save"]'); await page.waitForTimeout(200);
+  await go('#/feed'); await page.waitForSelector('a.tcard[href="#/t/vli-libraries"]');
+  await page.click('a.tcard[href="#/t/vli-libraries"]'); await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  await page.click('button[data-go="#/t/vli-libraries/skip"]'); await sheet(true);
+  await page.click('button[data-act="skip-confirm"]'); await page.waitForSelector('.feed-list'); await page.waitForTimeout(300);
+  await page.click('#toast-root button[data-act="toast-action"]'); await page.waitForTimeout(300);
+  await page.click('a.tcard[href="#/t/vli-libraries"]'); await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  await page.click('button[data-go="#/t/vli-libraries/skip"]'); await sheet(true);
+  await page.click('button[data-act="skip-confirm"]'); await page.waitForSelector('.feed-list'); await page.waitForTimeout(300);
+  await page.click('a.tcard[href="#/t/hoh-security"]'); await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  await page.click('a.req[href="#/t/hoh-security/req/r3"]'); await sheet(true);
+  await page.click('.sheet button[data-confirm="pass"]'); await sheet(false);
+  st = await stored();
+  const kinds = st.log.map((x) => x.e + (x.id ? ':' + x.id : '')).join(' ');
+  check(st.log[0].e === 'start' && st.log[0].f === 1 && /open:ell-schools save:ell-schools/.test(kinds) && /skip:vli-libraries undo:vli-libraries skip:vli-libraries/.test(kinds) && st.log.some((x) => x.e === 'open' && x.id === 'hoh-security' && x.q.indexOf('r3') !== -1) && st.log.some((x) => x.e === 'answer' && x.r === 'r3' && x.v === 'pass'), 'test log: records the Feed, opens, save, skip, undo and the answer (' + st.log.length + ' events)');
+  check(st.log.every((x, i) => typeof x.t === 'number' && x.t > 1.7e12 && (i === 0 || x.t >= st.log[i - 1].t)), 'test log: real-clock times, in order');
+  // Settings: one button and its caption, no count on the screen
+  await go('#/settings'); await page.waitForSelector('[data-act="copy-log"]');
+  const btn = await page.locator('[data-act="copy-log"]').boundingBox();
+  const screenText = await page.locator('.screen').innerText();
+  check(btn && btn.height >= 44 && (await page.locator('[data-act="copy-log"]').innerText()) === 'Copy test-session log' && screenText.includes('For a moderated test on this phone. Not analytics: nothing is sent, and Reset demo clears it.'), 'test log: Settings → Demo has "Copy test-session log" (44 px) with its caption');
+  check(!/\d+\s+(decision|check)s?\b/i.test(screenText), 'test log: no count on Settings before copying');
+  // a copy that fails: the toast says so and the log is shown as text
+  await page.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('smoke: blocked')) } }); });
+  await page.click('[data-act="copy-log"]'); await page.waitForSelector('#log-text'); await page.waitForTimeout(200);
+  const shown = await page.locator('#log-text').inputValue();
+  check((await toastText()).includes('Could not copy') && !(await toastText()).includes('Copied'), 'test log: a failed copy says "Could not copy", never "Copied"');
+  check(shown.includes('For a moderated test on this phone.') && shown.includes('Qualification checks completed: 2 ') && shown.includes('not shown (recorded with the fast demo setting') && shown.includes('“Needs your check” lines answered: 1 of 1 line shown') && shown.includes('Go verdicts saved to Bids: 1 of 1 opened'), 'test log: the shown text carries the caption and the counts (2 checks: each tender once; no seconds under ?demo=fast)');
+  const sc = await scanDom(page);
+  check(sc.length === 0, 'test log: Settings with the shown log passes the declutter scan' + (sc.length ? ': ' + sc.map((x) => x.pattern + ' · ' + x.el).join(', ') : ''));
+  // a copy that works: the toast reports the number, the shown text goes away
+  await page.evaluate(() => { window.__copied = null; Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: (t) => { window.__copied = t; return Promise.resolve(); } } }); });
+  await page.click('[data-act="copy-log"]'); await page.waitForTimeout(400);
+  const copied = await page.evaluate(() => window.__copied);
+  check((await toastText()).includes('Copied · 2 decisions on this phone') && !(await page.locator('#log-text').count()) && copied && copied.includes('For a moderated test on this phone.'), 'test log: a copy says "Copied · 2 decisions on this phone" and copies the text with its caption');
+  for (const h of ['#/feed', '#/bids', '#/company', '#/profile']) {
+    await go(h); await page.waitForTimeout(150);
+    const t = await page.locator('#screen').innerText();
+    check(!/test-session|decisions on this phone/i.test(t), 'test log: nothing of it on ' + h);
+  }
+  // Reset demo clears it
+  await go('#/settings'); await page.waitForSelector('[data-act="reset"]');
+  await page.click('[data-act="reset"]'); await page.waitForSelector('.welcome');
+  st = await stored();
+  check(st && st.log.length === 0, 'test log: Reset demo clears it');
+  check(problems.length === 0, 'test log: no console errors' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
+  await ctx.close();
+  // storage blocked (a private window): the log lives in memory and still exports
+  const ctx2 = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
+  await ctx2.addInitScript(() => { Storage.prototype.setItem = function () { throw new Error('blocked'); }; Storage.prototype.getItem = function () { return null; }; });
+  const p2 = await ctx2.newPage();
+  const problems2 = [];
+  watch(p2, problems2);
+  await p2.goto(BASE + '#/settings'); await p2.waitForSelector('[data-act="copy-log"]');
+  await p2.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.resolve() } }); });
+  await p2.click('[data-act="copy-log"]'); await p2.waitForTimeout(400);
+  check((await p2.locator('#toast-root').innerText()).includes('Copied · 0 decisions on this phone') && problems2.length === 0, 'test log: with storage blocked it still exports, no errors' + (problems2.length ? ':\n       ' + problems2.join('\n       ') : ''));
+  await browser.close();
+}
+
 (async () => {
   const appCss = ['styles.css', 'shared/tokens.css'].flatMap(scanCss);
   console.log('== static CSS scan (styles.css, shared/tokens.css)');
   check(appCss.length === 0, 'no declutter pattern in the app stylesheets' + (appCss.length ? ':\n       ' + appCss.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));
   const schemes = ['dark', 'light'].filter((s) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === s);
-  try { for (const s of schemes) await run(s); await reducedMotion(); await errorFallback(); }
-  catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
+  try { for (const s of schemes) await run(s); await reducedMotion(); await errorFallback(); await testSessionLog(); }
+  catch (e) { failures++; console.error('\nFAIL crashed: ' + (e && e.stack || e)); } // "FAIL" so tests/preflight.js shows the line
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }
-    catch (e) { failures++; console.error('\nMonkey crashed: ' + (e && e.stack || e)); }
+    catch (e) { failures++; console.error('\nFAIL monkey crashed: ' + (e && e.stack || e)); }
   }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);
-  process.exitCode = failures ? 1 : 0;
+  // Exit explicitly: after a crash the section's browser is never closed, and its open pipe would keep node, and the
+  // preflight gate around it, waiting forever (the iPhone hangs of 5 and 6 Nov: the run had finished, the process had not).
+  process.exit(failures ? 1 : 0);
 })();

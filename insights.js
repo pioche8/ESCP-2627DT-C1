@@ -6,6 +6,8 @@
  * tests/insights.test.js; it never changes engine.js or a verdict.
  * In the real product the outcome and the winner's price would come from the EU's award notices (matched to the bid)
  * and the reason from the owner's debrief note. In this prototype every past bid is fictional (data.js PAST_BIDS).
+ * Also (6 Nov 2026): the test-session log, the north-star metric and its supporting metrics for a moderated test,
+ * from the events app.js records on the phone (testLog, testLogText).
  * ES5 throughout, like the app's other scripts.
  */
 (function (root) {
@@ -82,8 +84,84 @@
     };
   }
 
+  // ---------- test-session log (6 Nov 2026, pass 2) ----------
+  // The north-star metric and its three supporting metrics as the product brief defines them ("Product objectives and
+  // success metric"), read from the events app.js records on this phone (tenderscout.v2 `log`) during a moderated test.
+  // Plain arithmetic like the rest of this file: nothing is sent anywhere, and nothing here touches a verdict.
+  //   start   {e:'start', t, f?}      the Feed was shown (once per page load); f = recorded with ?demo=fast
+  //   open    {e:'open', id, t, v, q} a tender's qualification check was shown; v = its verdict then, q = its
+  //                                   "Needs your check" line ids then
+  //   save    {e:'save', id, t} · skip {e:'skip', id, t} · restore {e:'restore', id, t} (a skipped tender back to Bids)
+  //   undo    {e:'undo', id, t, d}    a skip was undone; d = whether the tender is still decided (it was saved before)
+  //   answer  {e:'answer', id, r, v, t} the owner answered line r (v = 'pass' | 'fail'), or removed the answer (v = 'clear')
+  var LOG_MAX = 500;
+  function testLog(events) {
+    var ev = (events || []).filter(function (x) { return x && typeof x.e === 'string' && typeof x.t === 'number'; });
+    var opened = {}, decided = {}, shown = {}, answered = {}, goOpened = {}, goSaved = {};
+    var start = null, fast = false, firstGo = null;
+    ev.forEach(function (x) {
+      if (x.e === 'start') { if (start === null) start = x.t; if (x.f) fast = true; }
+      else if (x.e === 'open') {
+        opened[x.id] = true;
+        if (x.v === 'go') goOpened[x.id] = true;
+        (x.q || []).forEach(function (r) { shown[x.id + ':' + r] = true; });
+      }
+      else if (x.e === 'save' || x.e === 'restore' || x.e === 'skip') {
+        if (opened[x.id]) decided[x.id] = true; // a check counts only on a tender the owner opened
+        if (x.e === 'save' && goOpened[x.id]) { goSaved[x.id] = true; if (firstGo === null) firstGo = x.t; }
+      }
+      else if (x.e === 'undo') { if (x.d) decided[x.id] = true; else delete decided[x.id]; }
+      else if (x.e === 'answer') {
+        var k = x.id + ':' + x.r;
+        if (x.v === 'clear') delete answered[k]; else if (shown[k]) answered[k] = true;
+      }
+    });
+    var n = function (o) { return Object.keys(o).length; };
+    return {
+      events: ev.length, full: ev.length >= LOG_MAX,
+      from: ev.length ? ev[0].t : null, to: ev.length ? ev[ev.length - 1].t : null,
+      checks: n(decided),                 // the north star: qualification checks completed, each tender once
+      opened: n(opened),
+      reviewShown: n(shown), reviewAnswered: n(answered),
+      goOpened: n(goOpened), goSaved: n(goSaved),
+      fast: fast,                         // ?demo=fast caps the simulated waits, so the time is not shown
+      firstGoSeconds: !fast && start !== null && firstGo !== null ? Math.round((firstGo - start) / 1000) : null
+    };
+  }
+  function utc(t) { return new Date(t).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'; }
+  var LOG_CAPTION = 'For a moderated test on this phone. Not analytics: nothing is sent, and Reset demo clears it.';
+  // The text the "Copy test-session log" button copies. opts.name(id) → a tender's name; opts.label(v) → a verdict word.
+  function testLogText(events, opts) {
+    opts = opts || {};
+    var name = opts.name || function (id) { return id; }, label = opts.label || function (v) { return v; };
+    var s = testLog(events), ev = (events || []).filter(function (x) { return x && typeof x.e === 'string' && typeof x.t === 'number'; });
+    var plural = function (k, one) { return k + ' ' + one + (k === 1 ? '' : 's'); };
+    var lines = ['TenderScout test-session log', LOG_CAPTION, 'All companies and tenders are fictional.', ''];
+    if (!ev.length) { lines.push('None recorded yet.'); return lines.join('\n'); }
+    lines.push('Recorded ' + utc(s.from) + ' to ' + utc(s.to) + ' (this phone\u2019s clock)' + (s.full ? ', then stopped at ' + LOG_MAX + ' events' : '') + '.');
+    lines.push('Qualification checks completed: ' + s.checks + ' (a Save or Skip on a tender you opened, each tender once)');
+    lines.push('Time from the Feed to the first Go saved: ' + (s.fast ? 'not shown (recorded with the fast demo setting, which shortens the waits)' : s.firstGoSeconds === null ? 'no Go tender saved yet' : s.firstGoSeconds + ' s'));
+    lines.push('\u201cNeeds your check\u201d lines answered: ' + s.reviewAnswered + ' of ' + plural(s.reviewShown, 'line') + ' shown');
+    lines.push('Go verdicts saved to Bids: ' + s.goSaved + ' of ' + s.goOpened + ' opened');
+    lines.push('', 'Events (seconds after the first):');
+    var ANSWER = { pass: 'We meet it', fail: 'We don\u2019t meet it', clear: 'answer removed' };
+    ev.forEach(function (x) {
+      var what = x.e === 'start' ? 'Feed'
+        : x.e === 'open' ? 'Opened ' + name(x.id) + (x.v ? ' (' + label(x.v) + ')' : '')
+        : x.e === 'save' ? 'Saved to Bids: ' + name(x.id)
+        : x.e === 'skip' ? 'Skipped: ' + name(x.id)
+        : x.e === 'restore' ? 'Restored: ' + name(x.id)
+        : x.e === 'undo' ? 'Undo: ' + name(x.id)
+        : x.e === 'answer' ? 'Answered a line on ' + name(x.id) + ': ' + (ANSWER[x.v] || x.v)
+        : x.e;
+      lines.push('+' + Math.round((x.t - s.from) / 1000) + ' s  ' + what);
+    });
+    return lines.join('\n');
+  }
+
   var Insights = { summary: summary, priceGap: priceGap, monthsBefore: monthsBefore,
-                   REASONS: REASONS, REASON_LABEL: REASON_LABEL, WINDOW_MONTHS: WINDOW_MONTHS };
+                   REASONS: REASONS, REASON_LABEL: REASON_LABEL, WINDOW_MONTHS: WINDOW_MONTHS,
+                   testLog: testLog, testLogText: testLogText, LOG_MAX: LOG_MAX, LOG_CAPTION: LOG_CAPTION };
   if (typeof module !== 'undefined' && module.exports) module.exports = Insights;
   else root.Insights = Insights;
 })(this);

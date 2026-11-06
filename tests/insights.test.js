@@ -131,5 +131,59 @@ test('demo data: every past bid is fictional, inside the window, in one of the f
   });
 });
 
+// Test-session log (6 Nov 2026, pass 2): the north-star metric and its supporting metrics from the events app.js records.
+const ev = (e, id, t, extra) => Object.assign({ e: e, t: t * 1000 }, id ? { id: id } : {}, extra || {});
+
+test('test log: a check counts once per tender, only on a tender that was opened, and an undone skip does not count', () => {
+  const log = [ev('start', null, 0), ev('open', 'a', 5, { v: 'go', q: [] }), ev('save', 'a', 9), ev('save', 'a', 10),
+    ev('open', 'b', 12, { v: 'nogo', q: [] }), ev('skip', 'b', 15), ev('undo', 'b', 16, { d: false }), ev('skip', 'b', 17),
+    ev('open', 'c', 20, { v: 'maybe', q: [] }), ev('skip', 'c', 21), ev('undo', 'c', 22, { d: false }),
+    ev('skip', 'never-opened', 23)];
+  const s = I.testLog(log);
+  assert.strictEqual(s.checks, 2, 'a (saved twice) and b (skip, undo, skip); not c (undone), not the tender never opened');
+  assert.strictEqual(s.opened, 3);
+  assert.strictEqual(s.events, log.length);
+});
+
+test('test log: undoing a skip of a tender that was saved before keeps it decided', () => {
+  const s = I.testLog([ev('open', 'a', 0, { v: 'go', q: [] }), ev('save', 'a', 1), ev('skip', 'a', 2), ev('undo', 'a', 3, { d: true })]);
+  assert.strictEqual(s.checks, 1);
+});
+
+test('test log: "Needs your check" lines answered of those shown, Go verdicts saved of those opened', () => {
+  const s = I.testLog([ev('start', null, 0), ev('open', 'h', 1, { v: 'nogo', q: ['r3'] }), ev('answer', 'h', 2, { r: 'r3', v: 'pass' }),
+    ev('answer', 'h', 3, { r: 'r1', v: 'pass' }), ev('open', 'k', 4, { v: 'maybe', q: ['r2', 'r4'] }), ev('answer', 'k', 5, { r: 'r2', v: 'fail' }),
+    ev('answer', 'k', 6, { r: 'r2', v: 'clear' }), ev('open', 'g', 7, { v: 'go', q: [] }), ev('open', 'g2', 8, { v: 'go', q: [] }), ev('save', 'g', 30)]);
+  assert.strictEqual(s.reviewShown, 3, 'h:r3, k:r2, k:r4 (r1 was never a "Needs your check" line)');
+  assert.strictEqual(s.reviewAnswered, 1, 'h:r3 answered; k:r2 answered then removed');
+  assert.deepStrictEqual([s.goSaved, s.goOpened], [1, 2]);
+  assert.strictEqual(s.firstGoSeconds, 30, 'from the first Feed to the first Go saved');
+});
+
+test('test log: no seconds when the log was recorded with the fast demo setting, or before any Go is saved', () => {
+  assert.strictEqual(I.testLog([ev('start', null, 0, { f: 1 }), ev('open', 'g', 1, { v: 'go', q: [] }), ev('save', 'g', 2)]).firstGoSeconds, null);
+  assert.strictEqual(I.testLog([ev('start', null, 0, { f: 1 })]).fast, true);
+  assert.strictEqual(I.testLog([ev('start', null, 0), ev('open', 'm', 1, { v: 'maybe', q: [] }), ev('save', 'm', 2)]).firstGoSeconds, null);
+  assert.ok(/not shown \(recorded with the fast demo setting/.test(I.testLogText([ev('start', null, 0, { f: 1 })])));
+});
+
+test('test log text: carries its caption and the fictional line, says "None recorded yet" when empty, does not modify its input', () => {
+  const empty = I.testLogText([]);
+  assert.ok(empty.indexOf(I.LOG_CAPTION) !== -1 && /fictional/.test(empty) && /None recorded yet\./.test(empty));
+  assert.strictEqual(I.LOG_CAPTION, 'For a moderated test on this phone. Not analytics: nothing is sent, and Reset demo clears it.');
+  const log = [ev('start', null, 0), ev('open', 'a', 5, { v: 'go', q: [] }), ev('save', 'a', 9)];
+  const before = JSON.stringify(log);
+  const text = I.testLogText(log, { name: (id) => 'Tender ' + id, label: (v) => v === 'go' ? 'Go' : v });
+  assert.strictEqual(JSON.stringify(log), before);
+  assert.ok(/Qualification checks completed: 1 /.test(text) && /\+5 s {2}Opened Tender a \(Go\)/.test(text) && /Time from the Feed to the first Go saved: 9 s/.test(text));
+  assert.ok(!/\.js\b|\.md\b|\?demo=/.test(text), 'no file names or URL parameters in the exported text');
+});
+
+test('test log: flags a full log at the cap', () => {
+  const log = []; for (let i = 0; i < I.LOG_MAX; i++) log.push(ev('start', null, i));
+  assert.strictEqual(I.testLog(log).full, true);
+  assert.ok(/then stopped at 500 events/.test(I.testLogText(log)));
+});
+
 console.log(`\n${passed} tests passed`);
 })();

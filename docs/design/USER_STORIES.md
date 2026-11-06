@@ -156,6 +156,7 @@ Tests named below: [`tests/engine.test.js`](../../tests/engine.test.js) (engine)
 2. The ⓘ in the headers opens it, and the old `#/about` link opens the same tab. Locked by smoke `the header ⓘ opens Settings` and `the old #/about deep link opens the Settings tab`.
 3. It holds Appearance (System / Light / Dark, kept across a reload), Morning notification (the replay of US11), Demo (Reset demo, US10) and About this prototype (US10). Locked by smoke `Settings has Appearance, Demo and About this prototype`, `appearance persists across a reload` and `morning notification: About replays it and Escape closes it`.
 4. Before onboarding Settings has no tab bar and keeps ‹ Back. Not locked by a test.
+5. For a moderated test (not for the owner): Demo also holds "Copy test-session log", which copies the brief's north-star metric and its three supporting metrics for this phone since the last reset; no count shows anywhere else, and the toast reports what happened. Locked by smoke `test log: Settings → Demo has "Copy test-session log" (44 px) with its caption`, `test log: no count on Settings before copying`, `test log: a failed copy says "Could not copy", never "Copied"` and `test log: Reset demo clears it`.
 
 ---
 
