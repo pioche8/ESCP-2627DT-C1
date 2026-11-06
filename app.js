@@ -847,10 +847,11 @@
         '<button class="btn btn-secondary btn-block" data-act="morning">Show this morning’s notification</button></div>' +
       '<div class="sec-h"><h2>Demo</h2></div>' +
       '<div class="about-actions settings-demo"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
-      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p>' +
-      '<button class="btn btn-secondary btn-block" data-act="copy-log">Copy test-session log</button>' +
-      '<p class="caption">' + esc(I.LOG_CAPTION) + '</p>' +
-      (logText !== null ? '<label class="sr-only" for="log-text">Test-session log</label><textarea id="log-text" class="log-text" readonly rows="12">' + esc(logText) + '</textarea>' : '') +
+      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
+      // the test-session log: the same pattern as the morning notification (text, then its one action), apart from Reset
+      '<div class="group notify-row log-row"><p>' + esc(I.LOG_CAPTION) + '</p>' +
+        '<button class="btn btn-secondary btn-block" data-act="copy-log">Copy test-session log</button>' +
+        (logText !== null ? '<label class="sr-only" for="log-text">Test-session log</label><textarea id="log-text" class="log-text" readonly rows="12">' + esc(logText) + '</textarea>' : '') +
       '</div>' +
       '<div class="sec-h"><h2>About this prototype</h2></div>' +
       '<div class="about-intro"><p>A university prototype (ESCP Digital Product Design, 2026). TenderScout is a working name.</p></div>' +
