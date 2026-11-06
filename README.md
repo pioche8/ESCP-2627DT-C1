@@ -57,6 +57,9 @@ tests/         npm run preflight           (every gate below in order, one line 
                                             requirement never lowers the score, verdict consistent with the score; SEED= and CASES=)
                node tests/smoke.js         (optional Playwright smoke test, 390×844, light + dark + reduced motion; scans every screen for the 18 declutter patterns)
                node tests/browser-tests.js (tests.html in Chromium over file:// and HTTP, 0 page errors)
+               node tests/monkey.js        (seeded off-script walk: every screen, every control in random order, 10 min per phone profile;
+                                            asserts no console error, no empty screen, nothing wider than the viewport, 44 px targets;
+                                            MONKEY=1 node tests/smoke.js runs it after the smoke test; CI never does)
                node tests/declutter-scan.js (static scan of the app's and the site's stylesheets for the same patterns)
                node tests/demo-record.js   (records the BRIEF.md demo path into docs/demo/: MP4 + one PNG per step; Playwright + ffmpeg)
                node tests/live-check.js    (compares the files GitHub Pages serves with this checkout, byte for byte; no dependencies)
