@@ -109,7 +109,9 @@ if (fs) {
     const clone = (o) => JSON.parse(JSON.stringify(o));
     const state = new Function('D', 'clone', 'TODAY', 'return ' + m[1] + ';')(D, clone, TODAY); // eslint-disable-line no-new-func
     // notifiedOn (5 Nov, additive, CLAUDE.md §11 item 120): a fresh state counts as notified today, so ?demo=reset does not pop the morning notification
-    assert.deepStrictEqual(Object.keys(state).sort(), ['filter', 'notifiedOn', 'onboarded', 'overrides', 'palette', 'profile', 'saved', 'skipped', 'theme', 'website'].sort(), 'tenderscout.v2 shape');
+    // log (6 Nov, additive, CLAUDE.md §11 pass 2, S4): the test-session log starts empty, so ?demo=reset and Reset demo clear it
+    assert.deepStrictEqual(Object.keys(state).sort(), ['filter', 'log', 'notifiedOn', 'onboarded', 'overrides', 'palette', 'profile', 'saved', 'skipped', 'theme', 'website'].sort(), 'tenderscout.v2 shape');
+    assert.deepStrictEqual(state.log, [], 'the test-session log starts empty');
     assert.strictEqual(state.notifiedOn, TODAY, 'a fresh state counts as notified on the demo day');
     assert.strictEqual(state.onboarded, false);
     assert.deepStrictEqual(state.profile, D.PROFILE, 'profile = the demo profile');

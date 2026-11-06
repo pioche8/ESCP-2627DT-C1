@@ -36,7 +36,7 @@
   // notifiedOn = the day the morning notification last showed. A fresh state counts as notified today, so it first shows
   // on the next day the app is opened (in the prototype "today" is fixed, so use ?demo=morning or About to see it).
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand', notifiedOn: TODAY };
+    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand', notifiedOn: TODAY, log: [] };
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -45,6 +45,7 @@
   }
   var dirty = true;
   function save() { dirty = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } }
+  function saveQuiet() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { mem = S; } } // persist without forcing a re-render
   var S = load();
   if (THEMES.indexOf(themeParam) !== -1) { S.theme = themeParam; save(); }
   var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both · ?demo=morning shows the morning notification once
@@ -72,6 +73,40 @@
   var pulse = {};       // tenderId -> true: pulse its score tile on the next Feed visit
   var collapseId = null;// tenderId just skipped: its card collapses out of the Feed
   var drafting = false;
+  var logText = null;   // the test-session log, shown as selectable text after a copy that failed
+
+  // Test-session log (6 Nov 2026): what a moderated test needs to read the north-star metric on this phone (insights.js
+  // testLog). Real-clock times, at most I.LOG_MAX events, cleared by ?demo=reset and Reset demo. Nothing is sent.
+  var FAST = demoFlags.indexOf('fast') !== -1, logged = {};
+  function logEvent(e, id, extra, quiet) {
+    if (!S.log || !S.log.push) S.log = [];
+    if (S.log.length >= I.LOG_MAX) return;
+    var x = { e: e, t: Date.now() };
+    if (id) x.id = id;
+    if (extra) Object.keys(extra).forEach(function (k) { x[k] = extra[k]; });
+    S.log.push(x);
+    if (quiet) saveQuiet(); else save();
+  }
+  function logScreen(r) { // once per page load: the Feed, and each tender's qualification check
+    if (!S.onboarded) return;
+    if (r.name === 'feed' && !logged.start) { logged.start = true; logEvent('start', null, FAST ? { f: 1 } : null, true); }
+    if (r.name === 'detail' && readCache[r.id] && !logged['open:' + r.id]) {
+      var t = tender(r.id); if (!t) return;
+      var ev = evalT(t);
+      logged['open:' + r.id] = true;
+      logEvent('open', r.id, { v: ev.verdict, q: ev.checks.filter(function (c) { return c.status === 'review'; }).map(function (c) { return c.id; }) }, true);
+    }
+  }
+  function copyLog() {
+    var text = I.testLogText(S.log, { name: function (id) { var t = tender(id); return t ? bare(t.buyer) : id; }, label: function (v) { return V[v] || v; } });
+    var n = I.testLog(S.log).checks;
+    var failed = function () { logText = text; render(true); toast('Could not copy · the log is shown below'); };
+    var done = function () { logText = null; render(true); toast('Copied · ' + plural(n, 'decision') + ' on this phone'); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, failed);
+      else failed();
+    } catch (e) { failed(); }
+  }
 
   // ---------- DOM ----------
   var $app = document.getElementById('app');
@@ -812,7 +847,11 @@
         '<button class="btn btn-secondary btn-block" data-act="morning">Show this morning’s notification</button></div>' +
       '<div class="sec-h"><h2>Demo</h2></div>' +
       '<div class="about-actions settings-demo"><button class="btn btn-secondary btn-danger btn-block" data-act="reset">Reset demo</button>' +
-      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p></div>' +
+      '<p class="caption">Clears your profile, answers, saved and skipped tenders.</p>' +
+      '<button class="btn btn-secondary btn-block" data-act="copy-log">Copy test-session log</button>' +
+      '<p class="caption">' + esc(I.LOG_CAPTION) + '</p>' +
+      (logText !== null ? '<label class="sr-only" for="log-text">Test-session log</label><textarea id="log-text" class="log-text" readonly rows="12">' + esc(logText) + '</textarea>' : '') +
+      '</div>' +
       '<div class="sec-h"><h2>About this prototype</h2></div>' +
       '<div class="about-intro"><p>A university prototype (ESCP Digital Product Design, 2026). TenderScout is a working name.</p></div>' +
       '<div class="group" style="margin-top:12px">' +
@@ -961,6 +1000,7 @@
       }
       afterRender(r);
     }
+    logScreen(r);
     syncSheet(r);
     if (morningDue(r)) showMorning();
     var h1t = $screen.querySelector('h1');
@@ -1035,27 +1075,27 @@
     S.overrides[tid] = S.overrides[tid] || {};
     var prev = S.overrides[tid][rid];
     if (val === 'clear') delete S.overrides[tid][rid]; else S.overrides[tid][rid] = val;
-    save();
+    logEvent('answer', tid, { r: rid, v: val });
     var now = evalT(tender(tid)).verdict;
     closeSheet();
     toast(val === 'clear' ? 'Answer removed · now ' + V[now] : 'Answer saved · now ' + V[now], { label: 'Undo', fn: function () {
       S.overrides[tid] = S.overrides[tid] || {};
       if (prev) S.overrides[tid][rid] = prev; else delete S.overrides[tid][rid];
-      save(); render(true);
+      logEvent('answer', tid, { r: rid, v: prev || 'clear' }); render(true);
     } });
   }
   function skipConfirm(id) {
     var reasons = (skipDraft[id] || []).slice(), prevSaved = S.saved[id];
-    S.skipped[id] = { reasons: reasons, at: TODAY }; delete S.saved[id]; save();
+    S.skipped[id] = { reasons: reasons, at: TODAY }; delete S.saved[id]; logEvent('skip', id);
     skipDraft[id] = [];
     collapseId = id;
     backTo('#/feed', 2);
     toast(reasons.length ? 'Skipped. Reason saved.' : 'Skipped.', { label: 'Undo', fn: function () {
-      delete S.skipped[id]; if (prevSaved) S.saved[id] = prevSaved; save(); render(true);
+      delete S.skipped[id]; if (prevSaved) S.saved[id] = prevSaved; logEvent('undo', id, { d: !!prevSaved }); render(true);
     } });
   }
   function restore(id) {
-    delete S.skipped[id]; S.saved[id] = 'Deciding'; enteringId = id; save(); render(true);
+    delete S.skipped[id]; S.saved[id] = 'Deciding'; enteringId = id; logEvent('restore', id); render(true);
     toast('Restored to Deciding');
   }
   function setStage(id, stage) {
@@ -1121,12 +1161,13 @@
       case 'draft': draft(); break;
       case 'finish': S.onboarded = true; save(); go('#/feed'); break;
       case 'save':
-        S.saved[d.id] = 'Deciding'; delete S.skipped[d.id]; save(); render(true);
+        S.saved[d.id] = 'Deciding'; delete S.skipped[d.id]; logEvent('save', d.id); render(true);
         toast('Saved to Bids', { label: 'View', fn: function () { go('#/bids'); } });
         break;
       case 'xb': applyLever('xb', function (p) { p.crossBorder = !p.crossBorder; }, el); break;
       case 'close-sheet': closeSheet(); break;
       case 'morning': notifyShown = false; showMorning(); break;
+      case 'copy-log': copyLog(); break;
       case 'notify-close': hideMorning(); break;
       case 'notify-open': hideMorning(function () { S.filter = 'all'; save(); if (parse().name === 'feed') render(true); else go('#/feed'); }); break;
       case 'skip-confirm': skipConfirm(d.id); break;
@@ -1135,7 +1176,7 @@
       case 'theme-toggle': S.theme = effectiveScheme() === 'dark' ? 'light' : 'dark'; save(); applyTheme(); haptic('select'); render(true); break;
       case 'reset':
         if (!window.confirm('Reset the demo? This clears your profile, answers, saved and skipped tenders.')) break;
-        S = fresh(); readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {};
+        S = fresh(); readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {}; logged = {}; logText = null;
         save(); applyTheme(); stack = [location.hash]; replaceTo('#/welcome/1');
         break;
     }
