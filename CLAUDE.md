@@ -101,9 +101,10 @@ If a design change needs new engine output (e.g. a "what would flip this" hint),
 | `#/bids` | Deciding / Bidding / Submitted + Skipped (Restore) | stage switcher; the "Win/loss insights" row at the top |
 | `#/insights` | Win/loss insights (a page of Bids, since 5 Nov, item 122): win rate, value won, bids lost, price gap; win rate by area; why bids were lost | tab bar with Bids active; ‹ Back → Bids; fictional-data and "not AI" line |
 | `#/company` | Profile levers: turnover, references stepper, certificate toggles, languages, cross-border | live re-score + delta banner "Hohenau: No-go → Go" (**hero demo moment**) |
+| `#/profile` | Profile tab (since 5 Nov): the company profile, read only, with "Edit on Company" | Profile shows the firm; Company changes it |
 | `#/settings` (also `#/about`) | Settings tab (since 5 Nov, item 121): Appearance, Reset demo, and "About this prototype" (AI disclosure, demo-data notice) | the fourth tab; also reachable from header ⓘ and `#/about` |
 
-- Bottom tabs: Feed / Bids / Company / Settings. They are hidden during onboarding.
+- Bottom tabs: Feed / Bids / Company / Profile / Settings. They are hidden during onboarding, on a tender and its sheets, on Not found and on the error screen.
 - Before onboarding, any route except welcome, company or settings (`#/about`) redirects to `#/welcome/1`.
 - Unknown route → Not found with a link to the Feed.
 - If `DESIGN.md` changes the IA (tab names, screen order, new screens), follow `DESIGN.md`, update `docs/NAVIGATION.md` to match, and keep deep links and back behaviour working.
