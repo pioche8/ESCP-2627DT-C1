@@ -108,6 +108,8 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 | `tests/demo-golden.test.js` | the live demo's numbers (Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go, 777 pages in 4 languages), the storage key, the reset | node, `tests.html`, CI `check` |
 | `tests/engine-invariants.test.js` | a seeded property test: a fail is always No-go, score within 0–100, meeting one more line never lowers the score, verdicts consistent with the score, rank sorted | node, CI `check` |
 | `tests/docs-check.js` | every route `parse()` accepts and every tab appear in `docs/NAVIGATION.md` and `SKELETON.md`; every check a user story or flow names exists word for word; no interview is cited and no participant is quoted in `docs/design/` unless `evidence.md` logs it | node, CI `check` |
+| `tests/no-live-ai-check.js` | no server route under `site/src/app/` and no key-shaped string in a tracked file (§7.2; [ADR-0002](docs/adr/0002-real-tender-reader.md)) | node, CI `check` |
+| `tests/vercel-dist.test.js`, `site/scripts/sync-shared.mjs --check` | the Vercel app build is exactly the app files, byte-identical, every reference resolves; the site's copies of `engine.js`, `data.js` and the fonts equal the app's ([ADR-0001](docs/adr/0001-vercel-hosting.md)) | node, CI `check` |
 | `tests/declutter-scan.js` | the eighteen patterns are absent from the five stylesheets | node, CI `check` |
 | `shared/check-contrast.js` | WCAG AA on every pair, both schemes | node, CI `check` |
 | generated files in sync | tokens and the decision model match their sources | CI `check` |
