@@ -90,3 +90,27 @@ Surprises / what we got wrong:
 - Split roles: one asks, one writes. Over video, write live.
 - Write up notes **within 2 hours** of the interview.
 - Fill the gate tally in `evidence.md` after every interview.
+
+## 8. What each answer feeds
+A method table, not findings: it says where an answer goes once an interview is logged in [`evidence.md`](../evidence.md) §1 and §2, so T8 (traceability), T9 (persona and HMW) and T10 (journey) in [`docs/START_HERE.md`](START_HERE.md) can be written from the notes without re-reading every interview. It holds no answers. Anything not said in an interview stays out of those files or is marked ASSUMPTION.
+
+| Question | Tests | T8 · traceability | T9 · persona and HMW | T10 · journey |
+|---|---|---|---|---|
+| 1 Company, staff, public share of revenue | context for every hypothesis | the row's evidence column (who said it) | context of use; which persona the interviewee belongs to | — |
+| 2 How they found the last tender | H2 | the morning feed row | current tools | stage "a tender exists → found", tool today |
+| 3 Finding → bid / no bid, who, how long | H1 | the morning feed and qualification check rows | goals; pains in their words | every stage's actions and the time it took |
+| 4 Pages, what they actually read | H1 | the citation sheet row | pains in their words | stage "read the documents", pain |
+| 5 Did they bid, the deciding factor | H1, H2 | the verdict row | goals; an HMW about the deciding factor | stage "decide", outcome |
+| 6 A requirement found too late, its cost | H1, H4 | the knock-out rows (turnover, references, certificate, site visit) | pains; what they said about money or time | stage "start the bid", pain and its cost (only a figure they gave) |
+| 7 Tenders seen, looked into, bid per month | H1 | the north-star row (how often a check would happen) | context of use | how often the journey starts |
+| 8 The usual reason to skip | H1 | the skip-reasons row | pains; an HMW | stage "skip", reason |
+| 9 Another country or language | H3 | the translation and original-sentence rows | pains; an HMW about other languages | stage "read the documents" for a foreign tender |
+| 10 Tools today and what they pay | H2, H4 | the competition row in `BRIEF.md` (do they already have a qualifier?) | current tools; money | tool today at every stage |
+| 11 The most annoying part | H1 | the row of the feature it points to | pains in their words (a quote, with consent) | the stage it names, pain |
+| 12 Hours to prepare one bid | H4 | the business-model row (the €49 / €149 plans are ASSUMPTION) | money or time | stage "write the bid", cost |
+| 13 Worth of "not eligible, page 23" in a minute | H4 | the qualification check row | money; an HMW about a fast no | the TenderScout moment, in their words |
+| 14 Who else to talk to | — | — | — | — |
+| 15 Optional demo: where they tap first | usability, not H1–H4 | the screen's row (what they tapped, what they said) | — | the TenderScout moment's open question |
+| Procurement officers (C) | H2 from the buyer side, the RESHAPE route in `evidence.md` §0 | a buyer-side row, kept apart from the owners' rows | not the primary persona (`BRIEF.md` → User) | not the owner's journey; a note on the buyer's side |
+
+**The follow-up call with survey respondent S1** ([`evidence.md`](../evidence.md) §1b) should start with the questions the screening form did not settle: 9 (H3 was unclear) and 6, 10, 12 and 13 (H4 was not asked). The call is an interview: log it in §1 and §2 like any other, and only then does it count toward the gate.
