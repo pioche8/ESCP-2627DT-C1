@@ -7,6 +7,8 @@ import type { Feature, FeatureCollection, Geometry, Polygon } from 'geojson';
 import world from 'world-atlas/countries-110m.json';
 import { COUNTRIES, Engine, PROFILE, counts, evaluateAll, profileWith } from '@/data/app';
 import { C, VERDICT } from '@/components/ui/VerdictShape';
+import { Counter } from '@/components/ui/Counter';
+import { useReducedMotion } from '@/lib/useReducedMotion';
 
 // The countries come from data.js: home = the profile's countries (DE, AT), abroad = the other countries the tenders are
 // in (ES, NL, FR). ISO 3166-1 numeric ids are the world atlas's keys; the table covers every country engine.js names.
@@ -52,20 +54,42 @@ function spanAt(proj: GeoProjection, poly: Feature<Polygon>, x: number, y: numbe
 }
 const names = (cs: string[]) => { const n = cs.map(Engine.countryName); return n.length < 2 ? n.join('') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
 
+/** Fill delays (ms). On arrival the countries light up one after another, home first; on a switch the countries abroad
+ *  follow each other in the same order. Solid colours only (declutter rules); instant under reduced motion. */
+const INTRO_STEP = 140, SWITCH_STEP = 90;
+
 /**
  * "Where you bid": filled countries (where you bid in brand, the rest in bg) with a code on each of the five. Under the
- * map, the cross-border switch re-scores the tenders with the real decision rules and the counts update.
+ * map, the cross-border switch re-scores the tenders with the real decision rules and the counts count to the new values.
+ * Motion: the first time the map is half in view, the countries fill in one by one and the codes fade in; on a switch the
+ * countries abroad fill or empty in turn.
  */
 export function WorldMap() {
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [cross, setCross] = useState(PROFILE.crossBorder);
+  const reduce = useReducedMotion();
+  const [seen, setSeen] = useState(false); // false until the map has come into view: the countries wait unlit
+  const [settled, setSettled] = useState(false); // the arrival sequence is over: switch delays apply from then on
   useEffect(() => {
     const el = box.current!;
     const ro = new ResizeObserver(([e]) => setSize({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  useEffect(() => {
+    if (seen) return;
+    const el = box.current!;
+    if (!('IntersectionObserver' in window)) { const t = setTimeout(() => setSeen(true), 0); return () => clearTimeout(t); }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); io.disconnect(); } }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [seen]);
+  useEffect(() => {
+    if (!seen || settled) return;
+    const t = setTimeout(() => setSettled(true), reduce ? 0 : INTRO_STEP * SHOWN.length + 700);
+    return () => clearTimeout(t);
+  }, [seen, settled, reduce]);
   const views = useMemo(() => evaluateAll(profileWith({ crossBorder: cross })).filter((v) => v.verdict !== 'closed'), [cross]);
   const n = counts(views);
 
@@ -84,8 +108,15 @@ export function WorldMap() {
     });
     return { path, labels };
   }, [w, h]);
-  const bids = (cc: string | undefined) => !!cc && (HOME.includes(cc) || (cross && ABROAD.includes(cc)));
+  const lit = seen || reduce;
+  const bids = (cc: string | undefined) => lit && !!cc && (HOME.includes(cc) || (cross && ABROAD.includes(cc)));
   const where = cross ? SHOWN : HOME;
+  const delay = (cc: string | undefined) => {
+    if (!cc || reduce) return undefined;
+    const ms = settled ? Math.max(0, ABROAD.indexOf(cc)) * SWITCH_STEP : SHOWN.indexOf(cc) * INTRO_STEP;
+    return `${ms}ms`;
+  };
+  const summary = `${views.length} tenders: ${n.go} ${VERDICT.go.label}, ${n.maybe} ${VERDICT.maybe.label}, ${n.nogo} ${VERDICT.nogo.label}`;
 
   return (
     <>
@@ -94,13 +125,14 @@ export function WorldMap() {
           {geo && (
             <svg className="map-svg" width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Map: you bid in ${names(where)}.`}>
               <g>
-                {WORLD.map((f, i) => (
-                  <path key={i} d={geo.path(f) ?? undefined} fill={bids(CODE_BY_ID.get(String(f.id))) ? C.brand : C.bg} stroke={C.surface} strokeWidth={1} strokeLinejoin="round" />
-                ))}
+                {WORLD.map((f, i) => {
+                  const cc = CODE_BY_ID.get(String(f.id));
+                  return <path key={i} d={geo.path(f) ?? undefined} className={cc ? 'map-land' : undefined} style={{ fill: bids(cc) ? C.brand : C.bg, transitionDelay: delay(cc) }} stroke={C.surface} strokeWidth={1} strokeLinejoin="round" />;
+                })}
               </g>
               <g aria-hidden="true">
                 {geo.labels.map(({ cc, x, y, inside }) => (
-                  <text key={cc} x={x} y={y} textAnchor={inside ? 'middle' : 'end'} dominantBaseline="central" fill={bids(cc) ? (inside ? C.bg : C.ink) : C.muted} className="map-cc">{cc}</text>
+                  <text key={cc} x={x} y={y} textAnchor={inside ? 'middle' : 'end'} dominantBaseline="central" className={`map-cc${lit ? ' on' : ''}`} style={{ fill: bids(cc) ? (inside ? C.bg : C.ink) : C.muted, transitionDelay: delay(cc) }}>{cc}</text>
                 ))}
               </g>
             </svg>
@@ -112,10 +144,13 @@ export function WorldMap() {
           <span className={`sw${cross ? ' on' : ''}`} aria-hidden="true"><i className="sw-knob" /></span>
           <span>Bid outside {names(HOME)}</span>
         </button>
-        <p className="map-counts" aria-live="polite">
-          {views.length} tenders: {(['go', 'maybe', 'nogo'] as const).map((k, i) => (
-            <span key={k}><span style={{ color: C[k], fontWeight: 800 }}>{n[k]} {VERDICT[k].label}</span>{i < 2 ? ', ' : ''}</span>
-          ))}
+        <p className="map-counts">
+          <span className="sr-only" aria-live="polite">{summary}</span>
+          <span aria-hidden="true">
+            {views.length} tenders: {(['go', 'maybe', 'nogo'] as const).map((k, i) => (
+              <span key={k}><span style={{ color: C[k], fontWeight: 800 }}><Counter value={n[k]} /> {VERDICT[k].label}</span>{i < 2 ? ', ' : ''}</span>
+            ))}
+          </span>
         </p>
       </div>
     </>

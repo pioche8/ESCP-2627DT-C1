@@ -1,14 +1,15 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Engine, PROFILE, TODAY, counts, evaluateAll, evaluateOne, money, withCert, type Overrides, type TenderView } from '@/data/app';
 import { Icon } from '@/components/ui/Icon';
+import { Counter } from '@/components/ui/Counter';
 import { SimulatedText } from '@/components/ui/Primitives';
 import { Button } from '@/components/ui/Buttons';
 import { CountsLine, ScoreTile, StatusLine } from '@/components/ui/VerdictTile';
 import { C, VerdictShape, verdictLabel } from '@/components/ui/VerdictShape';
 import tokens from '@/generated/tokens';
-import { EASE, easeOutCubic } from '@/lib/motion';
+import { EASE } from '@/lib/motion';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 
 const FEED_IDS = ['ell-schools', 'kal-fibre', 'hoh-security'];
@@ -161,22 +162,4 @@ function TabBar({ tab, onTab }: { tab: number; onTab: (i: number) => void }) {
       })}
     </div>
   );
-}
-
-/** Count-up written to the DOM over 650 ms with easeOutCubic (the same curve as the app's re-score). Instant under reduced motion. */
-export function Counter({ value, duration = tokens.duration.rescore.countUp }: { value: number; duration?: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const prev = useRef(value);
-  const [initial] = useState(value);
-  const reduce = useReducedMotion();
-  useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const from = prev.current, to = value; prev.current = value;
-    if (reduce || from === to) { el.textContent = String(to); return; }
-    const t0 = performance.now(); let id = 0;
-    const step = (t: number) => { const p = Math.min(1, (t - t0) / duration); el.textContent = String(Math.round(from + (to - from) * easeOutCubic(p))); if (p < 1) id = requestAnimationFrame(step); };
-    id = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(id);
-  }, [value, duration, reduce]);
-  return <span ref={ref} className="counter-val">{initial}</span>;
 }
