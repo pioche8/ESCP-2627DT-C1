@@ -6,6 +6,7 @@
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
  *   SMOKE_ONLY=light node tests/smoke.js          (one scheme while developing)
  *   SMOKE_BROWSER=webkit SMOKE_DEVICE="iPhone 13" node tests/smoke.js   (Safari engine with a Playwright device profile; also "iPhone SE")
+ *   MONKEY=1 node tests/smoke.js                  (adds tests/monkey.js: a seeded 10-minute random walk per profile; CI never sets it)
  *
  * Path (CLAUDE.md §8.6 + the BRIEF.md 75-second demo):
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
@@ -491,6 +492,10 @@ async function errorFallback() {
   const schemes = ['dark', 'light'].filter((s) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === s);
   try { for (const s of schemes) await run(s); await reducedMotion(); await errorFallback(); }
   catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
+  if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
+    try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }
+    catch (e) { failures++; console.error('\nMonkey crashed: ' + (e && e.stack || e)); }
+  }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);
   process.exitCode = failures ? 1 : 0;
 })();
