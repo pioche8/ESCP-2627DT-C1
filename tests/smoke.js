@@ -4,9 +4,13 @@
  *
  *   node tests/smoke.js [screenshot-dir]          (needs Playwright + Chromium installed)
  *   SMOKE_URL=http://localhost:8000/ node tests/smoke.js   (test a server instead of file://)
+ *   SMOKE_SERVE=1 node tests/smoke.js             (serve this checkout over HTTP on a free local port: what a phone gets from Pages, minus TLS;
+ *                                                 the WebKit CI job uses it, because WebKit refuses the manifest over file://)
  *   SMOKE_ONLY=light node tests/smoke.js          (one scheme while developing)
  *   SMOKE_BROWSER=webkit SMOKE_DEVICE="iPhone 13" node tests/smoke.js   (Safari engine with a Playwright device profile; also "iPhone SE")
  *   MONKEY=1 node tests/smoke.js                  (adds tests/monkey.js: a seeded 10-minute random walk per profile; CI never sets it)
+ *   SMOKE_SECTION_MINUTES=4 (default)             each section's deadline (tests/lib/section.js): a section that crashes or outlives it
+ *                                                 prints FAIL with its name and step, and the next section still runs
  *
  * Path (CLAUDE.md §8.6 + the BRIEF.md 75-second demo):
  * welcome → reading → profile → feed → Go detail → requirement sheet → Hohenau detail →
@@ -24,9 +28,10 @@ const fs = require('fs');
 let playwright;
 try { playwright = require('playwright'); } catch (e) { console.error('Playwright is not installed: npm i -D playwright && npx playwright install chromium'); process.exit(2); }
 const { scanCss, scanDom } = require('./declutter-scan');
+const { section } = require('./lib/section'); // the one owner of each section's browser: launch, deadline, step, close
 
 const ROOT = path.resolve(__dirname, '..');
-const BASE = process.env.SMOKE_URL || 'file://' + ROOT + '/index.html';
+let BASE = process.env.SMOKE_URL || 'file://' + ROOT + '/index.html'; // SMOKE_SERVE=1 replaces it with a local HTTP URL before the first section
 const OUT = path.resolve(process.argv[2] || path.join(ROOT, 'screenshots'));
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -38,9 +43,8 @@ const DEVICE = process.env.SMOKE_DEVICE ? playwright.devices[process.env.SMOKE_D
 if (process.env.SMOKE_DEVICE && !DEVICE) { console.error('Unknown device ' + process.env.SMOKE_DEVICE); process.exit(2); }
 const contextOptions = (extra) => ({ ...(DEVICE || { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }), ...extra });
 
-async function run(scheme) {
+async function run(scheme, browser, step) {
   console.log('\n== ' + scheme + ' · ' + BROWSER + (DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '') + ' · ' + BASE);
-  const browser = await playwright[BROWSER].launch();
   const ctx = await browser.newContext(contextOptions({ colorScheme: scheme }));
   const VW = (DEVICE ? DEVICE.viewport : { width: 390, height: 844 }).width, VH = (DEVICE ? DEVICE.viewport : { width: 390, height: 844 }).height;
   const problems = [];
@@ -50,6 +54,7 @@ async function run(scheme) {
   let n = 0;
   const tag = scheme + (DEVICE ? '-' + process.env.SMOKE_DEVICE.replace(/\s+/g, '').toLowerCase() : '') + (BROWSER !== 'chromium' ? '-' + BROWSER : '');
   const shot = async (name, full) => {
+    step(name);
     await page.waitForTimeout(450);
     await page.screenshot({ path: path.join(OUT, `${tag}-${String(++n).padStart(2, '0')}-${name}.png`), fullPage: !!full });
   };
@@ -62,7 +67,17 @@ async function run(scheme) {
   const token = (name) => page.evaluate((k) => getComputedStyle(document.documentElement).getPropertyValue(k).trim(), name);
   const rgb = (hex) => { const h = hex.replace('#', ''); return 'rgb(' + [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ') + ')'; };
   const scanned = [];
-  const scan = async (name) => { const v = await scanDom(page); scanned.push(...v.map((x) => name + ': ' + x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : ''))); };
+  const overflowing = [];
+  // Every scanned screen also checks that no control's label is wider than the control (pass 3: "We don't meet it" spilled
+  // out of its button at 320 px once the line was answered, in Chromium and WebKit alike; no check measured it).
+  const labelsFit = async (name) => {
+    const o = await page.evaluate(() => Array.from(document.querySelectorAll('button, a, [role="tab"], [role="switch"], [role="radio"]')).filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && el.innerText.trim() !== '' && getComputedStyle(el).visibility !== 'hidden' && el.scrollWidth > el.clientWidth + 1; // labelled controls only: a switch's 44 px hit area overflows on purpose
+    }).map((el) => (el.getAttribute('data-act') || el.getAttribute('data-confirm') || el.tagName.toLowerCase()) + ' "' + el.innerText.trim().slice(0, 30) + '" ' + el.scrollWidth + ' > ' + el.clientWidth + ' px'));
+    overflowing.push(...o.map((x) => name + ': ' + x));
+  };
+  const scan = async (name) => { step(name); const v = await scanDom(page); scanned.push(...v.map((x) => name + ': ' + x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : ''))); await labelsFit(name); };
 
   // 01–03 Onboarding
   await page.goto(url('demo=reset&theme=' + scheme));
@@ -415,8 +430,8 @@ async function run(scheme) {
   console.log('  info elements under 44 px on Company (box only): ' + JSON.stringify(small));
 
   check(scanned.length === 0, 'declutter scan: none of the 18 patterns on any screen' + (scanned.length ? ':\n       ' + scanned.join('\n       ') : ''));
+  check(overflowing.length === 0, 'every control\'s label fits inside the control on every scanned screen (' + VW + ' px)' + (overflowing.length ? ':\n       ' + overflowing.join('\n       ') : ''));
   check(problems.length === 0, 'no console errors, page errors or failed requests' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
-  await browser.close();
 }
 
 function watch(page, problems) {
@@ -425,9 +440,9 @@ function watch(page, problems) {
   page.on('requestfailed', (r) => problems.push('requestfailed: ' + r.url() + ' ' + ((r.failure() || {}).errorText || '')));
 }
 
-async function reducedMotion() {
+async function reducedMotion(browser, step) {
   console.log('\n== reduced motion · ' + BROWSER + ' · ' + BASE);
-  const browser = await playwright[BROWSER].launch();
+  step('Company re-score');
   const ctx = await browser.newContext(contextOptions({ colorScheme: 'light', reducedMotion: 'reduce' }));
   const problems = [];
   const page = await ctx.newPage();
@@ -448,14 +463,12 @@ async function reducedMotion() {
   check(await page.evaluate(() => Array.from(document.querySelectorAll('.feed-head h1 .w')).every((w) => getComputedStyle(w).animationDuration === '0s')), 'the word reveal is instant under reduced motion');
   check(await page.evaluate(() => document.getAnimations().filter((a) => (a.effect.getComputedTiming().duration || 0) > 0).length) === 0, 'no running animation on the Feed under reduced motion');
   check(problems.length === 0, 'no console errors under reduced motion' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
-  await browser.close();
 }
 
 // Error fallback (5 Nov 2026): an injected uncaught error and an injected unhandled rejection each show the plain
 // "Something went wrong" screen with one Restart button; Restart returns to the Feed with tenderscout.v2 intact.
-async function errorFallback() {
+async function errorFallback(browser, step) {
   console.log('\n== error fallback · ' + BROWSER + ' · ' + BASE);
-  const browser = await playwright[BROWSER].launch();
   const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
   const page = await ctx.newPage();
   const problems = [];
@@ -464,6 +477,7 @@ async function errorFallback() {
   await page.waitForSelector('.welcome');
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; s.saved = { 'ell-schools': 'Deciding' }; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
   for (const kind of ['error', 'rejection']) {
+    step('injected ' + kind);
     await page.goto('about:blank'); await page.goto(BASE + '#/feed');
     await page.waitForSelector('.feed-list');
     if (kind === 'error') await page.evaluate(() => { setTimeout(() => { throw new Error('smoke: injected error'); }, 0); });
@@ -484,14 +498,13 @@ async function errorFallback() {
   }
   const unexpected = problems.filter((m) => !/smoke: injected/.test(m));
   check(unexpected.length === 0, 'no other console errors around the fallback' + (unexpected.length ? ':\n       ' + unexpected.join('\n       ') : ''));
-  await browser.close();
 }
 
 // Test-session log (6 Nov 2026, pass 2, S4): export-only; cleared by ?demo=reset and Reset demo; each tender counted once;
 // no seconds under ?demo=fast; the toast reports what happened (copied, or the log shown as text); no count elsewhere.
-async function testSessionLog() {
+async function testSessionLog(browser, step) {
   console.log('\n== test-session log · ' + BROWSER + (DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '') + ' · ' + BASE);
-  const browser = await playwright[BROWSER].launch();
+  step('decisions on the Feed');
   const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
   const page = await ctx.newPage();
   const problems = [];
@@ -527,6 +540,7 @@ async function testSessionLog() {
   check(st.log[0].e === 'start' && st.log[0].f === 1 && /open:ell-schools save:ell-schools/.test(kinds) && /skip:vli-libraries undo:vli-libraries skip:vli-libraries/.test(kinds) && st.log.some((x) => x.e === 'open' && x.id === 'hoh-security' && x.q.indexOf('r3') !== -1) && st.log.some((x) => x.e === 'answer' && x.r === 'r3' && x.v === 'pass'), 'test log: records the Feed, opens, save, skip, undo and the answer (' + st.log.length + ' events)');
   check(st.log.every((x, i) => typeof x.t === 'number' && x.t > 1.7e12 && (i === 0 || x.t >= st.log[i - 1].t)), 'test log: real-clock times, in order');
   // Settings: one button and its caption, no count on the screen
+  step('Settings');
   await go('#/settings'); await page.waitForSelector('[data-act="copy-log"]');
   const btn = await page.locator('[data-act="copy-log"]').boundingBox();
   const screenText = await page.locator('.screen').innerText();
@@ -558,6 +572,7 @@ async function testSessionLog() {
   check(problems.length === 0, 'test log: no console errors' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
   await ctx.close();
   // storage blocked (a private window): the log lives in memory and still exports
+  step('storage blocked');
   const ctx2 = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
   await ctx2.addInitScript(() => { Storage.prototype.setItem = function () { throw new Error('blocked'); }; Storage.prototype.getItem = function () { return null; }; });
   const p2 = await ctx2.newPage();
@@ -567,22 +582,42 @@ async function testSessionLog() {
   await p2.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.resolve() } }); });
   await p2.click('[data-act="copy-log"]'); await p2.waitForTimeout(400);
   check((await p2.locator('#toast-root').innerText()).includes('Copied · 0 decisions on this phone') && problems2.length === 0, 'test log: with storage blocked it still exports, no errors' + (problems2.length ? ':\n       ' + problems2.join('\n       ') : ''));
-  await browser.close();
+}
+
+// SMOKE_SERVE=1: the checkout over HTTP on 127.0.0.1 (the process exits at the end, which closes it).
+function serveRoot() {
+  const http = require('http');
+  const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+  return new Promise((resolve) => {
+    const srv = http.createServer((req, res) => {
+      const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0].replace(/^\//, '') || 'index.html'));
+      if (!p.startsWith(ROOT) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); res.end(); return; }
+      res.writeHead(200, { 'Content-Type': MIME[path.extname(p)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+      fs.createReadStream(p).pipe(res);
+    });
+    srv.listen(0, '127.0.0.1', () => resolve(srv));
+  });
 }
 
 (async () => {
+  if (process.env.SMOKE_SERVE && !process.env.SMOKE_URL) BASE = 'http://127.0.0.1:' + (await serveRoot()).address().port + '/';
   const appCss = ['styles.css', 'shared/tokens.css'].flatMap(scanCss);
   console.log('== static CSS scan (styles.css, shared/tokens.css)');
   check(appCss.length === 0, 'no declutter pattern in the app stylesheets' + (appCss.length ? ':\n       ' + appCss.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));
   const schemes = ['dark', 'light'].filter((s) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === s);
-  try { for (const s of schemes) await run(s); await reducedMotion(); await errorFallback(); await testSessionLog(); }
-  catch (e) { failures++; console.error('\nFAIL crashed: ' + (e && e.stack || e)); } // "FAIL" so tests/preflight.js shows the line
+  // Each section runs in its own browser, owned by tests/lib/section.js: a crash or a timeout prints the section and the
+  // step it was on ("FAIL light · iPhone SE crashed at step "hohenau": …"), counts as one failure, and the next section
+  // still runs. The device is part of the name so a CI log line says where it happened.
+  const dev = DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '';
+  const sections = schemes.map((s) => [s + dev, (b, step) => run(s, b, step)])
+    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog]]);
+  for (const [name, fn] of sections) if (!(await section(name, fn, { playwright, engine: BROWSER }))) failures++;
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }
     catch (e) { failures++; console.error('\nFAIL monkey crashed: ' + (e && e.stack || e)); }
   }
   console.log('\n' + (failures ? failures + ' check(s) failed' : 'Smoke test passed') + ' · screenshots in ' + OUT);
-  // Exit explicitly: after a crash the section's browser is never closed, and its open pipe would keep node, and the
-  // preflight gate around it, waiting forever (the iPhone hangs of 5 and 6 Nov: the run had finished, the process had not).
+  // Exit explicitly. Since pass 3 every section's browser is closed by tests/lib/section.js, even after a crash or a
+  // timeout; this stays as the backstop against anything else left open (the iPhone hangs of 5 and 6 Nov).
   process.exit(failures ? 1 : 0);
 })();

@@ -7,6 +7,8 @@
 //     with a smaller rule set; this run uses the full one with the WCAG 2.2 AA tags.)
 // The site is dark-only (CLAUDE.md §11 item 55); the light run emulates prefers-color-scheme: light and renders the
 // same dark page, which is what a phone set to light would get.
+//   AUDIT_URL=https://escp-2627dt-c1-site.vercel.app node scripts/audit.cjs   audits a deployed site instead of out/
+//   (no export needed; .github/workflows/post-deploy.yml runs it after each production deploy, ADR-0003).
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
@@ -22,7 +24,8 @@ const SCHEMES = ['dark', 'light'];
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium';
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml', '.webmanifest': 'application/manifest+json', '.mp4': 'video/mp4' };
 
-if (!fs.existsSync(path.join(OUT, 'index.html'))) { console.error('audit: no static export in out/. Run: STATIC_EXPORT=1 npm run build'); process.exit(2); }
+const REMOTE = (process.env.AUDIT_URL || '').replace(/\/$/, '');
+if (!REMOTE && !fs.existsSync(path.join(OUT, 'index.html'))) { console.error('audit: no static export in out/. Run: STATIC_EXPORT=1 npm run build'); process.exit(2); }
 fs.mkdirSync(REPORTS, { recursive: true });
 
 function serve() {
@@ -46,8 +49,8 @@ let failures = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) failures++; };
 
 (async () => {
-  const srv = await serve();
-  const base = 'http://127.0.0.1:' + srv.address().port;
+  const srv = REMOTE ? null : await serve();
+  const base = REMOTE || 'http://127.0.0.1:' + srv.address().port;
 
   // ---- Lighthouse (node API, Chrome launched through chrome-launcher, colour scheme set on a puppeteer page) ----
   const { default: lighthouse } = await import('lighthouse');
@@ -103,7 +106,7 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     }
   }
   await pw.close();
-  srv.close();
+  if (srv) srv.close();
   console.log('\n' + (failures ? failures + ' audit check(s) failed' : 'Lighthouse ≥ ' + THRESHOLD + ' in all four categories and 0 axe violations on ' + PAGES.length + ' pages × dark + light') + ' · reports in lighthouse/');
   process.exitCode = failures ? 1 : 0;
 })().catch((e) => { console.error(e); process.exit(1); });

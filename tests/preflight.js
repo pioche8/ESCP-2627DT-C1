@@ -36,6 +36,7 @@ const GATES = [
   { name: 'Generated decision model matches engine.js and data.js', cmd: 'node shared/how-it-decides.js && git diff --exit-code --stat -- site/src/generated/how-it-decides.json docs/HOW_IT_DECIDES.md' },
   { name: 'Site copies of engine.js, data.js and insights.js are current', cmd: 'node site/scripts/sync-shared.mjs --check' },
   { name: 'Vercel app build: the app files only, byte-identical', cmd: 'node tests/vercel-dist.test.js' },
+  { name: 'Browser owner of the gates (tests/lib/section.js), no browser', cmd: 'node tests/section.test.js' },
   { name: 'tests.html in Chromium (file:// and HTTP)', cmd: 'node tests/browser-tests.js', browser: true },
   { name: 'Smoke 390×844 (dark + light + reduced motion, declutter scan on every screen)', cmd: 'node tests/smoke.js', browser: true },
   { name: 'Smoke iPhone 13', cmd: 'SMOKE_DEVICE="iPhone 13" node tests/smoke.js', browser: true },

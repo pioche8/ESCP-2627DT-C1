@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * scripts/vercel-app-dist.js — the build step of the Vercel project "tenderscout-app" (docs/adr/0001-vercel-hosting.md).
+ * scripts/vercel-app-dist.js — the build step of the Vercel project "escp-2627dt-c1" (docs/adr/0001-vercel-hosting.md).
  *
  *   node scripts/vercel-app-dist.js            writes dist/ (what Vercel serves)
  *   node scripts/vercel-app-dist.js <dir>      writes <dir> instead (tests/vercel-dist.test.js uses a temp dir)
