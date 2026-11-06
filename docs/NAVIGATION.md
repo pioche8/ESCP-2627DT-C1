@@ -12,6 +12,8 @@ Context of use: an owner on a phone, between jobs, often in a van or on site. **
 
 > 5 Nov 2026 (Win/loss insights): Bids gained a **Win/loss insights** page (`#/insights`), opened from the row at the top of Bids. It shows the win rate, the value won, the win rate by area and why bids were lost (for example "6.8% above the winner" on price), computed from the company's past bids (fictional). The tab bar stays, with Bids active; ‹ Back returns to Bids, also after a deep link.
 
+> 5 Nov 2026 (error fallback): an uncaught error or an unhandled rejection replaces the screen with "Something went wrong · Your profile, answers and saved tenders are kept." and one Restart button; Restart reloads the app on the Feed (or Welcome before onboarding). The stored state `tenderscout.v2` is not touched; the error is logged to the console.
+
 ## Structure
 Four tabs: three questions the owner asks, plus Settings:
 | Tab | Question | Route |

@@ -449,12 +449,48 @@ async function reducedMotion() {
   await browser.close();
 }
 
+// Error fallback (5 Nov 2026): an injected uncaught error and an injected unhandled rejection each show the plain
+// "Something went wrong" screen with one Restart button; Restart returns to the Feed with tenderscout.v2 intact.
+async function errorFallback() {
+  console.log('\n== error fallback · ' + BROWSER + ' · ' + BASE);
+  const browser = await playwright[BROWSER].launch();
+  const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
+  const page = await ctx.newPage();
+  const problems = [];
+  watch(page, problems);
+  await page.goto(BASE + '?demo=reset&theme=dark');
+  await page.waitForSelector('.welcome');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.onboarded = true; s.saved = { 'ell-schools': 'Deciding' }; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  for (const kind of ['error', 'rejection']) {
+    await page.goto('about:blank'); await page.goto(BASE + '#/feed');
+    await page.waitForSelector('.feed-list');
+    if (kind === 'error') await page.evaluate(() => { setTimeout(() => { throw new Error('smoke: injected error'); }, 0); });
+    else await page.evaluate(() => { Promise.reject(new Error('smoke: injected rejection')); });
+    await page.waitForSelector('text=Something went wrong', { timeout: 3000 });
+    const btn = page.locator('button[data-act="restart"]');
+    const box = await btn.boundingBox();
+    check(await btn.count() === 1 && box && box.height >= 44 && (await page.locator('.tabbar').count()) === 0 && (await page.locator('button, a').count()) === 1, 'injected ' + kind + ': plain screen with Restart as the only action, no tab bar');
+    const sc = await scanDom(page);
+    check(sc.length === 0, 'error screen passes the declutter scan' + (sc.length ? ': ' + sc.map((x) => x.pattern + ' · ' + x.el).join(', ') : ''));
+    check(problems.some((m) => /smoke: injected/.test(m)), 'the error is logged to the console (' + kind + ')');
+    await page.evaluate(() => { location.hash = '#/company'; }); await page.waitForTimeout(150);
+    check((await page.locator('text=Something went wrong').count()) === 1, 'the error screen stays while the hash changes');
+    await btn.click();
+    await page.waitForSelector('.feed-list', { timeout: 5000 });
+    const kept = await page.evaluate(() => { try { return JSON.parse(localStorage.getItem('tenderscout.v2')); } catch (e) { return null; } });
+    check(page.url().endsWith('#/feed') && kept && kept.onboarded === true && kept.saved['ell-schools'] === 'Deciding' && (await page.locator('.feed-list').innerText()).includes('Saved'), 'Restart returns to the Feed with tenderscout.v2 intact (still onboarded, the saved tender still saved)');
+  }
+  const unexpected = problems.filter((m) => !/smoke: injected/.test(m));
+  check(unexpected.length === 0, 'no other console errors around the fallback' + (unexpected.length ? ':\n       ' + unexpected.join('\n       ') : ''));
+  await browser.close();
+}
+
 (async () => {
   const appCss = ['styles.css', 'shared/tokens.css'].flatMap(scanCss);
   console.log('== static CSS scan (styles.css, shared/tokens.css)');
   check(appCss.length === 0, 'no declutter pattern in the app stylesheets' + (appCss.length ? ':\n       ' + appCss.map((v) => v.file + ' · ' + v.pattern + ' · ' + v.match).join('\n       ') : ''));
   const schemes = ['dark', 'light'].filter((s) => !process.env.SMOKE_ONLY || process.env.SMOKE_ONLY === s);
-  try { for (const s of schemes) await run(s); await reducedMotion(); }
+  try { for (const s of schemes) await run(s); await reducedMotion(); await errorFallback(); }
   catch (e) { failures++; console.error('\nCrashed: ' + (e && e.stack || e)); }
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }
