@@ -5,6 +5,7 @@
 - [ ] `npm run preflight` is green (every gate below in one command; paste its output here), or the gates that apply, one by one:
 - [ ] `node tests/engine.test.js` passes (24, plus my new tests)
 - [ ] `node tests/data-check.js`, `node tests/demo-golden.test.js` and `node tests/engine-invariants.test.js` pass (if `data.js`, `engine.js` or `app.js` changed)
+- [ ] `node tests/docs-check.js` passes (if a route, a tab, a smoke or test name, a story or anything in `docs/design/` changed)
 - [ ] `node tests/declutter-scan.js` reports 0 findings
 - [ ] `node shared/build-tokens.js && node shared/check-contrast.js` reports 0 failures (only if `shared/tokens.json` changed)
 - [ ] `node tests/smoke.js` passes with 0 console errors (if `app.js`, `styles.css`, `data.js` or `index.html` changed)
