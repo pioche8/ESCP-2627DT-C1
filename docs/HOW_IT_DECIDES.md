@@ -118,5 +118,5 @@ The demo path on Landkreis Hohenau:
 ## 7. What is real in this prototype
 
 - **Simulated:** reading tenders, translating, answering questions and drafting the profile (`ai.js`): pre-written output after a delay, labelled "Simulated AI" wherever it shows. No model is called and there are no keys.
-- **Real:** this decision logic (`engine.js`), covered by 24 unit tests (`tests/engine.test.js`), 11 demo pins (`tests/demo-golden.test.js`), a seeded property test of 3000 random cases per run (`tests/engine-invariants.test.js`) and the 144 checks of the browser click-through (`tests/smoke.js`).
+- **Real:** this decision logic (`engine.js`), covered by 24 unit tests (`tests/engine.test.js`), 11 demo pins (`tests/demo-golden.test.js`), a seeded property test of 3000 random cases per run (`tests/engine-invariants.test.js`) and the 145 checks of the browser click-through (`tests/smoke.js`).
 - **Fictional:** every company, buyer, tender, page number and quote (`data.js`). None of it is interview evidence.
