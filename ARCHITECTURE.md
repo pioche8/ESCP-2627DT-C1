@@ -128,6 +128,8 @@ The workshop build is frozen on the branch **`release/v1-workshop`** (tag pushes
 git push --force-with-lease origin release/v1-workshop:main
 ```
 
+Vercel (prepared, not yet imported): two projects from this repository, the site from `site/` and the app from an allowlist copied byte for byte into `dist/` by `scripts/vercel-app-dist.js`, so only the app files are public there; Pages stays the demo URL and the fallback ([`docs/adr/0001-vercel-hosting.md`](docs/adr/0001-vercel-hosting.md), steps in [`docs/DEPLOY.md`](docs/DEPLOY.md)). CI checks that the app build is byte-identical and that the site's copies of `engine.js`, `data.js` and the fonts equal the app's.
+
 Older rollback points are the `backup/*` branches. Changes reach `main` through pull requests with CI green. The ruleset that enforces it (pull request required, `check` and `smoke` required, no force push, admin bypass so the rollback still works) is committed as `.github/ruleset-main.json`; a build session cannot apply it ([`CLAUDE.md`](CLAUDE.md) §11 item 92), so until someone has applied it from a laptop (Settings → Rules → Rulesets shows it) this is a team convention, not a lock.
 
 ## 9. What is real and what is fictional
