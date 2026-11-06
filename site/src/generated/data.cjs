@@ -180,9 +180,9 @@
   var COMPETITION = {
     'ell-schools': {
       past: [
-        { title: 'Wi-Fi for 8 secondary schools', buyer: 'Stadt Ellerbach', year: 2024, winner: 'velte', bidders: 4, value: 310000 },
-        { title: 'Network cabling, town hall annex', buyer: 'Stadt Ellerbach', year: 2023, winner: 'saalekom', bidders: 3, value: 140000 },
-        { title: 'School network upgrade', buyer: 'Gemeinde Rothfeld', year: 2025, winner: 'ostmark', bidders: 4, value: 520000 }
+        { title: 'Wi-Fi for 8 secondary schools', buyer: 'Stadt Ellerbach (fictional)', year: 2024, winner: 'velte', bidders: 4, value: 310000 },
+        { title: 'Network cabling, town hall annex', buyer: 'Stadt Ellerbach (fictional)', year: 2023, winner: 'saalekom', bidders: 3, value: 140000 },
+        { title: 'School network upgrade', buyer: 'Gemeinde Rothfeld (fictional)', year: 2025, winner: 'ostmark', bidders: 4, value: 520000 }
       ],
       rivals: [
         { id: 'velte', name: 'Velte Netztechnik (fictional)', refs: 4 },
@@ -192,9 +192,9 @@
     },
     'hoh-security': {
       past: [
-        { title: 'Security audit, county IT', buyer: 'Landkreis Hohenau', year: 2024, winner: 'pruefwerk', bidders: 7, value: 80000 },
-        { title: 'Penetration test, district offices', buyer: 'Landkreis Altmühlen', year: 2025, winner: 'pruefwerk', bidders: 6, value: 65000 },
-        { title: 'ISMS set-up and audit', buyer: 'Stadt Weißbach', year: 2025, winner: 'kernschutz', bidders: 6, value: 110000 }
+        { title: 'Security audit, county IT', buyer: 'Landkreis Hohenau (fictional)', year: 2024, winner: 'pruefwerk', bidders: 7, value: 80000 },
+        { title: 'Penetration test, district offices', buyer: 'Landkreis Altmühlen (fictional)', year: 2025, winner: 'pruefwerk', bidders: 6, value: 65000 },
+        { title: 'ISMS set-up and audit', buyer: 'Stadt Weißbach (fictional)', year: 2025, winner: 'kernschutz', bidders: 6, value: 110000 }
       ],
       rivals: [
         { id: 'pruefwerk', name: 'Prüfwerk IT-Sicherheit (fictional)', refs: 12 },
@@ -203,8 +203,8 @@
     },
     'val-dc': {
       past: [
-        { title: 'Data centre cabling, lot 1', buyer: 'Universidad de Valdemora', year: 2024, winner: 'cableval', bidders: 5, value: 290000 },
-        { title: 'Server room re-cabling', buyer: 'Hospital de Sorbanes', year: 2025, winner: 'redesmeseta', bidders: 4, value: 180000 }
+        { title: 'Data centre cabling, lot 1', buyer: 'Universidad de Valdemora (fictional)', year: 2024, winner: 'cableval', bidders: 5, value: 290000 },
+        { title: 'Server room re-cabling', buyer: 'Hospital de Sorbanes (fictional)', year: 2025, winner: 'redesmeseta', bidders: 4, value: 180000 }
       ],
       rivals: [
         { id: 'cableval', name: 'Cableval Instalaciones (fictional)', refs: 6 },
@@ -213,9 +213,9 @@
     },
     'kal-fibre': {
       past: [
-        { title: 'Fibre rollout, phase 1', buyer: 'Stadtwerke Kaltbrunn', year: 2024, winner: 'alpenfaser', bidders: 3, value: 950000 },
-        { title: 'FTTB for business park', buyer: 'Gemeinde Lindau am See', year: 2025, winner: 'alpenfaser', bidders: 2, value: 600000 },
-        { title: 'Fibre backbone, water plant', buyer: 'Stadtwerke Kaltbrunn', year: 2023, winner: 'donaunetz', bidders: 3, value: 420000 }
+        { title: 'Fibre rollout, phase 1', buyer: 'Stadtwerke Kaltbrunn (fictional)', year: 2024, winner: 'alpenfaser', bidders: 3, value: 950000 },
+        { title: 'FTTB for business park', buyer: 'Gemeinde Lindau am See (fictional)', year: 2025, winner: 'alpenfaser', bidders: 2, value: 600000 },
+        { title: 'Fibre backbone, water plant', buyer: 'Stadtwerke Kaltbrunn (fictional)', year: 2023, winner: 'donaunetz', bidders: 3, value: 420000 }
       ],
       rivals: [
         { id: 'alpenfaser', name: 'Alpenfaser Bau (fictional)', refs: 15 },
@@ -224,8 +224,8 @@
     },
     'vli-libraries': {
       past: [
-        { title: 'Wi-Fi for town hall and museum', buyer: 'Gemeente Vlietdam', year: 2024, winner: 'polderlink', bidders: 5, value: 160000 },
-        { title: 'Public Wi-Fi, 6 libraries', buyer: 'Gemeente Ruysdorp', year: 2025, winner: 'netwerkhuis', bidders: 6, value: 175000 }
+        { title: 'Wi-Fi for town hall and museum', buyer: 'Gemeente Vlietdam (fictional)', year: 2024, winner: 'polderlink', bidders: 5, value: 160000 },
+        { title: 'Public Wi-Fi, 6 libraries', buyer: 'Gemeente Ruysdorp (fictional)', year: 2025, winner: 'netwerkhuis', bidders: 6, value: 175000 }
       ],
       rivals: [
         { id: 'polderlink', name: 'Polderlink Netwerken (fictional)', refs: 8 },
@@ -234,8 +234,8 @@
     },
     'mor-support': {
       past: [
-        { title: 'IT support framework (3 years)', buyer: 'Centre Hospitalier de Morlanne', year: 2022, winner: 'infogestion', bidders: 4, value: 1800000 },
-        { title: 'Helpdesk and field support', buyer: 'CHU de Varennes', year: 2024, winner: 'infogestion', bidders: 5, value: 2100000 }
+        { title: 'IT support framework (3 years)', buyer: 'Centre Hospitalier de Morlanne (fictional)', year: 2022, winner: 'infogestion', bidders: 4, value: 1800000 },
+        { title: 'Helpdesk and field support', buyer: 'CHU de Varennes (fictional)', year: 2024, winner: 'infogestion', bidders: 5, value: 2100000 }
       ],
       rivals: [
         { id: 'infogestion', name: 'Infogestion Santé (fictional)', refs: 20 },

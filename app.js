@@ -423,7 +423,7 @@
         c.rivals.map(function (v) { return row(bare(v.name), 'Won ' + (wins[v.id] || 0) + ' of the last ' + c.past.length + ' · ' + plural(v.refs, 'reference')); }).join('') +
       '</div>' +
       '<p class="label-text comp-h">Similar past awards</p><div class="group">' +
-        c.past.map(function (a) { return row(a.title, a.buyer + ', ' + a.year + ' · won by ' + name(a.winner) + ' · ' + plural(a.bidders, 'bidder') + ' · ' + money(a.value)); }).join('') +
+        c.past.map(function (a) { return row(a.title, bare(a.buyer) + ', ' + a.year + ' · won by ' + name(a.winner) + ' · ' + plural(a.bidders, 'bidder') + ' · ' + money(a.value)); }).join('') +
       '</div>';
   }
   function fact(k, v, soon) { return '<div class="fact"><p class="k">' + k + '</p><p class="v' + (soon ? ' soon' : '') + '">' + esc(v) + '</p></div>'; }

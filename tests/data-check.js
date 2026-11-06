@@ -184,6 +184,32 @@ const bidIds = new Set();
   strings(W, b);
 });
 
+/* ---------- COMPETITION (app.js chanceToWin() + competitionHTML(), 5 Nov 2026; checked since 6 Nov) ---------- */
+const tenderIds = new Set((D.TENDERS || []).map((t) => t.id));
+Object.keys(D.COMPETITION || {}).forEach((tid) => {
+  const c = D.COMPETITION[tid], W = 'COMPETITION[' + tid + ']';
+  if (!tenderIds.has(tid)) fail(W, '', 'no tender with this id');
+  if (!c || !Array.isArray(c.past) || !c.past.length || !Array.isArray(c.rivals) || !c.rivals.length) { fail(W, '', 'expected non-empty past[] and rivals[]'); return; }
+  const rivalIds = new Set();
+  c.rivals.forEach((r, i) => {
+    const RW = W + '.rivals[' + (r && r.id ? r.id : i) + ']';
+    if (req(RW, r, 'id', isStr, 'a non-empty string') && rivalIds.has(r.id)) fail(RW, 'id', 'duplicate id'); rivalIds.add(r.id);
+    req(RW, r, 'name', (v) => isStr(v) && /\(fictional\)$/.test(v), 'a company name ending in "(fictional)"');
+    req(RW, r, 'refs', (v) => isInt(v) && v >= 0, 'a whole number of references');
+    strings(RW, r);
+  });
+  c.past.forEach((a, i) => {
+    const AW = W + '.past[' + i + ']';
+    req(AW, a, 'title', isStr, 'a non-empty string');
+    req(AW, a, 'buyer', (v) => isStr(v) && /\(fictional\)$/.test(v), 'a buyer name ending in "(fictional)"');
+    req(AW, a, 'year', (v) => isInt(v) && v >= 2000 && v <= +D.DEMO_TODAY.slice(0, 4), 'a year up to the demo year');
+    req(AW, a, 'winner', (v) => rivalIds.has(v), 'the id of one of this tender\'s rivals');
+    req(AW, a, 'bidders', (v) => isInt(v) && v >= 1, 'a whole number of bidders, at least 1');
+    req(AW, a, 'value', (v) => isInt(v) && v > 0, 'a positive whole number of euros');
+    strings(AW, a);
+  });
+});
+
 /* ---------- engine thresholds (constants the data relies on) ---------- */
 if (!(isNum(E.REVIEW_THRESHOLD) && E.REVIEW_THRESHOLD > 0 && E.REVIEW_THRESHOLD < 1)) fail('engine.js', 'REVIEW_THRESHOLD', 'must be between 0 and 1, got ' + E.REVIEW_THRESHOLD);
 if (!(isInt(E.KNOCKOUT_CAP) && E.KNOCKOUT_CAP >= 0 && E.KNOCKOUT_CAP <= 100)) fail('engine.js', 'KNOCKOUT_CAP', 'must be within 0–100, got ' + E.KNOCKOUT_CAP);
