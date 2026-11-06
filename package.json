@@ -3,7 +3,7 @@
   "private": true,
   "description": "TenderScout prototype: static app at the root (no dependencies), tests in tests/. Scripts only; Playwright is installed ad hoc for the browser gates.",
   "scripts": {
-    "test": "node tests/engine.test.js && node tests/insights.test.js && node tests/data-check.js && node tests/docs-check.js && node tests/demo-golden.test.js && node tests/engine-invariants.test.js && node tests/vercel-dist.test.js",
+    "test": "node tests/engine.test.js && node tests/insights.test.js && node tests/data-check.js && node tests/docs-check.js && node tests/demo-golden.test.js && node tests/engine-invariants.test.js && node tests/no-live-ai-check.js && node tests/vercel-dist.test.js",
     "preflight": "node tests/preflight.js",
     "smoke": "node tests/smoke.js",
     "tokens": "node shared/build-tokens.js && node shared/check-contrast.js"
