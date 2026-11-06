@@ -15,7 +15,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck && npm run build",
-    "audit": "npm run export && node scripts/how-check.cjs && node scripts/audit.cjs",
+    "audit": "npm run export && node scripts/how-check.cjs && node scripts/a11y-motion.cjs && node scripts/audit.cjs",
     "seo": "node scripts/seo-files.cjs"
   },
   "dependencies": {

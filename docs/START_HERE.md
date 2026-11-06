@@ -25,7 +25,7 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 | `ai.js` | The simulated AI: pre-written output after a delay. Nothing calls a model. | Almost never. |
 | `app.js` | Screens, hash router (`#/feed`, `#/t/:id`, `#/bids`, `#/company`, `#/about`), bottom sheets, state in `localStorage` (`tenderscout.v2`). | You add a screen, a button or a state. Keep the `data-*` attributes the click handler reads. |
 | `styles.css` | Components only. Every colour is one of the nine custom properties generated into `shared/tokens.css`. | You style something new. No hand-typed colours, no borders, shadows, gradients or radii over 8 px (`tests/declutter-scan.js` will tell you). |
-| `shared/tokens.json` | The one source for colours, type, the radius, easing and durations, for the app and the website. `node shared/build-tokens.js` regenerates `shared/tokens.css`, `site/src/styles/tokens.css` and `site/src/generated/tokens.ts`; `node shared/check-contrast.js` audits WCAG AA. | You change a colour or a duration. Never edit the generated files. |
+| `shared/tokens.json` | The one source for colours, type, the radius, easing and durations of the app. `node shared/build-tokens.js` regenerates `shared/tokens.css`; `node shared/check-contrast.js` audits WCAG AA (the app's pairs and the website's). Since 6 Nov the website keeps its original 3 Nov design and its own frozen token files in `site/src/styles/tokens.css` and `site/src/generated/tokens.ts`. | You change a colour or a duration. Never edit the generated files. |
 | `site/` | The marketing website (Next.js). It runs the app's `engine.js` on the app's `data.js` through copies in `site/src/generated/` (refreshed by `npm run sync`). Not deployed yet. | You change the website, or you changed `data.js` / `engine.js` / tokens and want the site to follow. |
 | `tests/` | `engine.test.js` (24 node tests), `smoke.js` (Playwright click-through at 390 × 844, light + dark + reduced motion), `declutter-scan.js` (the 18 banned visual patterns), `demo-record.js` (the backup video), `live-check.js` (is GitHub Pages serving this checkout?). | Every commit (see §4). |
 | `docs/` | `NAVIGATION.md` (routes, flows, states), `INTERVIEW_KIT.md`, `WEBSITE_BUILD_LOG.md`, `demo/` (the backup video and screenshots), this file. | You add a screen (update `NAVIGATION.md`) or a design document. |
@@ -62,10 +62,10 @@ node tests/data-check.js         # data.js has every field engine.js and app.js 
 node tests/docs-check.js         # every route and tab of app.js is in docs/NAVIGATION.md and SKELETON.md, every check a story names exists word for word, no interview or quote cited that evidence.md does not log
 node tests/no-live-ai-check.js    # no server route on the website, no key-shaped string in the repository (CLAUDE.md §7.2, ADR-0002)
 node tests/vercel-dist.test.js   # the Vercel app build is exactly the app files, byte-identical (ADR-0001)
-node site/scripts/sync-shared.mjs --check   # the site's copies of engine.js, data.js and the fonts equal the app's
+node site/scripts/sync-shared.mjs --check   # the site's copies of engine.js, data.js, insights.js and the fonts equal the app's
 node tests/demo-golden.test.js   # the live demo's numbers (Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go, 777 pages); see §5.4 before you move them
 node tests/engine-invariants.test.js  # seeded property test of the engine rules
-node tests/declutter-scan.js     # 0 findings in the five stylesheets
+node tests/declutter-scan.js     # 0 findings in the app's two stylesheets
 node shared/check-contrast.js    # 0 failures (after node shared/build-tokens.js, if you touched shared/tokens.json)
 ```
 

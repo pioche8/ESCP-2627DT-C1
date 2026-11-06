@@ -23,14 +23,14 @@ flowchart LR
     tj["shared/tokens.json<br/>nine colours per scheme, type, 8 px radius, easing, durations"]
     bt["shared/build-tokens.js"]
     tcss["shared/tokens.css"]
-    scss["site/src/styles/tokens.css (Tailwind @theme)<br/>site/src/generated/tokens.ts"]
-    tj --> bt --> tcss & scss
+    scss["site/src/styles/tokens.css (Tailwind @theme)<br/>site/src/generated/tokens.ts<br/>frozen 3 Nov originals, edited by hand"]
+    tj --> bt --> tcss
     tcss --> styles["styles.css (components only)"] --> appjs
   end
   subgraph site["Website (Next.js, site/, not deployed)"]
     direction TB
     sync["scripts/sync-shared.mjs (prebuild)"]
-    gen["src/generated/engine.cjs · data.cjs<br/>how-it-decides.json"]
+    gen["src/generated/engine.cjs · data.cjs · insights.cjs<br/>how-it-decides.json"]
     pages["/ landing · PhoneDemo · map<br/>/how 'How it decides' + Try the rules"]
     sync --> gen --> pages
     scss --> pages
@@ -93,11 +93,11 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 
 ## 5. Design tokens: one source, two products
 
-`shared/tokens.json` is the only place colours, type, the one 8 px radius, easing and durations are written: nine solid colours per scheme (background, surface, ink, muted, brand and the four verdict colours), one typeface. `node shared/build-tokens.js` emits `shared/tokens.css` for the app, `site/src/styles/tokens.css` (a Tailwind v4 `@theme` block) and `site/src/generated/tokens.ts` for the website. `styles.css` contains components only and no hand-typed colour. `node shared/check-contrast.js` audits every text/background pair in both schemes against WCAG AA; `tests/declutter-scan.js` proves the absence of the eighteen banned patterns (gradients, shadows, borders, pills, uppercase, italics, mono, eyebrows, numbering, code names in visible text, …) both in the stylesheets and in every rendered screen. Verdicts are never colour alone: shape + word everywhere (● Go, ▲ Maybe, ■ No-go, ◆ Needs your check).
+`shared/tokens.json` is the only place colours, type, the one 8 px radius, easing and durations are written: nine solid colours per scheme (background, surface, ink, muted, brand and the four verdict colours), one typeface. `node shared/build-tokens.js` emits `shared/tokens.css` for the app. Since 6 Nov the website keeps its original 3 Nov design and its own frozen token files, `site/src/styles/tokens.css` (a Tailwind v4 `@theme` block) and `site/src/generated/tokens.ts` (`CLAUDE.md` §11 item 139). `styles.css` contains components only and no hand-typed colour. `node shared/check-contrast.js` audits every app text/background pair in both schemes against WCAG AA, and the website's 33 original pairs from its frozen tokens; `tests/declutter-scan.js` proves the absence of the eighteen banned patterns (gradients, shadows, borders, pills, uppercase, italics, mono, eyebrows, numbering, code names in visible text, …) both in the app's stylesheets and in every rendered app screen (the website is out of its scope since 6 Nov). Verdicts are never colour alone: shape + word everywhere (● Go, ▲ Maybe, ■ No-go, ◆ Needs your check).
 
 ## 6. The website shares the code
 
-`site/` is a Next.js 16 site, not deployed yet (README → Website). `scripts/sync-shared.mjs`, run by `prebuild`, copies `engine.js` and `data.js` verbatim into `site/src/generated/` as CommonJS, rebuilds the tokens, runs `shared/how-it-decides.js` and re-renders the Open Graph image and icons from the tokens. The landing page's phone demo, the tender cards, the counts and the map all call the real engine on the real demo data, so every number on the site is the app's. `/how` ("How it decides") renders `how-it-decides.json`, which the generator produces by *probing* the engine (running it on controlled inputs and reading the constants back), and its "Try the rules" block runs the engine in the browser. `docs/HOW_IT_DECIDES.md` is the same generator's second output. CI fails if either falls behind the code. On Vercel the committed copies are used, so the site builds on its own (Root Directory = `site`).
+`site/` is a Next.js 16 site, not deployed yet (README → Website). `scripts/sync-shared.mjs`, run by `prebuild`, copies `engine.js`, `data.js` and `insights.js` verbatim into `site/src/generated/` as CommonJS, rebuilds the tokens, runs `shared/how-it-decides.js` and re-renders the Open Graph image and icons from the tokens. The landing page's phone demo (the app's five tabs, with the Bids tab's Win/loss row from `insights.js`), the tender cards, the counts and the map all call the real engine on the real demo data, so every number on the site is the app's. `/how` ("How it decides") renders `how-it-decides.json`, which the generator produces by *probing* the engine (running it on controlled inputs and reading the constants back), and its "Try the rules" block runs the engine in the browser. `docs/HOW_IT_DECIDES.md` is the same generator's second output. CI fails if either falls behind the code. On Vercel the committed copies are used, so the site builds on its own (Root Directory = `site`).
 
 ## 7. Tests and gates
 
@@ -109,8 +109,8 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 | `tests/engine-invariants.test.js` | a seeded property test: a fail is always No-go, score within 0–100, meeting one more line never lowers the score, verdicts consistent with the score, rank sorted | node, CI `check` |
 | `tests/docs-check.js` | every route `parse()` accepts and every tab appear in `docs/NAVIGATION.md` and `SKELETON.md`; every check a user story or flow names exists word for word; no interview is cited and no participant is quoted in `docs/design/` unless `evidence.md` logs it | node, CI `check` |
 | `tests/no-live-ai-check.js` | no server route under `site/src/app/` and no key-shaped string in a tracked file (§7.2; [ADR-0002](docs/adr/0002-real-tender-reader.md)) | node, CI `check` |
-| `tests/vercel-dist.test.js`, `site/scripts/sync-shared.mjs --check` | the Vercel app build is exactly the app files, byte-identical, every reference resolves; the site's copies of `engine.js`, `data.js` and the fonts equal the app's ([ADR-0001](docs/adr/0001-vercel-hosting.md)) | node, CI `check` |
-| `tests/declutter-scan.js` | the eighteen patterns are absent from the five stylesheets | node, CI `check` |
+| `tests/vercel-dist.test.js`, `site/scripts/sync-shared.mjs --check` | the Vercel app build is exactly the app files, byte-identical, every reference resolves; the site's copies of `engine.js`, `data.js`, `insights.js` and the shared fonts equal the app's ([ADR-0001](docs/adr/0001-vercel-hosting.md)) | node, CI `check` |
+| `tests/declutter-scan.js` | the eighteen patterns are absent from the app's two stylesheets (the website is out of scope since 6 Nov) | node, CI `check` |
 | `shared/check-contrast.js` | WCAG AA on every pair, both schemes | node, CI `check` |
 | generated files in sync | tokens and the decision model match their sources | CI `check` |
 | `tests/smoke.js` | the full click-through at 390×844 (and the iPhone 13 / SE profiles) in dark, light and reduced motion, with the declutter scan on every screen | Playwright + Chromium; CI `smoke` (390×844) |
@@ -131,7 +131,7 @@ The workshop build is frozen on the branch **`release/v1-workshop`** (tag pushes
 git push --force-with-lease origin release/v1-workshop:main
 ```
 
-Vercel (prepared, not yet imported): two projects from this repository, the site from `site/` and the app from an allowlist copied byte for byte into `dist/` by `scripts/vercel-app-dist.js`, so only the app files are public there; Pages stays the demo URL and the fallback ([`docs/adr/0001-vercel-hosting.md`](docs/adr/0001-vercel-hosting.md), steps in [`docs/DEPLOY.md`](docs/DEPLOY.md)). CI checks that the app build is byte-identical and that the site's copies of `engine.js`, `data.js` and the fonts equal the app's.
+Vercel (prepared, not yet imported): two projects from this repository, the site from `site/` and the app from an allowlist copied byte for byte into `dist/` by `scripts/vercel-app-dist.js`, so only the app files are public there; Pages stays the demo URL and the fallback ([`docs/adr/0001-vercel-hosting.md`](docs/adr/0001-vercel-hosting.md), steps in [`docs/DEPLOY.md`](docs/DEPLOY.md)). CI checks that the app build is byte-identical and that the site's copies of `engine.js`, `data.js`, `insights.js` and the shared fonts equal the app's.
 
 Older rollback points are the `backup/*` branches. Changes reach `main` through pull requests with CI green. The ruleset that enforces it (pull request required, `check` and `smoke` required, no force push, admin bypass so the rollback still works) is committed as `.github/ruleset-main.json`; a build session cannot apply it ([`CLAUDE.md`](CLAUDE.md) §11 item 92), so until someone has applied it from a laptop (Settings → Rules → Rulesets shows it) this is a team convention, not a lock.
 

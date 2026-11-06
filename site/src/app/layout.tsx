@@ -5,8 +5,19 @@ import { SITE_URL } from '@/lib/site';
 
 // The same vendored files as the app (copied by scripts/sync-shared.mjs), so the site and the app render type identically.
 const hanken = localFont({
-  src: [{ path: '../fonts/HankenGrotesk-normal-400to800-latin.woff2', weight: '400 800', style: 'normal' }],
+  src: [
+    { path: '../fonts/HankenGrotesk-normal-400to800-latin.woff2', weight: '400 800', style: 'normal' },
+    { path: '../fonts/HankenGrotesk-italic-400-latin.woff2', weight: '400', style: 'italic' },
+  ],
   variable: '--font-hanken',
+  display: 'swap',
+});
+const plex = localFont({
+  src: [
+    { path: '../fonts/IBMPlexMono-normal-500-latin.woff2', weight: '500', style: 'normal' },
+    { path: '../fonts/IBMPlexMono-normal-600-latin.woff2', weight: '600', style: 'normal' },
+  ],
+  variable: '--font-plex',
   display: 'swap',
 });
 const symbols = localFont({
@@ -44,7 +55,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${hanken.variable} ${symbols.variable}`}>
+    <html lang="en" className={`${hanken.variable} ${plex.variable} ${symbols.variable}`}>
       <body>{children}</body>
     </html>
   );

@@ -1,6 +1,6 @@
 # TenderScout UI design
 
-The interface as it ships on `main` (5 Nov 2026): a storyboard of the demo, every screen and state as a screenshot, and the visual system behind them. Every image is the real app at 390 × 844 (2×), dark by default, showing the fictional demo data ([`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)). [`DESIGN.md`](DESIGN.md) is the designer's original spec of 2 Nov; where the two differ, this file and [`shared/tokens.json`](shared/tokens.json) describe what ships (the 4 Nov declutter, `CLAUDE.md` §11 items 53–68).
+The interface as it ships on `main` (6 Nov 2026: every frame re-made from the five-tab app, `CLAUDE.md` §11 item 137): a storyboard of the demo, every screen and state as a screenshot, and the visual system behind them. Every image is the real app at 390 × 844 (2×), dark by default, showing the fictional demo data ([`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)). [`DESIGN.md`](DESIGN.md) is the designer's original spec of 2 Nov; where the two differ, this file and [`shared/tokens.json`](shared/tokens.json) describe what ships (the 4 Nov declutter, `CLAUDE.md` §11 items 53–68).
 
 | This file covers | Not in this file (look here instead) |
 |---|---|
@@ -17,8 +17,8 @@ The path from [`BRIEF.md`](BRIEF.md), one frame per step (also a video: [`docs/d
 | <img src="docs/demo/step-3-go-tender-citation.png" width="180" alt="Requirement sheet with the German source sentence"> | 3 · The Go tender | opens Stadt Ellerbach (Go 100) and taps the turnover line | the sheet: ● Meets, 96% AI confidence, the original German sentence with the decisive phrase underlined, its translation, "Vergabeunterlagen, p. 23, §4.2", and the two answers |
 | <img src="docs/demo/step-4-hohenau-needs-your-check.png" width="180" alt="Needs your check sheet"> | 4 · The No-go tender | opens Landkreis Hohenau (No-go 25) and taps the unclear line | ■ Fails on ISO 27001 above ◆ Needs your check at 58%; the sheet says "Only you can answer" and offers We don't meet it / We meet it at equal weight |
 | <img src="docs/demo/step-5-company-rescore.png" width="180" alt="Company screen with the re-score card"> | 5 · Company | answers "We meet it", then switches ISO 27001 on | the re-score card "Landkreis Hohenau · ■ No-go → ● Go · just now", the counts now 2 Go · 2 Maybe · 2 No-go, and a hint under each lever |
-| <img src="docs/demo/step-6-ask-this-tender.png" width="180" alt="Ask this tender with an answer"> | 6 · Ask the tender | opens Hohenau again and asks "Can we subcontract the audit?" | 3 of 3 met, and the answer with its page in plain text, labelled "Simulated AI" |
-| <img src="docs/demo/step-7-bids.png" width="180" alt="Bids with a skipped tender"> | 7 · Skip and Bids | skips the Dutch libraries tender with "Missing a certificate" | Bids: Deciding / Bidding / Submitted, and under Skipped the tender, its reason and Restore |
+| <img src="docs/demo/step-6-ask-this-tender.png" width="180" alt="Ask this tender with an answer"> | 6 · Ask the tender | opens Hohenau again and asks "Can we subcontract the audit?" | the Competition section (likely bidders, similar past awards), then the answer with its page in plain text, labelled "Simulated AI"; the checklist above now reads 3 of 3 met |
+| <img src="docs/demo/step-7-bids.png" width="180" alt="Bids with a skipped tender"> | 7 · Skip and Bids | skips the Dutch libraries tender with "Missing a certificate" | Bids: the Win/loss row, Deciding / Bidding / Submitted, and under Skipped the tender, its reason and Restore |
 
 ## 2. Every screen and state
 
@@ -36,6 +36,10 @@ The path from [`BRIEF.md`](BRIEF.md), one frame per step (also a video: [`docs/d
 |---|---|---|
 | First open: "Reading 146 pages (German)…", page count, progress, three steps, placeholder bars | Closed (test date `?today=2026-12-23`): "The deadline passed on 4 Dec.", Save disabled with "Closed tenders can't be saved" | Saved: the button becomes "In Bids · Deciding" and the toast "Saved to Bids · View" |
 
+| <img src="docs/ui/tender-competition.png" width="200" alt="Competition section of a tender"> |
+|---|
+| Competition (since 5 Nov, labelled "Simulated AI"): on a No-go tender "Qualify first", then the likely bidders and similar past awards. A rough estimate from past awards with plain rules; it never changes the score |
+
 ### Feed states
 | <img src="docs/demo/step-2-feed.png" width="200" alt="Feed"> | <img src="docs/ui/feed-closed.png" width="200" alt="Feed with closed tenders"> | <img src="docs/ui/feed-offline.png" width="200" alt="Feed offline"> |
 |---|---|---|
@@ -44,22 +48,26 @@ The path from [`BRIEF.md`](BRIEF.md), one frame per step (also a video: [`docs/d
 ### Sheets, Bids, Company
 | <img src="docs/ui/skip-sheet.png" width="200" alt="Skip sheet"> | <img src="docs/ui/bids-stages.png" width="200" alt="Bids with a tender in Bidding"> | <img src="docs/ui/bids-empty.png" width="200" alt="Empty Bids"> | <img src="docs/ui/company-iso-alone.png" width="200" alt="Company with ISO 27001 alone"> |
 |---|---|---|---|
-| Skip sheet `#/t/:id/skip`: six optional reasons, Cancel / Skip tender | Bids: the "Win/loss insights" row, a tender moved to Bidding, the stage tabs, Skipped with Restore | Empty Bids: the Win/loss row, "No bids yet", "Open Feed" | ISO 27001 alone (no answer yet): the honest "No-go → Maybe", and the hint "Landkreis Hohenau moved up to Maybe" |
+| Skip sheet `#/t/:id/skip`: six optional reasons, Cancel / Skip tender | Bids: the "Win/loss insights" row, a tender in Bidding, the stage tabs, Skipped with its reason and Restore | Empty Bids: the Win/loss row, "No bids yet", "Open Feed" | ISO 27001 alone (no answer yet): the honest "No-go → Maybe", and the hint "Landkreis Hohenau moved up to Maybe" |
 
 ### Win/loss insights (a page of Bids, since 5 Nov)
 | <img src="docs/ui/insights.png" width="200" alt="Win/loss insights"> | <img src="docs/ui/insights-full.png" width="200" alt="Win/loss insights, the whole page"> | <img src="docs/ui/light-insights.png" width="200" alt="Win/loss insights, light"> |
 |---|---|---|
 | `#/insights`, from the row at the top of Bids: win rate, value won, bids lost, % above the winner when lost on price; win rate by area with one bar each | The whole page: "Why you lost" leads with the computed sentence, then the reasons with their counts; the honesty line at the end | Light scheme |
 
-### About and errors
-| <img src="docs/ui/about.png" width="200" alt="About"> | <img src="docs/ui/not-found.png" width="200" alt="Page not found"> |
-|---|---|
-| About `#/about`: the four statements and Appearance (System / Light / Dark); Reset demo sits below them (the toast is left over from the previous step) | Any unknown route: "Page not found", "Open Feed" |
+### Profile, Settings, the morning notification and errors
+| <img src="docs/ui/profile.png" width="200" alt="Profile tab"> | <img src="docs/ui/about.png" width="200" alt="Settings tab"> | <img src="docs/ui/morning-notification.png" width="200" alt="Simulated morning notification"> | <img src="docs/ui/not-found.png" width="200" alt="Page not found"> |
+|---|---|---|---|
+| Profile `#/profile` (the fourth tab since 5 Nov): the firm read only, "Edit on Company". Profile shows the firm; Company changes it | Settings `#/settings` (also `#/about`, the fifth tab): Appearance, Morning notification, Demo (Reset demo, Copy test-session log), and the four "About this prototype" statements further down | The simulated morning notification (`?demo=morning`, or Settings → "Show this morning's notification"): 7:00, the day's ● Go / ▲ Maybe / ■ No-go counts | Any unknown route: "Page not found", "Open Feed" |
 
-### Light scheme (◐ in the header, or About → Appearance)
+### Light scheme (◐ in the header, or Settings → Appearance)
 | <img src="docs/ui/light-feed.png" width="160" alt="Feed, light"> | <img src="docs/ui/light-tender-nogo.png" width="160" alt="No-go tender, light"> | <img src="docs/ui/light-sheet-check.png" width="160" alt="Needs your check sheet, light"> | <img src="docs/ui/light-company-rescore.png" width="160" alt="Company re-score, light"> | <img src="docs/ui/light-bids.png" width="160" alt="Bids, light"> |
 |---|---|---|---|---|
 | Feed | No-go tender | Needs your check | Company after the flip | Bids |
+
+| <img src="docs/ui/light-profile.png" width="160" alt="Profile, light"> | <img src="docs/ui/light-settings.png" width="160" alt="Settings, light"> |
+|---|---|
+| Profile | Settings |
 
 ## 3. Visual system
 
@@ -134,5 +142,6 @@ Sizes and where each control is used: [`SKELETON.md`](SKELETON.md) §5.
 ## 6. Keeping the screenshots current
 
 - The storyboard frames come from `node tests/demo-record.js` (it rewrites `docs/demo/`).
-- The other frames are copies of what `node tests/smoke.js <folder>` writes (`<scheme>-NN-<name>.png`, dark by default; `SMOKE_ONLY=light` for the light ones): `docs/ui/reading.png` ← `dark-02-reading`, `check-profile` ← `dark-03-check-profile`, `tender-loading` ← `dark-05-detail-loading`, `tender-go` ← `dark-06-detail-go`, `tender-nogo` ← `dark-08-detail-nogo`, `skip-sheet` ← `dark-15-skip-sheet`, `tender-saved` ← `dark-17-saved`, `bids-stages` ← `dark-18-bids`, `insights` ← `dark-19-insights`, `insights-full` ← `dark-20-insights-full`, `about` ← `dark-22-settings`, `tender-maybe` ← `dark-24-detail-maybe`, `tender-closed` ← `dark-25-detail-closed`, `feed-closed` ← `dark-26-feed-closed`, `feed-offline` ← `dark-27-feed-offline`, `not-found` ← `dark-28-not-found`, `bids-empty` ← `dark-29-bids-empty`, `company-iso-alone` ← `dark-30-company-iso-alone` (on 5 Nov the numbers after 18 moved by two for the Win/loss frames and by one more for the Profile tab's `dark-21-profile`); `light-feed` ← `light-04-feed`, `light-tender-nogo` ← `light-08-detail-nogo`, `light-sheet-check` ← `light-10-sheet-check`, `light-company-rescore` ← `light-13-company-rescore`, `light-bids` ← `light-18-bids`, `light-insights` ← `light-19-insights`. The Win/loss frames in `docs/ui/` were taken without the "Saved to Bids" toast that the smoke path leaves on screen.
+- Most other frames are copies of what `node tests/smoke.js <folder>` writes (`<scheme>-NN-<name>.png`): `docs/ui/reading.png` ← `dark-02-reading`, `check-profile` ← `dark-03-check-profile`, `tender-loading` ← `dark-05-detail-loading`, `tender-go` ← `dark-06-detail-go`, `tender-nogo` ← `dark-08-detail-nogo`, `skip-sheet` ← `dark-15-skip-sheet`, `tender-saved` ← `dark-17-saved`, `tender-maybe` ← `dark-24-detail-maybe`, `tender-closed` ← `dark-25-detail-closed`, `feed-closed` ← `dark-26-feed-closed`, `feed-offline` ← `dark-27-feed-offline`, `not-found` ← `dark-28-not-found`, `bids-empty` ← `dark-29-bids-empty`, `company-iso-alone` ← `dark-30-company-iso-alone`, `morning-notification` ← `dark-31-morning-notification`; `light-feed` ← `light-04-feed`, `light-tender-nogo` ← `light-08-detail-nogo`, `light-sheet-check` ← `light-10-sheet-check`.
+- The smoke path leaves a toast on Bids, Win/loss, Profile, Settings, the Company flip and the Competition frame, so those eleven come from `node tests/ui-frames.js` (6 Nov; it rewrites them in `docs/ui/`): a fresh page per frame at 390 × 844 (2×) with `?demo=fast&theme=<scheme>`, `tenderscout.v2` seeded before load (onboarded, plus the state the frame needs: Stadt Ellerbach in Bidding and the Dutch libraries skipped with "Missing a certificate" for Bids; the answer on Hohenau's unclear line for the Company flip, then a tap on ISO 27001), and the shot taken once any toast is gone: `bids-stages`, `light-bids`, `insights`, `insights-full` (full page), `light-insights`, `profile`, `light-profile`, `about` (the Settings tab), `light-settings`, `light-company-rescore`, `tender-competition` (Hohenau, scrolled to Competition).
 - A change that alters how a screen looks updates its screenshot and its wireframe in [`SKELETON.md`](SKELETON.md) in the same commit.

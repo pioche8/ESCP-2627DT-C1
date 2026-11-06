@@ -3,12 +3,12 @@
 // Asserts, in Chromium at 1440 and 390 px: the page renders the generated tables with the engine's numbers (weights,
 // thresholds, the six demo rows), "Try the rules" reproduces the demo path 25 → 90 → 100 with the moved line marked,
 // an off-script change (sector 72 off) gives "Outside your sectors", the reset returns to 25, no console errors, no
-// horizontal scroll, every tap target ≥ 44 px, and none of the 18 declutter patterns in the rendered page.
+// horizontal scroll and every tap target ≥ 44 px. (No declutter scan since 6 Nov 2026: the site is back to its original
+// 3 Nov design, CLAUDE.md §11 item 139.)
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const { chromium } = require('playwright');
-const scan = require('../../tests/declutter-scan.js');
 
 const site = path.resolve(__dirname, '..');
 const OUT = path.join(site, 'out');
@@ -84,14 +84,11 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     st = await state();
     ok(st.v === 'maybe' && st.s === 90, 'keyboard: Space on the switch → Maybe 90');
 
-    // Layout, tap targets, declutter
+    // Layout, tap targets
     const scroll = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
     ok(scroll[0] <= scroll[1], 'no horizontal scroll (' + scroll.join(' / ') + ')');
     const small = await page.evaluate(() => Array.from(document.querySelectorAll('.try button, .try input, .how-toc a, .how-cta a, .site-header a, .site-header .btn')).map((el) => { const r = el.getBoundingClientRect(); return [el.getAttribute('aria-label') || el.textContent.trim().slice(0, 30), Math.round(r.width), Math.round(r.height)]; }).filter((x) => x[1] && x[2] && (x[1] < 44 || x[2] < 44)));
     ok(small.length === 0, 'every control is at least 44 px' + (small.length ? ': ' + JSON.stringify(small) : ''));
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(300);
-    const found = await scan.scanDom(page);
-    ok(found.length === 0, 'declutter scan: none of the 18 patterns' + (found.length ? '\n       ' + found.map((x) => x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : '')).join('\n       ') : ''));
     ok(problems.length === 0, 'no console errors, page errors or failed requests' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
     await page.screenshot({ path: path.join(site, 'screenshots', 'how-' + width + '.png'), fullPage: true }).catch(() => {});
     await ctx.close();

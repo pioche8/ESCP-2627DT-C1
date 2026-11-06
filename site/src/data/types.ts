@@ -52,7 +52,13 @@ export interface Demo {
   TENDERS: Tender[];
   CERT_OPTIONS: string[];
   SECTORS: [string, string][];
+  PAST_BIDS: PastBid[];
 }
+/** A fictional past bid of the demo company (data.js PAST_BIDS), read by insights.js only. */
+export interface PastBid { id: string; submitted: string; cpv: string; title: string; buyer: string; country: string; ourPrice: number; outcome: 'won' | 'lost'; winnerPrice?: number; reason?: string }
+/** The part of insights.js's summary() the site shows (the Bids row of the phone demo). */
+export interface WinLossSummary { submitted: number; won: number; winRate: number }
+export interface InsightsApi { summary(bids: PastBid[], today: string, months?: number): WinLossSummary; WINDOW_MONTHS: number }
 export interface Check { id: string; label: string; cite: string; confidence: number; type: string; status: Status; note: string; confirmed?: boolean }
 export interface Result {
   tenderId: string;

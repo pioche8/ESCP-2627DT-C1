@@ -19,7 +19,7 @@ import { Footer } from './sections/Footer';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-/** The one-page site: thirteen sections plus the full-screen menu. Every number comes from the app's decision rules on its demo data. */
+/** The one-page site: thirteen sections in the handoff's order plus the full-screen menu. Every number comes from engine.js on data.js. */
 export function Landing() {
   const [menu, setMenu] = useState(false);
   const menuBtn = useRef<HTMLButtonElement>(null);
@@ -34,9 +34,9 @@ export function Landing() {
       <a href="#main" className="skip-link">Skip to content</a>
       <Menu open={menu} onClose={() => setMenu(false)} counts={c} nextDeadline={soonest ? { buyer: soonest.buyer, days: soonest.daysLeft } : null} dateLabel={dateLabel} returnTo={menuBtn} />
       <main id="main">
-        <Hero menuOpen={menu} onMenu={() => setMenu(true)} menuRef={menuBtn} />
+        <Hero menuOpen={menu} onMenu={() => setMenu(true)} count={open.length} menuRef={menuBtn} />
         <Statement />
-        <Tonight tenders={open} />
+        <Tonight tenders={open} count={open.length} />
         <Languages />
         <HowItWorks counts={c} quote={hoh} />
         <BuiltFor />
