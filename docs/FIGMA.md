@@ -58,9 +58,9 @@ audit) generates:
 | Output | Used by | Shape |
 |---|---|---|
 | `shared/tokens.css` | the app (`index.html` loads it before `styles.css`) | `:root, [data-scheme="dark"] { --c-bg: #02040A; … }`, `[data-scheme="light"] { … }`, plus `--font-ui`, `--r: 8px`, `--ease-*`, `--dur-*`, `--app-*` layout values, `--safe-top` / `--safe-bottom` |
+| `.design-cache/tenderscout.md` | the design-drift lock (gitignored) | token summary |
 
 Since 6 Nov 2026 the website is back to its original 3 Nov design and keeps its own frozen `site/src/styles/tokens.css` and `site/src/generated/tokens.ts`, which the build no longer writes (`CLAUDE.md` §11 item 139). Figma mirrors the app's tokens.
-| `.design-cache/tenderscout.md` | the design-drift lock (gitignored) | token summary |
 
 The structure (abridged):
 

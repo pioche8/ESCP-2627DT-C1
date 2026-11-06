@@ -43,7 +43,7 @@ function check(group, label, fg, bg, kind, base) {
 
 const VERDICTS = ['go', 'maybe', 'nogo', 'check'];
 Object.keys(T.color.themes).forEach((s) => {
-  const t = T.color.themes[s], g = s + (s === T.color.site ? ' (site + app)' : ' (app)');
+  const t = T.color.themes[s], g = s + ' (app)'; // the website keeps its own 3 Nov tokens since 6 Nov (below)
   ['bg', 'surface'].forEach((ground) => {
     check(g, 'ink on ' + ground, t.ink, t[ground]);
     check(g, 'muted on ' + ground, t.muted, t[ground]);
@@ -60,7 +60,8 @@ Object.keys(T.color.themes).forEach((s) => {
 
 /* ---- the website (dark ground): its frozen 3 Nov tokens, the 3 Nov site pairs ---- */
 const siteTs = path.join(__dirname, '..', 'site', 'src', 'generated', 'tokens.ts');
-if (fs.existsSync(siteTs)) {
+if (!fs.existsSync(siteTs)) { console.error('check-contrast: site/src/generated/tokens.ts is missing, so the website\'s pairs cannot be audited'); process.exit(1); }
+{
   const src = fs.readFileSync(siteTs, 'utf8');
   const ST = JSON.parse(src.slice(src.indexOf('{'), src.lastIndexOf('} as const;') + 1));
   const S = ST.color.site, V = ST.verdict;

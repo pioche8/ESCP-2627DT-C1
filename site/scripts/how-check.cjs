@@ -3,7 +3,7 @@
 // Asserts, in Chromium at 1440 and 390 px: the page renders the generated tables with the engine's numbers (weights,
 // thresholds, the six demo rows), "Try the rules" reproduces the demo path 25 → 90 → 100 with the moved line marked,
 // an off-script change (sector 72 off) gives "Outside your sectors", the reset returns to 25, no console errors, no
-// horizontal scroll and every tap target ≥ 44 px. (No declutter scan since 5 Nov 2026: the site is back to its original
+// horizontal scroll and every tap target ≥ 44 px. (No declutter scan since 6 Nov 2026: the site is back to its original
 // 3 Nov design, CLAUDE.md §11 item 139.)
 const fs = require('node:fs');
 const path = require('node:path');

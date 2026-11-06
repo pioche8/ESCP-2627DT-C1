@@ -62,7 +62,7 @@ node tests/data-check.js         # data.js has every field engine.js and app.js 
 node tests/docs-check.js         # every route and tab of app.js is in docs/NAVIGATION.md and SKELETON.md, every check a story names exists word for word, no interview or quote cited that evidence.md does not log
 node tests/no-live-ai-check.js    # no server route on the website, no key-shaped string in the repository (CLAUDE.md §7.2, ADR-0002)
 node tests/vercel-dist.test.js   # the Vercel app build is exactly the app files, byte-identical (ADR-0001)
-node site/scripts/sync-shared.mjs --check   # the site's copies of engine.js, data.js and the fonts equal the app's
+node site/scripts/sync-shared.mjs --check   # the site's copies of engine.js, data.js, insights.js and the fonts equal the app's
 node tests/demo-golden.test.js   # the live demo's numbers (Hohenau 25 → 90 → 100, 1 Go · 2 Maybe · 3 No-go, 777 pages); see §5.4 before you move them
 node tests/engine-invariants.test.js  # seeded property test of the engine rules
 node tests/declutter-scan.js     # 0 findings in the app's two stylesheets

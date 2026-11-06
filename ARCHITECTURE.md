@@ -109,7 +109,7 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 | `tests/engine-invariants.test.js` | a seeded property test: a fail is always No-go, score within 0–100, meeting one more line never lowers the score, verdicts consistent with the score, rank sorted | node, CI `check` |
 | `tests/docs-check.js` | every route `parse()` accepts and every tab appear in `docs/NAVIGATION.md` and `SKELETON.md`; every check a user story or flow names exists word for word; no interview is cited and no participant is quoted in `docs/design/` unless `evidence.md` logs it | node, CI `check` |
 | `tests/no-live-ai-check.js` | no server route under `site/src/app/` and no key-shaped string in a tracked file (§7.2; [ADR-0002](docs/adr/0002-real-tender-reader.md)) | node, CI `check` |
-| `tests/vercel-dist.test.js`, `site/scripts/sync-shared.mjs --check` | the Vercel app build is exactly the app files, byte-identical, every reference resolves; the site's copies of `engine.js`, `data.js` and the fonts equal the app's ([ADR-0001](docs/adr/0001-vercel-hosting.md)) | node, CI `check` |
+| `tests/vercel-dist.test.js`, `site/scripts/sync-shared.mjs --check` | the Vercel app build is exactly the app files, byte-identical, every reference resolves; the site's copies of `engine.js`, `data.js`, `insights.js` and the shared fonts equal the app's ([ADR-0001](docs/adr/0001-vercel-hosting.md)) | node, CI `check` |
 | `tests/declutter-scan.js` | the eighteen patterns are absent from the app's two stylesheets (the website is out of scope since 6 Nov) | node, CI `check` |
 | `shared/check-contrast.js` | WCAG AA on every pair, both schemes | node, CI `check` |
 | generated files in sync | tokens and the decision model match their sources | CI `check` |
@@ -131,7 +131,7 @@ The workshop build is frozen on the branch **`release/v1-workshop`** (tag pushes
 git push --force-with-lease origin release/v1-workshop:main
 ```
 
-Vercel (prepared, not yet imported): two projects from this repository, the site from `site/` and the app from an allowlist copied byte for byte into `dist/` by `scripts/vercel-app-dist.js`, so only the app files are public there; Pages stays the demo URL and the fallback ([`docs/adr/0001-vercel-hosting.md`](docs/adr/0001-vercel-hosting.md), steps in [`docs/DEPLOY.md`](docs/DEPLOY.md)). CI checks that the app build is byte-identical and that the site's copies of `engine.js`, `data.js` and the fonts equal the app's.
+Vercel (prepared, not yet imported): two projects from this repository, the site from `site/` and the app from an allowlist copied byte for byte into `dist/` by `scripts/vercel-app-dist.js`, so only the app files are public there; Pages stays the demo URL and the fallback ([`docs/adr/0001-vercel-hosting.md`](docs/adr/0001-vercel-hosting.md), steps in [`docs/DEPLOY.md`](docs/DEPLOY.md)). CI checks that the app build is byte-identical and that the site's copies of `engine.js`, `data.js`, `insights.js` and the shared fonts equal the app's.
 
 Older rollback points are the `backup/*` branches. Changes reach `main` through pull requests with CI green. The ruleset that enforces it (pull request required, `check` and `smoke` required, no force push, admin bypass so the rollback still works) is committed as `.github/ruleset-main.json`; a build session cannot apply it ([`CLAUDE.md`](CLAUDE.md) §11 item 92), so until someone has applied it from a laptop (Settings → Rules → Rulesets shows it) this is a team convention, not a lock.
 

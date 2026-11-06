@@ -53,13 +53,18 @@ export function PhoneDemo() {
   const hv = tileVerdict(hoh.verdict);
   const reduce = useReducedMotion();
   const stage = (v: TenderView) => (v.id === 'ell-schools' ? 'Bidding' : v.verdict === 'nogo' ? 'Not bidding' : 'Deciding');
+  // The screen scrolls when a tab is taller than it; every tab opens at its top, like the app.
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (panelRef.current) panelRef.current.scrollTop = 0; }, [tab]);
+  // "Edit on Company" switches tabs: focus follows it to the Company tab, so a keyboard user is not dropped on <body>.
+  const editOnCompany = () => { setTab(2); document.getElementById('dock-tab-2')?.focus(); };
 
   return (
     <div className="phone-wrap">
       <div className="phone" role="group" aria-label="TenderScout app demo">
         <div className="phone-screen">
           <div className="notch" aria-hidden="true" />
-          <div className="pscreen" role="tabpanel" id="phone-panel" aria-labelledby={`dock-tab-${tab}`} tabIndex={0}>
+          <div ref={panelRef} className="pscreen" role="tabpanel" id="phone-panel" aria-labelledby={`dock-tab-${tab}`} tabIndex={0}>
             {tab === 0 && (
               <>
                 <div className="phead">
@@ -171,7 +176,7 @@ export function PhoneDemo() {
                     <dt>Countries</dt><dd>{profile.countries.map(Engine.countryName).join(', ')}{profile.crossBorder ? ', cross-border' : ''}</dd>
                   </dl>
                 </div>
-                <WipeButton className="pbtn-full" onClick={() => setTab(2)}>Edit on Company</WipeButton>
+                <WipeButton className="pbtn-full" onClick={editOnCompany}>Edit on Company</WipeButton>
               </>
             )}
             {tab === 4 && (
@@ -203,14 +208,15 @@ export function PhoneDemo() {
 
 /**
  * Navy glass dock with the sliding sky pill and the amber-red count badge on Bids (hidden while Bids is active). Five tabs
- * since 6 Nov 2026: the active tab takes the width the four 44 px icon tabs leave (118 px in a 308 px dock) and shows its
- * label; on a phone too narrow for the label the pill keeps the icon only, so every tab stays at least 44 px wide.
+ * since 6 Nov 2026: the active tab takes the width the four 44 px icon tabs leave (106 px in the desktop phone's 296 px
+ * dock) and shows its label; on a phone too narrow for the label the pill keeps the icon only, so every tab stays at least
+ * 44 px wide. The first render assumes the desktop width (296 px), so the server markup matches the widest real dock.
  */
 const DOCK_INSET = 7, DOCK_MIN = 44, DOCK_LABEL_MIN = 100;
 function FloatingDock({ tab, onTab, badge }: { tab: number; onTab: (i: number) => void; badge: number }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const [dw, setDw] = useState(308);
+  const [dw, setDw] = useState(296);
   useEffect(() => {
     const el = ref.current; if (!el) return;
     const ro = new ResizeObserver(([e]) => setDw(Math.round(e.contentRect.width)));
