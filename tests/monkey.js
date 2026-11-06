@@ -33,7 +33,7 @@ const D = require(path.join(ROOT, 'data.js'));
 
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-const ROUTES = ['#/feed', '#/bids', '#/company', '#/about', '#/welcome/1', '#/welcome/3', '#/nope', '#/t/none']
+const ROUTES = ['#/feed', '#/bids', '#/insights', '#/company', '#/profile', '#/settings', '#/about', '#/welcome/1', '#/welcome/3', '#/nope', '#/t/none']
   .concat(D.TENDERS.flatMap((t) => ['#/t/' + t.id, '#/t/' + t.id + '/skip'].concat(t.requirements.map((q) => '#/t/' + t.id + '/req/' + q.id))));
 
 // Runs in the page: visible interactive elements with a stable signature and their box (switch ::after hit area included).
