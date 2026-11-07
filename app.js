@@ -381,7 +381,7 @@
       // Proof first (pass 5): the checklist, knock-outs on top, comes before the summary, and the photo moves to the end,
       // so the first requirement is on screen without a scroll on a 390 × 844 phone.
       '<div class="sec-h"><h2>Can you qualify?</h2><span class="aside">' + r.count.pass + ' of ' + r.checks.length + ' met</span></div>' +
-      '<div class="cards">' + checks.map(function (c) { return reqCard(t, c); }).join('') + '</div>' +
+      '<div class="cards">' + checks.map(function (c) { return reqCard(t, c, closed); }).join('') + '</div>' +
       '<div class="sec-h"><h2>In short</h2>' + ai() + '</div><p class="in-short reveal">' + words(t.ai.summary) + '</p>' +
       (qa.length ? '<div class="sec-h"><h2>Ask this tender</h2>' + ai() + '</div><div class="asks" id="asks">' + asksHTML(t) + '</div>' : '') +
       competitionHTML(t, r) +
@@ -430,18 +430,19 @@
   }
   function fact(k, v, soon) { return '<div class="fact"><p class="k">' + k + '</p><p class="v' + (soon ? ' soon' : '') + '">' + esc(v) + '</p></div>'; }
 
-  function reqCard(t, c) {
+  // closed: the tender can no longer be bid on, so its checklist is a record: no "Check →" and the citation stays muted.
+  function reqCard(t, c, closed) {
     var q = reqOf(t, c.id), st = STATUS[c.status], cp = citeParts(t, q), unresolved = c.status === 'review';
     var kind = c.confirmed ? 'Your answer' : c.status === 'fail' ? 'Knock-out' : (KIND[q.type] || 'Requirement');
     var line = c.confirmed ? (c.status === 'pass' ? 'You said you meet it' : 'You said you don’t meet it')
       : unresolved ? Math.round(q.confidence * 100) + '% sure. Only you can answer.' : c.note;
     var label = st.label + ', ' + kind.toLowerCase() + '. ' + q.label + '. ' + line + '. Source: ' + cp.doc + ' page ' + cp.page + '.';
-    return '<a class="req v-' + st.v + '" href="#/t/' + t.id + '/req/' + c.id + '" aria-label="' + esc(label) + '">' +
+    return '<a class="req v-' + st.v + (closed ? ' req-record' : '') + '" href="#/t/' + t.id + '/req/' + c.id + '" aria-label="' + esc(label) + '">' +
       status(st.v, st.label, kind) +
       '<span class="req-title">' + esc(q.label) + '</span>' +
       '<span class="' + (unresolved ? 'req-sure' : 'req-check') + '">' + esc(line) + '</span>' +
       cite(cp.doc, cp.page, cp.section) +
-      (unresolved ? '<span class="req-cta">Check' + icon('arrow_forward', 's18') + '</span>' : '') + '</a>';
+      (unresolved && !closed ? '<span class="req-cta">Check' + icon('arrow_forward', 's18') + '</span>' : '') + '</a>';
   }
 
   function asksHTML(t) {
