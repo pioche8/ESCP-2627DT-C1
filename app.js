@@ -660,7 +660,7 @@
         '<button class="switch" role="switch" aria-checked="' + has(p.certifications, cert) + '" aria-labelledby="cert-' + i + '" data-cert="' + esc(cert) + '"></button></div>';
     }).join('');
     var langRows = LANG_OPTIONS.map(function (l, i) {
-      return '<div class="row"><div class="txt"><p class="row-label" id="lang-' + i + '">' + esc(E.langName(l)) + '</p>' + (i === 0 ? '<p class="hint" data-hint="lang"></p>' : '') + '</div>' +
+      return '<div class="row"><div class="txt"><p class="row-label" id="lang-' + i + '">' + esc(E.langName(l)) + '</p><p class="hint" data-hint="lang:' + l + '"></p></div>' +
         '<button class="switch" role="switch" aria-checked="' + has(p.languages, l) + '" aria-labelledby="lang-' + i + '" data-lang="' + l + '"></button></div>';
     }).join('');
     var html = '<div class="screen ' + (S.onboarded ? 'has-tabs' : 'has-bar') + '">' +
@@ -670,7 +670,7 @@
         '<p class="sub">' + esc(p.name) + ' · ' + esc(p.city) + '</p>' +
         '<p class="label-text" style="margin-top:18px">Your feed right now</p>' + countsLine(c, true) +
       '</header>' +
-      '<div id="rescore">' + rescoreCard(false) + '</div>' +
+      '<div id="rescore" aria-live="polite">' + rescoreCard(false) + '</div>' +
       '<div class="sec-h"><h2>Size</h2></div><div class="group">' +
         '<div class="row"><div class="txt"><p class="row-label"><label for="turnover">Turnover</label></p><p class="row-sub">Last full year, in € millions</p></div>' +
           '<label class="money-field" for="turnover"><span class="unit" aria-hidden="true">€</span><input id="turnover" data-field="turnover" inputmode="decimal" autocomplete="off" value="' + (p.turnover / 1e6) + '"><span class="unit" aria-hidden="true">M</span></label></div>' +
@@ -697,15 +697,19 @@
     var ch = lastChange.changes;
     if (!ch.length) return neutral('Re-scored ' + plural(D.TENDERS.length, 'tender') + '.', 'No verdict changed.');
     var c = ch[0], t = tender(c.tenderId), more = ch.length > 1 ? ' · +' + (ch.length - 1) + ' more' : '';
+    // The score is the payoff (pass 5): "25 → 100" with the new score in the new verdict's colour, from Engine.diff.
     return '<div class="rescore' + (enter ? ' enter' : '') + '" data-rescore="' + c.tenderId + ':' + c.from + ':' + c.to + '">' +
-      '<p class="rescore-buyer" aria-hidden="true">' + esc(bare(t.buyer)) + '</p>' +
+      '<div class="rescore-top"><p class="rescore-buyer" aria-hidden="true">' + esc(bare(t.buyer)) + '</p>' +
+        '<p class="rescore-score" aria-hidden="true"><span class="from">' + c.fromScore + '</span><span class="arrow">→</span><b class="to v-' + c.to + (c.toScore < c.fromScore ? ' down' : '') + '" data-from="' + c.fromScore + '" style="min-width:' + String(Math.max(c.fromScore, c.toScore)).length + 'ch">' + c.toScore + '</b></p></div>' +
       '<p class="change-row" aria-hidden="true">' + status(c.from, V[c.from]) + '<span class="arrow">→</span>' + status(c.to, V[c.to]) + '<span>just now' + esc(more) + '</span></p>' +
-      '<p class="sr-only">' + esc(bare(t.buyer)) + ': ' + V[c.from] + ' → ' + V[c.to] + esc(more) + '</p></div>';
+      '<p class="sr-only">' + esc(bare(t.buyer)) + ': ' + V[c.from] + ' → ' + V[c.to] + ', score ' + c.fromScore + ' → ' + c.toScore + esc(more) + '</p></div>';
   }
   // Unlock hints: "Turn on → Gemeente Vlietdam becomes Maybe". Computed by Engine.whatIf (no state change).
   function hintText(changes, lead, verb) {
     var c = changes[0];
-    return lead + ' → ' + bare(tender(c.tenderId).buyer) + ' ' + verb + ' ' + V[c.to] + (changes.length > 1 ? ' +' + (changes.length - 1) + ' more' : '');
+    // The arrow stays with the buyer's name and "· +1 more" stays whole, as in the unlocked hint, so no line ends on "→" or "+1".
+    return esc(lead + ' →') + '&nbsp;' + esc(bare(tender(c.tenderId).buyer) + ' ' + verb + ' ') + status(c.to, V[c.to]) +
+      (changes.length > 1 ? ' <span class="nowrap">· +' + (changes.length - 1) + ' more</span>' : '');
   }
   function whatIf(patch) {
     return E.whatIf(D.TENDERS, S.profile, TODAY, S.overrides, patch).filter(function (c) { return !S.skipped[c.tenderId]; });
@@ -715,7 +719,11 @@
     if (!lastChange || lastChange.lever !== lever) return null;
     var u = ups(lastChange.changes); if (!u.length) return null;
     var c = u[0], name = bare(tender(c.tenderId).buyer);
-    return { ok: true, text: (c.to === 'go' ? 'Unlocked ' + name : name + ' moved up to ' + V[c.to]) + (u.length > 1 ? ' +' + (u.length - 1) + ' more' : '') };
+    // The score rides with the switch (pass 5): where the card cannot come back without hiding the switch (iPhone SE),
+    // "25 → 100" is still where the eye is. Each "·" stays with what follows it, so no line ends on a separator.
+    return { ok: true, text: esc(c.to === 'go' ? 'Unlocked ' + name + ' ' : name + ' moved up to ') +
+      '<span class="nowrap">' + (c.to === 'go' ? '· ' : '') + status(c.to, V[c.to]) + '</span> <span class="nowrap">· ' + c.fromScore + ' → ' + c.toScore + '</span>' +
+      (u.length > 1 ? ' <span class="nowrap">· +' + (u.length - 1) + ' more</span>' : '') };
   }
   function hints() {
     var p = S.profile, out = {};
@@ -729,15 +737,10 @@
     });
     var ref = whatIf({ references: p.references + 1 });
     out.ref = unlockedHint('ref') || (ups(ref).length ? { text: hintText(ups(ref), '+1 reference', 'becomes') } : null);
-    var langHint = null;
-    LANG_OPTIONS.some(function (l) {
-      if (has(p.languages, l)) return false;
-      var u = ups(whatIf({ languages: p.languages.concat([l]) }));
-      if (u.length) { langHint = { text: hintText(u, 'Add ' + E.langName(l), 'becomes') }; return true; }
-      return false;
+    LANG_OPTIONS.forEach(function (l) { // each language's hint sits on its own row (pass 5; it used to sit under German)
+      var key = 'lang:' + l, u = has(p.languages, l) ? [] : ups(whatIf({ languages: p.languages.concat([l]) }));
+      out[key] = unlockedHint(key) || (u.length ? { text: hintText(u, 'Turn on', 'becomes') } : null);
     });
-    var lastLang = lastChange && /^lang:/.test(lastChange.lever) ? unlockedHint(lastChange.lever) : null;
-    out.lang = lastLang || langHint;
     var xb = whatIf({ crossBorder: !p.crossBorder });
     out.xb = unlockedHint('xb') || (p.crossBorder ? (xb.length ? { down: true, text: hintText(xb, 'Turn off', 'drops to') } : null)
       : (ups(xb).length ? { text: hintText(ups(xb), 'Turn on', 'becomes') } : null));
@@ -748,12 +751,13 @@
     Array.prototype.forEach.call($screen.querySelectorAll('[data-hint]'), function (el) {
       var x = h[el.getAttribute('data-hint')];
       el.className = 'hint' + (x && x.ok ? ' ok' : x && x.down ? ' down' : '');
-      el.textContent = x ? x.text : '';
+      el.innerHTML = x ? x.text : ''; // escaped in hintText / unlockedHint; the verdict is shape + word
       el.hidden = !x;
     });
   }
   // Apply a profile change and re-score live, without re-rendering (so switches and counts animate).
   function applyLever(lever, mutate, fromEl) {
+    var at = fromEl && fromEl.getBoundingClientRect ? fromEl.getBoundingClientRect() : null; // where the finger is
     var before = E.verdicts(D.TENDERS, S.profile, TODAY, S.overrides);
     mutate(S.profile); save();
     var changes = E.diff(before, E.verdicts(D.TENDERS, S.profile, TODAY, S.overrides)).filter(function (c) { return !S.skipped[c.tenderId]; });
@@ -778,6 +782,12 @@
       mountRescore(fromEl);
     }, reduceMotion ? 0 : 60);
     paintHints();
+    // Keep the control just tapped where the finger left it, before the next frame: a hint that gains or loses a line
+    // re-centres the control in its row, and Safari has no scroll anchoring to undo that (pass 5).
+    if (at && document.body.contains(fromEl)) {
+      var now = fromEl.getBoundingClientRect();
+      if (Math.abs(now.top - at.top) >= 1) window.scrollBy(0, now.top - at.top);
+    }
   }
   // Re-score card = one object changing shape (design/MOTION.md rule 2): the card grows out of the control that changed
   // (FLIP, 700 ms --ease-morph) while its contents fade in over the second half, and a faint dashed ghost stays on the
@@ -788,16 +798,40 @@
     var rs = document.getElementById('rescore'); if (!rs) return;
     rs.innerHTML = rescoreCard(true);
     var card = rs.firstElementChild;
-    if (!card || !fromEl) return;
-    var a = fromEl.getBoundingClientRect(), b = card.getBoundingClientRect();
-    // Short screens (iPhone 13 / SE): the card can sit just above the fold when the switch is tapped. Bring it back in
-    // (an instant scroll, at most one screen) so the re-score is seen; further away, the hint next to the control tells.
-    if (b.bottom < 0 && b.top > -window.innerHeight * 0.6) {
+    // The new score counts up: from 315 ms inside the morph, at once when the card pops (no frozen "90 → 90" while it fades in).
+    var to = card && card.querySelector('.rescore-score .to'), target = to ? +to.textContent : 0;
+    if (to) to.textContent = to.getAttribute('data-from');
+    var count = function (delay) { if (to) setTimeout(function () { countUp(to, +to.getAttribute('data-from'), target); }, reduceMotion ? 0 : delay); };
+    if (!card || !fromEl) { count(0); return; }
+    var a, b, s, row = card.querySelector('.rescore-top');
+    // Measure the card's own box, not the first frame of its pop (scaled .86): with the animation off for the read, the
+    // decisions and the morph below start from where the card really sits. Putting it back restarts the pop from its start.
+    var measure = function () {
+      card.style.animation = 'none';
+      a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect(); s = row ? row.getBoundingClientRect() : b;
+      card.style.animation = '';
+    };
+    measure();
+    var bar = $tabs.querySelector('.tabbar'), floor = (bar && bar.getBoundingClientRect().top) || window.innerHeight; // the fixed tab bar hides what is under it
+    // Short screens (iPhone 13 / SE): the card can sit above the fold when the switch is tapped. When its score row is not
+    // whole on screen, bring the card back in with an instant scroll so the re-score is seen, but only for a card that names
+    // a change, and only when the control just tapped stays fully in view above the tab bar afterwards; otherwise the hint
+    // next to the control tells (pass 5).
+    var unseen = lastChange && lastChange.changes.length && s.top < 0 && a.top >= 0;
+    if (unseen && a.bottom + 12 - b.top <= floor) {
       window.scrollBy(0, b.top - 12);
-      a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
+      measure();
+    } else if (unseen) {
+      // The card stays out of view (iPhone SE: it never fits on one screen with the switch). When the hint under the control
+      // carries the score (a change up), it must not sit under the tab bar: scroll by its overhang, keeping the control in view.
+      var hint = $screen.querySelector('[data-hint="' + lastChange.lever + '"]'), h = hint && !hint.hidden && hint.classList.contains('ok') && hint.getBoundingClientRect();
+      if (h && h.height && h.bottom > floor - 4 && a.top - (h.bottom - floor + 8) >= 0) {
+        window.scrollBy(0, h.bottom - floor + 8);
+        measure();
+      }
     }
-    if (reduceMotion || typeof card.animate !== 'function') return;
-    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > window.innerHeight || a.bottom < 0 || a.top > window.innerHeight) return; // card or control off-screen: keep the pop
+    if (reduceMotion || typeof card.animate !== 'function') { count(0); return; }
+    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > floor || a.bottom < 0 || a.top > floor) { count(0); return; } // card or control off-screen: keep the pop
     card.classList.remove('enter'); card.classList.add('morph');
     var sx = a.width / b.width, sy = a.height / b.height;
     var r = parseFloat(getComputedStyle(fromEl).borderTopLeftRadius) || 8;
@@ -810,6 +844,7 @@
       ch.animate([{ opacity: 0 }, { opacity: 0, offset: .45 }, { opacity: 1 }], { duration: 700, easing: 'ease-out', fill: 'both' });
     });
     ghostAt(a, r);
+    count(315);
   }
   function ghostAt(rect, radius) {
     var g = document.createElement('span');
@@ -824,9 +859,11 @@
   var COUNT_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-rescore-count-up'), 10) || 650;
   var PAGES_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-pages-count-up'), 10) || 2800; // the site's 777 counter
   function countUp(el, from, to, ms) {
+    var run = el.countRun = (el.countRun || 0) + 1; // a newer count on the same number stops this one (two quick taps)
     if (reduceMotion || from === to) { el.textContent = to; return; }
     var t0 = performance.now();
     (function step(now) {
+      if (el.countRun !== run) return;
       var k = Math.min(1, (now - t0) / (ms || COUNT_MS));
       el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
       if (k < 1) requestAnimationFrame(step);

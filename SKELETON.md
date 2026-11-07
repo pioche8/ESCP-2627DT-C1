@@ -202,18 +202,20 @@ Numbers from `insights.js` on `DEMO.PAST_BIDS` (fictional). Without past bids: "
 [sub]       Nordlicht Netzwerk GmbH (fictional) · Leipzig, DE
 [counts]    Your feed right now: ● 1 Go · ▲ 2 Maybe · ■ 3 No-go
 [re-score]  Change anything below / Every tender re-scores at once.
-            → after a change: Landkreis Hohenau · ■ No-go → ● Go · just now
+            → after a change: Landkreis Hohenau ........... 25 → 100   (the new score in the new verdict's colour, counting up)
+                              ■ No-go → ● Go · just now
 [section]   Size
 [row]       Turnover (last full year, € millions) ........ [ € 3.2 M ]
 [row]       References (comparable, last 3 years) ........ [ − 4 + ]
-            hint: +1 reference → Stadtwerke Kaltbrunn becomes Go
+            hint: +1 reference → Stadtwerke Kaltbrunn becomes ● Go      (muted text; the verdict as shape + word)
 [section]   Certificates
 [row]       ISO 9001 ............................................ (on)
 [row]       ISO 27001 ........................................... (off)
-            hint: Turn on → Landkreis Hohenau becomes Maybe
+            hint: Turn on → Landkreis Hohenau becomes ▲ Maybe
 [row]       VCA · ISO 14001 ...................................... (off)
 [section]   Bid languages
-[row]       German · English (on) · Spanish · French · Dutch (off)
+[row]       German · English (on) · Spanish · French · Dutch (off), one row each
+            hint under Spanish: Turn on → Universidad de Valdemora becomes ● Go   (each language its own hint)
 [section]   Where you bid
 [row]       Bid outside Germany and Austria ..................... (on)
 [caption]   Re-scoring is plain rules, not AI. All companies and tenders are fictional.

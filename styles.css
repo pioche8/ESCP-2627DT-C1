@@ -445,7 +445,15 @@ html.sheet-open { overflow:hidden; }
 .rescore-buyer { font:700 16px/21px var(--font-ui); }
 .rescore-text { font:500 14px/20px var(--font-ui); color:var(--c-muted); }
 .change-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
-.change-row .status { font-size:14px; }
+.change-row .status { font-size:15px; }
+/* the payoff: "25 → 100" on the buyer's line, the new score in the new verdict's colour (counts up from the old one; instant
+   under reduced motion). On the same line, so the card stays about as tall as before and the morph still fits a short phone. */
+.rescore-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.rescore-top .rescore-buyer { min-width:0; }
+.rescore-top, .rescore.neutral .rescore-buyer { min-height:30px; } /* the neutral card and the score card are one height, so a change never pushes down the switch just tapped */
+.rescore-score { flex:none; display:flex; align-items:baseline; gap:6px; font:700 15px/1 var(--font-ui); color:var(--c-muted); font-variant-numeric:tabular-nums; }
+.rescore-score .to { font:800 28px/1 var(--font-ui); color:var(--v); text-align:right; }
+.rescore-score .to.down { text-align:left; } /* a score that drops (100 → 25): the spare width goes to the card's edge, not between the arrow and the score */ /* min-width (inline, in ch) holds the final width, so the old score and the arrow stay still while it counts */
 .group { margin:0 16px; padding:4px 16px; border-radius:var(--r); background:var(--c-surface); }
 .row { display:flex; align-items:center; gap:12px; min-height:60px; padding:10px 0; }
 .row .txt { flex:1; min-width:0; }
@@ -457,9 +465,13 @@ html.sheet-open { overflow:hidden; }
 .comp-h { margin:16px 20px 8px; }
 .row-label { font:700 16px/21px var(--font-ui); }
 .row-sub { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
-.hint { margin-top:2px; font:600 13px/18px var(--font-ui); color:var(--c-brand); }
-.hint.ok { color:var(--c-go); }
-.hint.down { color:var(--c-maybe); }
+/* Hints (pass 5): muted text; colour only on the target verdict, which is shape + word ("becomes ▲ Maybe"), so colour keeps
+   meaning a verdict and never a direction. */
+.hint { margin-top:2px; font:600 13px/18px var(--font-ui); color:var(--c-muted); }
+.hint .status { display:inline; font-size:13px; white-space:nowrap; } /* the shape and its word wrap as one */
+.hint .nowrap { white-space:nowrap; } /* "· ● Go", "· 25 → 100" and "· +1 more" each stay whole, so no line ends on a separator */
+.hint .status .shape { display:inline-block; margin-right:4px; vertical-align:0; }
+.row-sub + .hint { margin-top:6px; } /* a what-if line, not more of the row's description */
 .money-field { cursor:text; display:inline-flex; align-items:center; gap:2px; height:44px; padding:0 12px; border-radius:var(--r); background:var(--c-bg); font:800 18px/1 var(--font-ui); }
 .money-field input { width:3.2em; border:0; background:transparent; outline:none; text-align:right; font:800 18px/1 var(--font-ui); color:var(--c-ink); padding:0; height:44px; }
 .money-field:focus-within { outline:var(--focus-w) solid var(--c-brand); outline-offset:var(--focus-o); }
