@@ -84,24 +84,25 @@ The whole card is the link. Empty states replace the cards: "Nothing new tonight
 [verdict]   ■ No-go
 [score]     25 /100
 [headline]  1 knock-out requirement: you don't hold ISO 27001. One more needs your answer.
-[photo]     (if the tender has one, not when closed) its own block
 [title]     IT security audit and hardening for district administration
 [original]  IT-Sicherheitsaudit und Härtung der Kreisverwaltung    in its own language
 [meta]      Landkreis Hohenau · Germany   (· skipped)
 [facts]     Value €95k | Deadline 27 Nov · 22 days left
-[section]   In short ................................. Simulated AI
-            Audit 400 workstations and 30 servers …
-[section]   Can you qualify? ............................ 1 of 3 met
+[section]   Can you qualify? ............................ 1 of 3 met      the first line on screen without a scroll at 390 × 844
 [line]      ■ Fails · Knock-out
             ISO 27001 information security
             Missing ISO 27001 (mandatory)
-            Vergabeunterlagen, p. 12, §3.1
+            Vergabeunterlagen, p. 12, §3.1                  the citation in brand text (muted under "Check →" and on a Closed tender)
 [line]      ◆ Needs your check · Unclear wording
             Staff with "comparable qualification"
             58% sure. Only you can answer.
             Vergabeunterlagen, p. 14, §3.4
             Check →                                         44 px
 [line]      ● Meets · References …                          order: Fails → Needs your check → Risk → Meets
+[section]   In short ................................. Simulated AI
+            Audit 400 workstations and 30 servers …
+[section]   (if it has questions) Ask this tender ........ Simulated AI
+            Can we subcontract the audit?  ›                opens the answer and its page
 [section]   Competition .............................. Simulated AI     (not on a Closed tender)
 [chance]    Qualify first                                   on a Go or Maybe: "Fair chance · About 1 in 5" (Kaltbrunn)
             You miss a knock-out above, so a bid would be excluded before price or quality count.
@@ -115,12 +116,11 @@ The whole card is the link. Empty states replace the cards: "Nothing new tonight
 [row]       Security audit, county IT
             Landkreis Hohenau, 2024 · won by Prüfwerk IT-Sicherheit · 7 bidders · €80k
 [row]       … one row per past award (three for Hohenau)
-[section]   (if it has questions) Ask this tender ........ Simulated AI
-            Can we subcontract the audit?  ›                opens the answer and its page
+[photo]     (if the tender has one, not when closed) its own block
 [caption]   All companies and tenders are fictional
 [action]    | Skip | Save to Bids |
 ```
-Bar variants: saved → `| Skip | In Bids · Deciding |`; skipped → `| Restore | Save to Bids |`; closed → the note "Closed tenders can't be saved" above `| Skip | Save to Bids (disabled) |`.
+Bar variants: saved → `| Skip | In Bids · Deciding |`; skipped → `| Restore | Save to Bids |`; closed → the note "Closed tenders can't be saved" above `| Skip | Save to Bids (disabled) |`. A Closed tender's header says "Closed" once, in place of the verdict and the score, and its checklist is a record: no "Check →" and muted citations.
 
 First open per session: the verdict block is replaced by "Reading 64 pages (German)…", "p. N of 64", a progress bar and three steps, and the body by placeholder bars; the action bar is already there.
 Competition (5 Nov): the bidders and past awards stand for a simulated AI reading of past award notices (fictional, `data.js` `COMPETITION`), so the section heading carries "Simulated AI". The chance line is plain rules in `app.js` (`chanceToWin`): one over the average number of bidders on the similar awards, lower when one rival won two or more of them, higher or lower by the firm's references against the strongest rival's. It reads Good, Fair or Low chance with "About 1 in N", says "Qualify first" on a No-go, and adds "Only once you clear the open points above." on a Maybe. It never changes the score or the verdict.
