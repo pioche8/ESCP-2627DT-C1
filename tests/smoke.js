@@ -268,7 +268,9 @@ async function run(scheme, browser, step) {
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company counts move to 2 : 2 : 2');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
   const isoHint = (await page.locator('[data-hint="cert:ISO 27001"]').innerText()).replace(/\s+/g, ' ');
-  check(isoHint.includes('25 → 100') && await page.locator('[data-hint="cert:ISO 27001"] .nowrap').count() === 2, 'the hint at the switch carries the score too, each "·" kept with what follows it: "' + isoHint + '"');
+  // rendered lines of the hint (per-character line boxes): the score stays whole and no line ends on "·" or "→"
+  const hintLines = await page.evaluate(() => { const el = document.querySelector('[data-hint="cert:ISO 27001"]'), lines = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { for (let i = 0; i < n.length; i++) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const b = r.getClientRects()[0]; if (!b) continue; let l = lines.find((x) => Math.abs(x.top - b.top) < 4); if (!l) lines.push(l = { top: b.top, t: '' }); l.t += n.data[i]; } } return lines.sort((x, y) => x.top - y.top).map((x) => x.t.trim()); });
+  check(isoHint.includes('25 → 100') && hintLines.some((l) => l.includes('25 → 100')) && hintLines.every((l) => !/[·→]$/.test(l)), 'the hint at the switch carries the score too, whole, and no line ends on "·" or "→": ' + JSON.stringify(hintLines));
   const xs = await steady;
   check(xs.length > 0 && new Set(xs).size === 1, 'the old score and the arrow hold still while the new score counts up (' + xs.length + ' frames, x = ' + Array.from(new Set(xs)).join(', ') + ')');
   await page.evaluate(() => window.scrollTo(0, 0)); // show the re-score card
@@ -292,6 +294,24 @@ async function run(scheme, browser, step) {
   await page.click('button[data-cert="VCA"]'); await page.click('button[data-cert="VCA"]'); // two quick taps: on, then off again mid-count
   await page.waitForTimeout(1200);
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'two quick taps on a switch leave the counts right (2 : 2 : 2): ' + (await page.locator('#co-tiles b').allInnerTexts()).join(','));
+  await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
+  // A score that drops (ISO 27001 off: 100 → 25) keeps the arrow-to-score gap of a rise; the spare width goes to the edge.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click('button[data-cert="ISO 27001"]');
+  await page.waitForSelector('#rescore .rescore[data-rescore="hoh-security:go:nogo"]', { timeout: 3000 }); // the new card, not the VCA one before it
+  await page.waitForFunction(() => (document.querySelector('#rescore .rescore-score .to') || {}).textContent === '25', null, { timeout: 3000 }).catch(() => {});
+  await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
+  const downGap = await page.evaluate(() => { const to = document.querySelector('#rescore .rescore-score .to'), ar = document.querySelector('#rescore .rescore-score .arrow'), r = document.createRange(); r.selectNodeContents(to); return [to.textContent, Math.round(r.getBoundingClientRect().left - ar.getBoundingClientRect().right)]; });
+  check(downGap[0] === '25' && downGap[1] <= 8, 'a score that drops (100 → 25) sits next to its arrow, not across a blank (' + JSON.stringify(downGap) + ' px)');
+  // ISO 27001 on again with the switch just above the tab bar: when the card cannot be seen, the hint that carries the score is clear of the tab bar.
+  await page.evaluate((f) => { const r = document.querySelector('button[data-cert="ISO 27001"]').getBoundingClientRect(); window.scrollBy(0, r.bottom - (f - 4)); }, floor);
+  await page.waitForTimeout(100);
+  const isoLow = await page.locator('button[data-cert="ISO 27001"]').boundingBox();
+  await page.mouse.click(isoLow.x + isoLow.width / 2, isoLow.y + isoLow.height / 2);
+  await page.waitForTimeout(200);
+  const lowTap = await page.evaluate((f) => { const s = document.querySelector('button[data-cert="ISO 27001"]').getBoundingClientRect(), h = document.querySelector('[data-hint="cert:ISO 27001"]').getBoundingClientRect(), c = document.querySelector('#rescore .rescore').getBoundingClientRect(); return { sw: [Math.round(s.top), Math.round(s.bottom)], hint: Math.round(h.bottom), card: c.top >= 0 && c.bottom <= f, on: document.querySelector('button[data-cert="ISO 27001"]').getAttribute('aria-checked') === 'true' }; }, floor);
+  check(lowTap.on && lowTap.sw[0] >= 0 && lowTap.sw[1] <= floor && (lowTap.card || lowTap.hint <= floor), 'a switch tapped just above the tab bar: the switch stays in view and the score is seen, on the card or in the hint above the tab bar (' + JSON.stringify(lowTap) + ', tab bar at ' + Math.round(floor) + ')');
+  await page.waitForFunction(() => Array.from(document.querySelectorAll('#co-tiles b')).map((b) => b.textContent).join(',') === '2,2,2', null, { timeout: 3000 }).catch(() => {});
   await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
 
   // Feed after the change

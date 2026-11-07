@@ -700,7 +700,7 @@
     // The score is the payoff (pass 5): "25 → 100" with the new score in the new verdict's colour, from Engine.diff.
     return '<div class="rescore' + (enter ? ' enter' : '') + '" data-rescore="' + c.tenderId + ':' + c.from + ':' + c.to + '">' +
       '<div class="rescore-top"><p class="rescore-buyer" aria-hidden="true">' + esc(bare(t.buyer)) + '</p>' +
-        '<p class="rescore-score" aria-hidden="true"><span class="from">' + c.fromScore + '</span><span class="arrow">→</span><b class="to v-' + c.to + '" data-from="' + c.fromScore + '" style="min-width:' + String(Math.max(c.fromScore, c.toScore)).length + 'ch">' + c.toScore + '</b></p></div>' +
+        '<p class="rescore-score" aria-hidden="true"><span class="from">' + c.fromScore + '</span><span class="arrow">→</span><b class="to v-' + c.to + (c.toScore < c.fromScore ? ' down' : '') + '" data-from="' + c.fromScore + '" style="min-width:' + String(Math.max(c.fromScore, c.toScore)).length + 'ch">' + c.toScore + '</b></p></div>' +
       '<p class="change-row" aria-hidden="true">' + status(c.from, V[c.from]) + '<span class="arrow">→</span>' + status(c.to, V[c.to]) + '<span>just now' + esc(more) + '</span></p>' +
       '<p class="sr-only">' + esc(bare(t.buyer)) + ': ' + V[c.from] + ' → ' + V[c.to] + ', score ' + c.fromScore + ' → ' + c.toScore + esc(more) + '</p></div>';
   }
@@ -721,7 +721,7 @@
     // "25 → 100" is still where the eye is. Each "·" stays with what follows it, so no line ends on a separator.
     return { ok: true, text: esc(c.to === 'go' ? 'Unlocked ' + name + ' ' : name + ' moved up to ') +
       '<span class="nowrap">' + (c.to === 'go' ? '· ' : '') + status(c.to, V[c.to]) + '</span> <span class="nowrap">· ' + c.fromScore + ' → ' + c.toScore + '</span>' +
-      (u.length > 1 ? esc(' +' + (u.length - 1) + ' more') : '') };
+      (u.length > 1 ? ' <span class="nowrap">· +' + (u.length - 1) + ' more</span>' : '') };
   }
   function hints() {
     var p = S.profile, out = {};
@@ -802,6 +802,14 @@
     if (lastChange && lastChange.changes.length && b.bottom < 0 && a.top >= 0 && a.bottom + 12 - b.top <= floor) {
       window.scrollBy(0, b.top - 12);
       a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
+    } else if (lastChange && lastChange.changes.length && b.bottom < 0 && a.top >= 0) {
+      // The card stays out of view (iPhone SE: it never fits on one screen with the switch), so the hint under the control,
+      // which carries the score, must not sit under the tab bar: scroll by its overhang (a few px; the control stays in view).
+      var hint = $screen.querySelector('[data-hint="' + lastChange.lever + '"]'), h = hint && !hint.hidden && hint.getBoundingClientRect();
+      if (h && h.height && h.bottom > floor - 4 && a.top - (h.bottom - floor + 8) >= 0) {
+        window.scrollBy(0, h.bottom - floor + 8);
+        a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
+      }
     }
     if (reduceMotion || typeof card.animate !== 'function') { count(0); return; }
     if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > floor || a.bottom < 0 || a.top > floor) { count(0); return; } // card or control off-screen: keep the pop
