@@ -8,7 +8,7 @@ const VALID = /^[^\s.]+(\.[^\s.]+)*\.[a-z]{2,}$/i;
 
 /**
  * Website field with the "Draft my profile" button and a validation line under it. The original's motion in solid
- * colours (pass 5): the button's metal ring is a solid arc turning around the arrow (5 s a turn), and the blue glow that
+ * colours (pass 5): the button's metal ring is a solid ring with a short ink sheen travelling around it (5 s a turn), and the blue glow that
  * drifted behind the section is a surface-coloured disc on the same 12 s drift. Both stop under reduced motion.
  */
 export function Start() {
@@ -26,7 +26,7 @@ export function Start() {
             <input value={site} onChange={(e) => setSite(e.target.value)} placeholder="yourcompany.eu" aria-label="Company website" autoComplete="url" autoCapitalize="off" spellCheck={false} inputMode="url" aria-describedby="site-msg" />
           </div>
           <Button href={APP_URL} size="lg" dim={!valid} external className="btn-metal">
-            <span className="metal" aria-hidden="true"><svg viewBox="0 0 30 30" className="metal-spin"><circle cx="15" cy="15" r="13" /></svg><Icon name="arrow_forward" size={16} /></span>
+            <span className="metal" aria-hidden="true"><svg viewBox="0 0 30 30" className="metal-ring"><circle cx="15" cy="15" r="13" /></svg><svg viewBox="0 0 30 30" className="metal-spin"><circle cx="15" cy="15" r="13" /></svg><Icon name="arrow_forward" size={16} /></span>
             Draft my profile
           </Button>
         </div>

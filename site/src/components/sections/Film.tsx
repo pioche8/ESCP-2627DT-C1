@@ -20,8 +20,8 @@ export function Film() {
         <a href={FILM_URL} target="_blank" rel="noopener noreferrer" className="poster" aria-label="Watch the 45-second launch film (MP4, opens in a new tab)">
           <Photo src="/assets/harbor-dusk.jpg" sizes="(min-width: 1280px) 1200px, 100vw" className="poster-photo" />
           <span className="poster-play" aria-hidden="true">
-            <svg viewBox="0 0 80 80" className="poster-ping"><rect x="4" y="4" width="72" height="72" rx="8" /></svg>
-            <svg viewBox="0 0 80 80" className="poster-btn"><rect x="4" y="4" width="72" height="72" rx="8" /><path d="M32 26 L56 40 L32 54 Z" /></svg>
+            <svg viewBox="0 0 80 80" className="poster-ping"><rect x="4" y="4" width="72" height="72" rx="6.15" /></svg>
+            <svg viewBox="0 0 80 80" className="poster-btn"><rect x="4" y="4" width="72" height="72" rx="6.15" /><path d="M32 26 L56 40 L32 54 Z" /></svg>
           </span>
         </a>
         <div className="poster-bar" aria-hidden="true"><div /></div>

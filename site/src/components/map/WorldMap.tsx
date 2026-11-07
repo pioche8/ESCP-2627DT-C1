@@ -129,7 +129,9 @@ export function WorldMap() {
     // that height (the Netherlands on a phone) it goes just west of it, on the sea, in a text colour instead of the fill's.
     const labels = LABEL_AT.map(({ cc, poly }) => {
       const [x, y] = CODE_AT[cc] ? proj(CODE_AT[cc])! : path.centroid(poly), [left, right] = spanAt(proj, poly, x, y);
-      return right - left < LABEL_W ? { cc, x: left - 4, y, inside: false } : { cc, x, y, inside: true };
+      // too narrow at that height: on the sea beside the country (west; Austria east, where no arc crosses)
+      if (right - left < LABEL_W) return cc === 'AT' ? { cc, x: right + 4, y, inside: false, east: true } : { cc, x: left - 4, y, inside: false, east: false };
+      return { cc, x, y, inside: true, east: false };
     });
     return { proj, path, labels, home: proj(HOME_LL)! };
   }, [w, h]);
@@ -161,8 +163,8 @@ export function WorldMap() {
                 })}
               </g>
               <g aria-hidden="true">
-                {geo.labels.map(({ cc, x, y, inside }) => (
-                  <text key={cc} x={x} y={y} textAnchor={inside ? 'middle' : 'end'} dominantBaseline="central" className={`map-cc${lit ? ' on' : ''}`} style={{ fill: bids(cc) ? (inside ? C.bg : C.ink) : C.muted, transitionDelay: delay(cc) }}>{cc}</text>
+                {geo.labels.map(({ cc, x, y, inside, east }) => (
+                  <text key={cc} x={x} y={y} textAnchor={inside ? 'middle' : east ? 'start' : 'end'} dominantBaseline="central" className={`map-cc${lit ? ' on' : ''}`} style={{ fill: bids(cc) ? (inside ? C.bg : C.ink) : C.muted, stroke: bids(cc) && inside ? C.brand : 'none', transitionDelay: delay(cc) }}>{cc}</text>
                 ))}
               </g>
               {lit && (
@@ -177,7 +179,7 @@ export function WorldMap() {
                   <g transform={`translate(${geo.home[0]},${geo.home[1]})`} aria-hidden="true">
                     {!reduce && <circle className="pulse" r={6} />}
                     <circle className="home-dot" r={7} />
-                    {labelsOn && <text x={13} y={-10} className="map-home">You · Leipzig</text>}
+                    <text x={13} y={-10} className="map-home">{labelsOn ? 'You · Leipzig' : 'You'}</text>
                   </g>
                   {pins.map((p, i) => {
                     const [x, y] = geo.proj(p.at)!, v = shapeOf(p.v.verdict), [lx, ly, anchor] = p.lab, on = showTip === p.id;

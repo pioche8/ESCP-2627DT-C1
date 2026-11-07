@@ -58,7 +58,7 @@ const into = async (page, sel, wait = 400) => { await page.evaluate((sel) => { d
   ok(/lit-0/.test(lit) && lit !== lit2, 'hero: the wordmark lights the letters nearest the disc, in solid steps, and they follow it (the gradient wordmark)');
   await p.mouse.move(5, 5);
   await go(p, 'statement', 300);
-  ok(await running(p, '.st-band') === 3, 'statement: three surface bands drift (16 s / 20 s / 12 s)');
+  ok(await running(p, '.st-band') === 2, 'statement: two surface discs drift (16 s / 20 s, the original glows)');
   await p.evaluate(() => window.scrollBy(0, 300)); await p.waitForTimeout(400);
   const words = await p.evaluate(() => [document.querySelectorAll('.reveal span.lit').length, document.querySelectorAll('.reveal span').length]);
   ok(words[0] > 0, `statement: word-by-word reveal (${words[0]}/${words[1]} lit)`);

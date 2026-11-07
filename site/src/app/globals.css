@@ -38,7 +38,7 @@ img, svg, video { display: block; }
 /* the pan and the sweep step a solid colour along the letters or words (one lit at a time); no gradient */
 @keyframes ts-lit-end { 0%, 24.99% { color: var(--c-brand); } 25%, 100% { color: var(--c-ink); } }
 @keyframes ts-lit-mid { 0%, 24.99% { color: var(--c-ink); } 25%, 49.99% { color: var(--c-brand); } 50%, 74.99% { color: var(--c-ink); } 75%, 100% { color: var(--c-brand); } }
-@keyframes ts-sweep-word { 0%, 19.99% { color: var(--c-brand); } 20%, 100% { color: var(--c-ink); } }
+@keyframes ts-sweep-word { 0%, 8.99% { color: var(--c-brand); } 9%, 100% { color: var(--c-ink); } } /* one word lit at a time (11 words, 4.5 s) */
 /* the home pulse and the film ping: a solid ring grows while its stroke thins to nothing (no fade, no alpha) */
 @keyframes ts-pulse { 0% { transform: scale(1); stroke-width: 2.5px; } 100% { transform: scale(3.4); stroke-width: 0; } }
 @keyframes ts-ping { 0% { transform: scale(1); stroke-width: 3px; } 100% { transform: scale(1.8); stroke-width: 0; } }

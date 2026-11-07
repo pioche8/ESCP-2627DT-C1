@@ -65,7 +65,7 @@ export default function HowPage() {
             </header>
             <h1 className="hero-tagline how-h1">How it decides.</h1>
             <p className="body how-lead">
-              The AI reads the tender; these rules decide. Everything on this page was derived from the prototype’s decision code when the site was built: the rules were run on probe inputs and the weights and thresholds were read from the code and checked against those runs. If the code changes, this page changes with it. Code version {H.source.engineSha}, demo data {H.source.dataSha}.
+              The AI reads the tender; these rules decide. Everything on this page was derived from the prototype’s decision code when the site was built: the rules were run on probe inputs and the weights and thresholds were read from the code and checked against those runs. <span title={`Code version ${H.source.engineSha}, demo data ${H.source.dataSha}`}>If the code changes, this page changes with it.</span>
             </p>
             <nav className="how-toc" aria-label="On this page">
               {[['#statuses', 'Statuses'], ['#score', 'Score'], ['#verdict', 'Verdict'], ['#try', 'Try the rules'], ['#proof', 'The proof'], ['#demo', 'The demo data'], ['#real', 'What is real']].map(([h, l]) => <a key={h} href={h}>{l}</a>)}

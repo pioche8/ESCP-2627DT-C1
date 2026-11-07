@@ -44,7 +44,9 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     const body = (await page.locator('main').innerText()).replace(/\s+/g, ' ');
     ok((await text('h1')).includes('How it decides'), 'title');
     ok(body.includes(`${H.weights.sector} if any of the tender’s CPV codes`) && body.includes(`Go line is ${H.constants.goMinScore}`) && body.includes(`caps the score at ${H.constants.knockoutCap}`), 'weights and thresholds come from the generated model (sector ' + H.weights.sector + ', Go ' + H.constants.goMinScore + ', cap ' + H.constants.knockoutCap + ')');
-    ok(body.includes(H.source.engineSha) && body.includes(H.source.dataSha), 'code and data versions shown (' + H.source.engineSha + ', ' + H.source.dataSha + ')');
+    // the versions sit in a title (pass 5: hashes are code identifiers, not visible text), and never in the visible text
+    const vtitle = await page.evaluate(() => Array.from(document.querySelectorAll('main [title]')).map((e) => e.getAttribute('title')).join(' | '));
+    ok(vtitle.includes(H.source.engineSha) && vtitle.includes(H.source.dataSha) && !body.includes(H.source.engineSha), 'code and data versions in a title, not in the visible text (' + H.source.engineSha + ', ' + H.source.dataSha + ')');
     const rows = await page.locator('.how-demo tbody tr').count();
     ok(rows === H.demo.tenders.length, 'demo table has ' + rows + ' rows (' + H.demo.tenders.length + ' tenders)');
     const hohRow = (await page.locator('.how-demo tbody tr').filter({ hasText: 'Landkreis Hohenau' }).innerText()).replace(/\s+/g, ' ');

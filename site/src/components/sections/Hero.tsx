@@ -36,7 +36,8 @@ export function Hero({ menuOpen, onMenu, menuRef }: { menuOpen: boolean; onMenu:
   const light = (x: number) => {
     const h = g.current, px = (x / 100) * h.w;
     h.letters.forEach((l) => {
-      const d = Math.abs(l.cx - px) / l.w, step = d < 0.6 ? 0 : d < 1.6 ? 1 : d < 2.6 ? 2 : 3;
+      // over the disc a letter is at least muted, so it never vanishes into the disc's surface colour
+      const d = Math.abs(l.cx - px) / l.w, step = d < 0.6 ? 0 : d < 1.6 ? 1 : d < 2.6 || Math.abs(l.cx - px) < h.r ? 2 : 3;
       if (step !== l.step) { if (l.step < 3) l.el.classList.remove(STEPS[l.step]); if (step < 3) l.el.classList.add(STEPS[step]); l.step = step; }
     });
   };

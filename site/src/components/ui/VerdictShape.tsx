@@ -7,7 +7,8 @@ export const C = tokens.color.themes[tokens.color.site];
 
 /** ● Go · ▲ Maybe · ■ No-go · ◆ Needs your check. The shape always travels with the word. Colour comes from the parent's --v. */
 export function VerdictShape({ verdict, size = 8, color, className = '' }: { verdict: VerdictKey; size?: number; color?: string; className?: string }) {
-  const base: React.CSSProperties = { display: 'inline-block', flex: 'none', width: size, height: size, background: color ?? 'var(--v, currentColor)' };
+  // Only an explicit colour is inline; otherwise the CSS paints the shape (.vshape, and dark on a verdict fill: .vtile .vshape …).
+  const base: React.CSSProperties = { display: 'inline-block', flex: 'none', width: size, height: size, ...(color ? { background: color } : {}) };
   const style: React.CSSProperties =
     verdict === 'go' ? { ...base, borderRadius: '50%' }
     : verdict === 'maybe' ? { ...base, width: Math.round(size * 1.1), clipPath: tokens.verdict.maybe.clip }

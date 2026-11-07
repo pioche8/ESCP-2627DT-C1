@@ -2,14 +2,15 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 
-const STEP = 24, DOT = 2.4, R_LIT = 340, R_HOT = 150; // the original's 24 px grid and 340 px spotlight
+const STEP = 24, DOT = 2.4, R_LIT = 220, R_HOT = 90, PAD = 16; // the original's 24 px grid; a tighter spot than its 340 px soft glow, since solid tiers are louder than a fade
 
 /**
  * The original "How it works" spotlight in solid colours (pass 5): a 24 px grid of small squares in the surface colour,
- * where the squares within 340 px of the cursor turn muted and those within 150 px turn brand. No gradient and no mask:
+ * where the squares within 220 px of the cursor turn muted and those within 90 px turn brand. No gradient and no mask:
  * a canvas, viewport-tall and sticky inside the section, redrawn on mouse move and scroll (one rAF at a time), the grid
- * anchored to the section so it scrolls with the page. Without a mouse (touch) or under reduced motion the lit spot rests
- * where the original's did: half-way across, 30 % down the section.
+ * anchored to the section so it scrolls with the page. Squares behind the active step's text stay surface, so the lit dots
+ * never sit between letters. Without a mouse (touch) or under reduced motion there is no lit spot: a spotlight follows a
+ * pointer (the original rested half-way across, 30 % down, on top of the step text on a phone).
  */
 export function SpotGrid() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -28,10 +29,14 @@ export function SpotGrid() {
       ctx.clearRect(0, 0, w, h);
       const s = sec.getBoundingClientRect(), c = cv.getBoundingClientRect();
       const ox = (((s.left - c.left) % STEP) + STEP) % STEP, oy = (((s.top - c.top) % STEP) + STEP) % STEP;
-      const [cx, cy] = mouse && !reduce ? [mouse[0] - c.left, mouse[1] - c.top] : [s.left + s.width * 0.5 - c.left, s.top + s.height * 0.3 - c.top];
+      const spot = mouse && !reduce ? [mouse[0] - c.left, mouse[1] - c.top] : null;
+      // the active step's title and body (not the whole 85vh step), so only the dots behind the words stay quiet
+      const parts = Array.from(sec.querySelectorAll('.how-step.active .step-title, .how-step.active .step-body')).map((e) => e.getBoundingClientRect());
+      const txt = parts.length ? [Math.min(...parts.map((r) => r.left)) - c.left - PAD, Math.min(...parts.map((r) => r.top)) - c.top - PAD, Math.max(...parts.map((r) => r.right)) - c.left + PAD, Math.max(...parts.map((r) => r.bottom)) - c.top + PAD] : null;
       for (let y = oy; y < h; y += STEP) {
         for (let x = ox; x < w; x += STEP) {
-          const d = Math.hypot(x - cx, y - cy);
+          const quiet = !spot || (txt && x > txt[0] && x < txt[2] && y > txt[1] && y < txt[3]);
+          const d = quiet ? Infinity : Math.hypot(x - spot[0], y - spot[1]);
           ctx.fillStyle = d < R_HOT ? col.hot : d < R_LIT ? col.lit : col.dot;
           ctx.fillRect(x - DOT / 2, y - DOT / 2, DOT, DOT);
         }
