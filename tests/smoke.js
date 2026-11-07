@@ -244,8 +244,15 @@ async function run(scheme, browser, step) {
   }).map((s) => s.closest('[data-hint]').getAttribute('data-hint')));
   check(split.length === 0, 'every lever hint keeps its verdict shape and word on one line' + (split.length ? ': split in ' + split.join(', ') : ''));
   await scan('company'); await shot('company');
+  // The card grows out of the switch when both fit on one screen above the tab bar (the distance does not depend on the
+  // scroll). On iPhone SE they do not: the card pops instead and the switch stays in view (it is not scrolled under the bar).
+  const isoFloor = await page.evaluate(() => { const t = document.querySelector('.tabbar'); return t ? t.getBoundingClientRect().top : innerHeight; });
+  const fits = await page.evaluate((f) => { const sw = document.querySelector('button[data-cert="ISO 27001"]').getBoundingClientRect(), rs = document.getElementById('rescore').getBoundingClientRect(); return sw.bottom - rs.top + 12 <= f; }, isoFloor);
   await page.click('button[data-cert="ISO 27001"]');
-  check(await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false), 'a dashed ghost is left on the switch while the re-score card grows out of it');
+  const ghost = await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false);
+  const isoBox = await page.locator('button[data-cert="ISO 27001"]').boundingBox();
+  if (fits) check(ghost, 'a dashed ghost is left on the switch while the re-score card grows out of it');
+  else check(isoBox.y >= 0 && isoBox.y + isoBox.height <= isoFloor, 'the card and the switch do not fit on one screen: the card pops and the switch stays in view above the tab bar (' + Math.round(isoBox.y) + ' px, tab bar at ' + Math.round(isoFloor) + ')');
   await page.waitForSelector('.rescore[data-rescore]');
   await page.waitForTimeout(700);
   const sr = await page.locator('#rescore .sr-only').innerText();
