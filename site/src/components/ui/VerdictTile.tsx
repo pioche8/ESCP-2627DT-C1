@@ -41,7 +41,7 @@ export function StatusLine({ verdict, why, size = 8, className = '', label }: { 
 /** "1 Go · 2 Maybe · 3 No-go" as plain text, each count in its verdict colour. */
 export function CountsLine({ counts, className = '' }: { counts: { go: number; maybe: number; nogo: number }; className?: string }) {
   return (
-    <p className={`counts ${className}`} aria-label={`${counts.go} Go, ${counts.maybe} Maybe, ${counts.nogo} No-go`}>
+    <p className={`counts ${className}`} role="group" aria-label={`${counts.go} Go, ${counts.maybe} Maybe, ${counts.nogo} No-go`}>
       {(['go', 'maybe', 'nogo'] as const).map((k) => (
         <span key={k} className={`v-${k}`} aria-hidden="true"><VerdictShape verdict={k} size={8} /><b>{counts[k]}</b>{VERDICT[k].label}</span>
       ))}

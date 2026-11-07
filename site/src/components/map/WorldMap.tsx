@@ -30,6 +30,7 @@ const PINS: { id: string; name: string; at: [number, number]; lab: [number, numb
 ];
 const CODE_AT: Record<string, [number, number]> = { DE: [9.3, 52.2], AT: [11.6, 47.05], NL: [5.7, 52.85], FR: [2.4, 46.9], ES: [-5.4, 41.9] };
 const LABELS_FROM = 560; // below this width the pins keep their shapes and tooltips but not their name labels (they crowd)
+const TIP_ROOM = 190; // the tooltip (up to ~165 px with its 18 px gap) opens below a pin closer than this to the top of the map
 
 type Country = Feature<Geometry, Record<string, unknown>> & { id?: string | number };
 function mainland(f: Country): Country {
@@ -85,6 +86,8 @@ export function WorldMap() {
   const [cross, setCross] = useState(PROFILE.crossBorder);
   const [tip, setTip] = useState<string | null>(null); // the pin whose tooltip shows
   const [held, setHeld] = useState<string | null>(null); // a pin tapped or pressed: its tooltip stays until tapped again
+  const [dismissed, setDismissed] = useState<string | null>(null); // Escape hides the tooltip showing now, until the pin changes
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reduce = useReducedMotion();
   const [seen, setSeen] = useState(false); // false until the map has come into view: the countries wait unlit
   const [settled, setSettled] = useState(false); // the arrival sequence is over: switch delays apply from then on
@@ -107,12 +110,13 @@ export function WorldMap() {
     const t = setTimeout(() => setSettled(true), reduce ? 0 : INTRO_STEP * SHOWN.length + 700);
     return () => clearTimeout(t);
   }, [seen, settled, reduce]);
-  useEffect(() => { // Escape closes a held tooltip
-    if (!held) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setHeld(null); setTip(null); } };
+  useEffect(() => { // Escape dismisses any tooltip showing (held, hovered or focused: WCAG 1.4.13), until another pin is chosen
+    const showing = tip ?? held;
+    if (!showing || showing === dismissed) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setHeld(null); setDismissed(showing); } };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [held]);
+  }, [tip, held, dismissed]);
   const profile = useMemo(() => profileWith({ crossBorder: cross }), [cross]);
   const pins = useMemo(() => PINS.map((p) => ({ ...p, v: evaluateOne(p.id, profile) })), [profile]);
   const open = pins.filter((p) => p.v.verdict !== 'closed');
@@ -127,13 +131,24 @@ export function WorldMap() {
     const path = geoPath(proj);
     // A code goes on its country (the original's spot where it has one); where the country is narrower than the code at
     // that height (the Netherlands on a phone) it goes just west of it, on the sea, in a text colour instead of the fill's.
+    const pinXY = PINS.map((p) => proj(p.at)!).concat([proj(HOME_LL)!]);
+    const clear = (x: number, y: number, anchor: 'middle' | 'start' | 'end') => { // the code's box keeps 6 px from every pin shape
+      const x0 = anchor === 'middle' ? x - LABEL_W / 2 : anchor === 'start' ? x : x - LABEL_W, x1 = x0 + LABEL_W;
+      return pinXY.every(([px, py]) => Math.max(x0 - px, 0, px - x1) > 16 || Math.abs(py - y) > 18);
+    };
     const labels = LABEL_AT.map(({ cc, poly }) => {
-      const [x, y] = CODE_AT[cc] ? proj(CODE_AT[cc])! : path.centroid(poly), [left, right] = spanAt(proj, poly, x, y);
-      // too narrow at that height: on the sea beside the country (west; Austria east, where no arc crosses)
-      if (right - left < LABEL_W) return cc === 'AT' ? { cc, x: right + 4, y, inside: false, east: true } : { cc, x: left - 4, y, inside: false, east: false };
-      return { cc, x, y, inside: true, east: false };
+      const [x0, y0] = CODE_AT[cc] ? proj(CODE_AT[cc])! : path.centroid(poly);
+      // where the code would touch a pin (narrow maps: AT under Kaltbrunn, NL beside Vlietdam), try nearby spots first
+      const spots: [number, number][] = [[x0, y0], [x0, y0 + 16], [x0, y0 - 16], [x0 - 18, y0], [x0 + 18, y0], [x0 - 14, y0 + 14], [x0 + 14, y0 + 14]];
+      const fit = spots.find(([x, y]) => { const [l, r] = spanAt(proj, poly, x, y); return r - l >= LABEL_W && clear(x, y, 'middle'); });
+      if (fit) return { cc, x: fit[0], y: fit[1], inside: true, east: false };
+      // too narrow or crowded: on the sea beside the country (west; Austria east, where no arc crosses)
+      const [left, right] = spanAt(proj, poly, x0, y0);
+      if (cc === 'AT') return { cc, x: right + 4, y: y0, inside: false, east: true };
+      const west = { cc, x: left - 4, y: y0, inside: false, east: false };
+      return clear(west.x, y0, 'end') || !clear(right + 4, y0, 'start') ? west : { cc, x: right + 4, y: y0, inside: false, east: true };
     });
-    return { proj, path, labels, home: proj(HOME_LL)! };
+    return { proj, path, labels, home: proj(HOME_LL)!, pinXY };
   }, [w, h]);
   const lit = seen || reduce;
   const bids = (cc: string | undefined) => lit && !!cc && (HOME.includes(cc) || (cross && ABROAD.includes(cc)));
@@ -144,18 +159,31 @@ export function WorldMap() {
     return `${ms}ms`;
   };
   const summary = `${open.length} tenders: ${n.go} ${VERDICT.go.label}, ${n.maybe} ${VERDICT.maybe.label}, ${n.nogo} ${VERDICT.nogo.label}`;
-  const showTip = tip ?? held;
+  const showTip = (tip ?? held) === dismissed ? null : (tip ?? held);
   const tipPin = pins.find((p) => p.id === showTip);
   const tipXY = tipPin && geo ? geo.proj(tipPin.at)! : null;
   const labelsOn = w >= LABELS_FROM;
-  const press = (id: string) => { setHeld((cur) => (cur === id ? null : id)); setTip(null); };
+  const press = (id: string) => { setHeld((cur) => (cur === id ? null : id)); setTip(null); setDismissed(null); };
+  const hover = (id: string | null) => { if (leaveTimer.current) clearTimeout(leaveTimer.current); setTip(id); if (id !== dismissed) setDismissed(null); };
+  // Pointer targets (pass 5): the pin nearest the pointer, within 26 px, so two close pins split the space between them
+  // instead of the later one's circle covering the earlier pin (Hohenau and Kaltbrunn are 18 px apart on a 320 px phone).
+  const nearest = (e: React.PointerEvent | React.MouseEvent) => {
+    if (!geo) return null;
+    const r = e.currentTarget.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    let best: string | null = null, bd = 26;
+    PINS.forEach((p, i) => { const [px, py] = geo.pinXY[i], d = Math.hypot(px - x, py - y); if (d < bd) { bd = d; best = p.id; } });
+    return best;
+  };
 
   return (
     <>
-      <div className="map-frame" onClick={(e) => { if (!(e.target as Element).closest('.pin')) { setHeld(null); setTip(null); } }}>
+      <div className="map-frame">
         <div ref={box} className="map">
           {geo && (
-            <svg className="map-svg" width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="group" aria-label={`Map: you bid in ${names(where)}. ${summary}. Each tender is a pin; focus one for its verdict.`}>
+            <svg className={`map-svg${tip ? ' over-pin' : ''}`} width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="group" aria-label={`Map: you bid in ${names(where)}. ${summary}. Each tender is a pin; focus one for its verdict.`}
+              onPointerMove={(e) => { if (e.pointerType === 'mouse') { const id = nearest(e); if (id !== tip) hover(id); } }}
+              onPointerLeave={(e) => { if (e.pointerType === 'mouse') { if (leaveTimer.current) clearTimeout(leaveTimer.current); leaveTimer.current = setTimeout(() => setTip(null), 160); } }}
+              onClick={(e) => { const id = nearest(e); if (id) press(id); else { setHeld(null); setTip(null); } }}>
               <g>
                 {WORLD.map((f, i) => {
                   const cc = CODE_BY_ID.get(String(f.id));
@@ -173,7 +201,8 @@ export function WorldMap() {
                     {pins.map((p) => {
                       const [x, y] = geo.proj(p.at)!, [hx, hy] = geo.home, dx = x - hx, dy = y - hy, d = Math.hypot(dx, dy) || 1;
                       const cx = (hx + x) / 2 + (dy / d) * d * 0.2, cy = (hy + y) / 2 - (dx / d) * d * 0.2;
-                      return <path key={p.id} className={`arc${p.v.verdict === 'nogo' || p.v.verdict === 'closed' ? ' arc-off' : ''}`} d={`M${hx},${hy} Q${cx},${cy} ${x},${y}`} />;
+                      const d2 = `M${hx},${hy} Q${cx},${cy} ${x},${y}`, off = p.v.verdict === 'nogo' || p.v.verdict === 'closed';
+                      return <g key={p.id}><path className="arc-case" d={d2} /><path className={`arc${off ? ' arc-off' : ''}`} d={d2} /></g>;
                     })}
                   </g>
                   <g transform={`translate(${geo.home[0]},${geo.home[1]})`} aria-hidden="true">
@@ -185,16 +214,16 @@ export function WorldMap() {
                     const [x, y] = geo.proj(p.at)!, v = shapeOf(p.v.verdict), [lx, ly, anchor] = p.lab, on = showTip === p.id;
                     return (
                       <g key={p.id} className={`pin v-${v}${on ? ' on' : ''}`} transform={`translate(${x},${y})`} tabIndex={0} role="button" aria-expanded={held === p.id}
-                        aria-label={`${p.name}: ${verdictLabel(p.v.verdict)}, score ${p.v.score}. ${p.v.title}, ${p.v.buyer}, ${Engine.countryName(p.v.country)}. ${p.v.why}`}
-                        onMouseEnter={() => setTip(p.id)} onMouseLeave={() => setTip(null)} onFocus={() => setTip(p.id)} onBlur={() => setTip(null)}
-                        onClick={() => press(p.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press(p.id); } }}>
+                        aria-label={`${p.name} ${verdictLabel(p.v.verdict)} · ${p.v.score}. ${p.v.title}, ${p.v.buyer}, ${Engine.countryName(p.v.country)}. ${p.v.why}`} /* starts with the visible label (WCAG 2.5.3) */
+                        onFocus={() => hover(p.id)} onBlur={() => setTip(null)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press(p.id); } }}>
                         <circle className="pin-hit" r={22} />
                         <g className="pin-shape" style={reduce ? undefined : { animationDelay: `${600 + i * 80}ms` }}>
                           {v === 'go' ? <circle r={8} /> : v === 'maybe' ? <path d="M0,-9.5 L9.5,7 L-9.5,7Z" /> : <rect x={-7} y={-7} width={14} height={14} rx={1.5} />}
                         </g>
                         {labelsOn && (
                           <text x={lx} y={ly - 6} textAnchor={anchor} className="pin-label" aria-hidden="true">
-                            <tspan className="pin-name">{p.name}</tspan>
+                            <tspan className="pin-name">{p.name}</tspan>{' '}
                             <tspan x={lx} dy={15} className="pin-v">{verdictLabel(p.v.verdict)} · {p.v.score}</tspan>
                           </text>
                         )}
@@ -206,7 +235,8 @@ export function WorldMap() {
             </svg>
           )}
           {tipPin && tipXY && (
-            <div className={`map-tip${tipXY[1] < 140 ? ' below' : ''}`} role="tooltip" style={{ left: Math.min(Math.max(tipXY[0], 125), w - 125), top: tipXY[1] }}>
+            <div className={`map-tip${tipXY[1] < TIP_ROOM ? ' below' : ''}`} role="tooltip" style={{ left: Math.min(Math.max(tipXY[0], 125), w - 125), top: tipXY[1] }}
+              onPointerEnter={() => { if (leaveTimer.current) clearTimeout(leaveTimer.current); }} onPointerLeave={(e) => { if (e.pointerType === 'mouse') setTip(null); }}>
               <p className="tip-b">{tipPin.v.title}</p>
               <p className="tip-s">{tipPin.v.buyer}, {Engine.countryName(tipPin.v.country)}</p>
               <p className={`tip-v v-${shapeOf(tipPin.v.verdict)}`}><VerdictShape verdict={shapeOf(tipPin.v.verdict)} size={9} /><b>{verdictLabel(tipPin.v.verdict)} · {tipPin.v.score}</b></p>

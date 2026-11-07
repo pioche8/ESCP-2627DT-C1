@@ -12,8 +12,9 @@ const STEP = 24, DOT = 2.4, R_LIT = 220, R_HOT = 90, PAD = 16; // the original's
  * never sit between letters. Without a mouse (touch) or under reduced motion there is no lit spot: a spotlight follows a
  * pointer (the original rested half-way across, 30 % down, on top of the step text on a phone).
  */
-export function SpotGrid() {
+export function SpotGrid({ active }: { active: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const redraw = useRef<() => void>(() => {});
   const reduce = useReducedMotion();
   useEffect(() => {
     const cv = ref.current, sec = cv?.parentElement; if (!cv || !sec) return;
@@ -43,13 +44,16 @@ export function SpotGrid() {
       }
     };
     const queue = () => { if (on && !raf) raf = requestAnimationFrame(draw); };
-    const move = (e: MouseEvent) => { if (reduce) return; mouse = [e.clientX, e.clientY]; queue(); };
-    const leave = () => { mouse = null; queue(); };
+    // a mouse only: a touch tap fires compatibility mouse events and no leave, which would park a lit patch on the screen
+    const move = (e: PointerEvent) => { if (reduce || e.pointerType !== 'mouse') return; mouse = [e.clientX, e.clientY]; queue(); };
+    const leave = (e: PointerEvent) => { if (e.pointerType !== 'mouse') return; mouse = null; queue(); };
+    redraw.current = queue;
     const io = new IntersectionObserver(([e]) => { on = e.isIntersecting; queue(); });
     io.observe(sec);
-    sec.addEventListener('mousemove', move); sec.addEventListener('mouseleave', leave);
+    sec.addEventListener('pointermove', move); sec.addEventListener('pointerleave', leave);
     window.addEventListener('scroll', queue, { passive: true }); window.addEventListener('resize', queue);
-    return () => { io.disconnect(); sec.removeEventListener('mousemove', move); sec.removeEventListener('mouseleave', leave); window.removeEventListener('scroll', queue); window.removeEventListener('resize', queue); if (raf) cancelAnimationFrame(raf); };
+    return () => { io.disconnect(); sec.removeEventListener('pointermove', move); sec.removeEventListener('pointerleave', leave); window.removeEventListener('scroll', queue); window.removeEventListener('resize', queue); if (raf) cancelAnimationFrame(raf); };
   }, [reduce]);
+  useEffect(() => { redraw.current(); }, [active]); // the quiet area follows the active step's text
   return <canvas ref={ref} className="how-spot" aria-hidden="true" />;
 }

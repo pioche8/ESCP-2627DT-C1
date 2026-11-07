@@ -47,13 +47,15 @@ Object.keys(T.color.themes).forEach((s) => {
   check(g, 'muted fill against bg (switch off)', t.muted, t.bg, 'ui');
 });
 
-/* ---- the website's map (pass 5, 7 Nov 2026): the shapes it draws on its own fills; text there always sits on a ground-coloured
-   halo or block, so the text pairs above cover it ---- */
+/* ---- the website's map (pass 5, 7 Nov 2026): the shapes it draws on its own fills. Its text sits on a ground-coloured halo
+   or block (pins, "You", the tooltip), or is ground-coloured on the brand fill with a brand halo (the country codes), so the
+   text pairs above cover it ---- */
 {
   const t = T.color.themes[T.color.site], g = T.color.site + ' (site map)';
   check(g, 'pin outline (bg) against a country you bid in (brand fill)', t.bg, t.brand, 'ui');
   VERDICTS.filter((v) => v !== 'check').forEach((v) => check(g, v + ' pin against the sea (surface)', t[v], t.surface, 'ui'));
-  check(g, 'arc dashes (ink) against the sea and other countries', t.ink, t.surface, 'ui');
+  check(g, 'arc dashes (ink, muted toward No-go) against the sea', t.ink, t.surface, 'ui');
+  check(g, 'arc dashes over a country you bid in: their ground-coloured casing against the brand fill', t.bg, t.brand, 'ui');
 }
 
 const w = rows.reduce((a, r) => r.map((c, i) => Math.max(a[i] || 0, String(c).length)), []);

@@ -6,7 +6,7 @@ import { SectorMarquee } from '@/components/ui/SectorMarquee';
 
 /**
  * Five featured sectors, each a photo block with its code and name beneath. The original's accordion is back (pass 5): on
- * hover, focus or tap one strip widens (flex 1 → 3 over 700 ms; on a phone its photo grows taller) and shows its line and
+ * hover, focus or tap one strip widens (flex 1 → 2.2 over 700 ms; on a phone its photo grows taller) and shows its line and
  * the weekly count. Under them, the original's two rows of all 45 divisions drift in opposite directions as plain text.
  */
 export function Sectors() {

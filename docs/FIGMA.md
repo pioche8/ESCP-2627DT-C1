@@ -181,7 +181,7 @@ sets "Status", "Score tile" and "Button" to `VerdictShape` + label, `VerdictTile
   applied on `.screen`, `.vhead`, the tab bar, the action bar, the sheet footer, the toast and the Welcome form.
 - **Motion:** tokens `--ease-*` / `--dur-*` (`design/MOTION.md`): entrance pop 480 ms, sheet 320 ms, the switch →
   re-score morph 700 ms, and count-ups.
-- **Verified:** `tests/declutter-scan.js` (static CSS and rendered DOM), `shared/check-contrast.js` (AA: the app's 46 pairs, the website's 33 since 6 Nov),
+- **Verified:** `tests/declutter-scan.js` (static CSS and rendered DOM), `shared/check-contrast.js` (AA: 52 pairs, the website on the dark scheme plus its map's shapes),
   `tests/smoke.js` (390 × 844, iPhone 13 / SE, dark, light and reduced motion).
 
 ### 2.7 Project structure

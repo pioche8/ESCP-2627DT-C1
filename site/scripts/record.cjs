@@ -43,7 +43,7 @@ async function record(browser, base, { w, h, dsf, touch, name }) {
   await page.goto(base, { waitUntil: 'networkidle' }); await sleep(500);
   const cdp = await ctx.newCDPSession(page);
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'site-rec-'));
-  const frames = []; const t0 = Date.now(); let on = true;
+  const frames = []; const t0 = Date.now(); let on = true, misses = 0;
   const sampler = (async () => {
     let i = 0;
     while (on) {
@@ -51,18 +51,20 @@ async function record(browser, base, { w, h, dsf, touch, name }) {
       try {
         const r = await Promise.race([cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 86, fromSurface: true, optimizeForSpeed: true }), sleep(2000)]);
         if (r && r.data) { const f = path.join(tmp, 'f' + String(i++).padStart(5, '0') + '.jpg'); fs.writeFileSync(f, Buffer.from(r.data, 'base64')); frames.push({ t: Date.now() - t0, f }); }
-      } catch { /* try again */ }
+        else misses++; // a capture that hung past 2 s
+      } catch { misses++; /* mid-navigation: try again, counted */ }
       const left = 40 - (Date.now() - tick); if (left > 0) await sleep(left);
     }
   })();
   const tap = async (sel, nth = 0) => { const el = page.locator(sel).nth(nth); if (touch) await el.tap(); else { await el.hover(); await sleep(250); await el.click(); } };
+  const pin = (i) => page.locator('.pin').nth(i).locator('.pin-shape');
   // 1. hero: the disc drifts (and, with a mouse, follows the pointer); the wordmark's lit letters follow it
   if (!touch) { for (let k = 0; k <= 40; k++) { await page.mouse.move(150 + (w - 300) * (k / 40), 520 + 60 * Math.sin(k / 6)); await sleep(90); } await page.mouse.move(w / 2, 40); }
   await sleep(touch ? 3500 : 1500);
   // 2. the map: fill-in, pins and arcs; a tooltip; cross-border off (only Valdemora flips) and on again
   await glide(page, '#where', 1300, touch ? 0 : -10); await sleep(2600);
-  await tap('.pin', 1); await sleep(1800);
-  if (touch) { const fr = await page.locator('.map-frame').boundingBox(); await page.touchscreen.tap(fr.x + 10, fr.y + fr.height - 10); } else { await page.locator('.pin').nth(5).hover(); }
+  if (touch) await pin(1).tap(); else { await pin(1).hover(); await sleep(250); await pin(1).click(); } await sleep(1800);
+  if (touch) { const fr = await page.locator('.map-frame').boundingBox(); await page.touchscreen.tap(fr.x + 10, fr.y + fr.height - 10); } else { await pin(5).hover(); }
   await sleep(1200);
   await page.locator('.map-panel').scrollIntoViewIfNeeded(); await tap('.map-row'); await sleep(2000);
   await tap('.map-row'); await sleep(1600);
@@ -85,8 +87,10 @@ async function record(browser, base, { w, h, dsf, touch, name }) {
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', path.join(tmp, 'list.txt'), '-c:v', 'libx264', '-preset', 'slow', '-crf', '26',
     '-pix_fmt', 'yuv420p', '-vf', 'scale=' + w * dsf + ':' + h * dsf + ':flags=lanczos', '-r', String(FPS), '-movflags', '+faststart', '-an', mp4], { stdio: 'inherit' });
   fs.rmSync(tmp, { recursive: true, force: true });
-  const mb = fs.statSync(mp4).size / 1048576;
-  console.log(`video  docs/site/${name} · ${(end - frames[0].t) / 1000 | 0} s · ${frames.length} frames · ${mb.toFixed(1)} MB` + (problems.length ? ' · PROBLEMS: ' + problems.join(' | ') : ''));
+  const mb = fs.statSync(mp4).size / 1048576, secs = (end - frames[0].t) / 1000, fps = frames.length / secs;
+  if (fps < 8) problems.push(`only ${fps.toFixed(1)} frames per second were captured (at least 8 needed for a smooth video)`);
+  if (misses > frames.length / 10) problems.push(`${misses} captures failed or hung (over a tenth of ${frames.length})`);
+  console.log(`video  docs/site/${name} · ${secs | 0} s · ${frames.length} frames (${fps.toFixed(1)}/s, ${misses} missed) · ${mb.toFixed(1)} MB` + (problems.length ? ' · PROBLEMS: ' + problems.join(' | ') : ''));
   return problems.length === 0 && mb < 10;
 }
 
@@ -96,12 +100,14 @@ async function strip(browser, before, after) {
   const shots = [];
   for (const [label, url] of [['before', before], ['after', after]]) {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
-    const page = await ctx.newPage(); await page.goto(url, { waitUntil: 'networkidle' }); await sleep(800);
+    const page = await ctx.newPage(); const errs = []; page.on('pageerror', (e) => errs.push(e.message)); page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+    await page.goto(url, { waitUntil: 'networkidle' }); await sleep(800);
     for (const id of ['top', 'where', 'app']) {
       await page.evaluate((id) => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById(id).scrollIntoView(); }, id);
       await sleep(id === 'where' ? 2600 : 900);
       const f = path.join(tmp, `${id}-${label}.png`); await page.screenshot({ path: f }); shots.push(f);
     }
+    if (label === 'after' && errs.length) throw new Error('console errors on the site while making the strip: ' + errs.join(' | '));
     await ctx.close();
   }
   const png = path.join(DOCS, 'before-after.png'), jpg = path.join(DOCS, 'before-after.jpg');
