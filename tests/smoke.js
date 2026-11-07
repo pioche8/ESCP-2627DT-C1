@@ -234,9 +234,10 @@ async function run(scheme, browser, step) {
   await page.waitForSelector('.co-head');
   check(await page.locator('.co-head img').count() === 0, 'no photo behind the Company title');
   check((await text('#co-tiles')).replace(/\s+/g, ' ') === '1 Go 2 Maybe 3 No-go', 'counts as plain text "1 Go 2 Maybe 3 No-go"');
-  const hint = (await page.locator('[data-hint="cert:ISO 27001"]').innerText()).replace(/\s+/g, ' '); // the arrow is joined to the name by a no-break space
+  const hintText = (k) => page.locator('[data-hint="' + k + '"]').evaluate((el) => el.textContent.replace(/\s+/g, ' ').trim()); // textContent: WebKit's innerText drops the space at a soft line break
+  const hint = await hintText('cert:ISO 27001');
   check(hint.includes('Turn on → Landkreis Hohenau becomes Go'), 'impact hint before toggling: ' + hint);
-  check((await page.locator('[data-hint="cert:VCA"]').innerText()).includes('Gemeente Vlietdam becomes Maybe'), 'VCA hint: Vlietdam becomes Maybe');
+  check((await hintText('cert:VCA')).includes('Gemeente Vlietdam becomes Maybe'), 'VCA hint: Vlietdam becomes Maybe');
   check(await page.locator('[role="switch"][data-lang]').count() === 5, 'bid languages are rows with switches');
   const split = await page.evaluate(() => Array.from(document.querySelectorAll('.hint .status')).filter((s) => s.getClientRects().length).filter((s) => {
     const a = s.querySelector('.shape').getBoundingClientRect(), b = s.querySelector('b').getBoundingClientRect();
@@ -269,8 +270,8 @@ async function run(scheme, browser, step) {
   check(await css('#rescore .rescore-score .to', 'color') === rgb(await token('--c-go')) && await css('[data-hint="cert:ISO 27001"]', 'color') === rgb(await token('--c-muted')), 'colour means a verdict: the new score in the Go colour, the hint text muted (the verdict in it is shape + word)');
   check(await page.locator('button[data-cert="ISO 27001"][aria-checked="true"]').count() === 1, 'switch is on (role=switch, aria-checked)');
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company counts move to 2 : 2 : 2');
-  check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
-  const isoHint = (await page.locator('[data-hint="cert:ISO 27001"]').innerText()).replace(/\s+/g, ' ');
+  check((await hintText('cert:ISO 27001')).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
+  const isoHint = await hintText('cert:ISO 27001');
   // rendered lines of the hint (per-character line boxes): the score stays whole and no line ends on "·" or "→"
   const hintLines = await page.evaluate(() => { const el = document.querySelector('[data-hint="cert:ISO 27001"]'), lines = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { for (let i = 0; i < n.length; i++) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const b = r.getClientRects()[0]; if (!b) continue; let l = lines.find((x) => Math.abs(x.top - b.top) < 4); if (!l) lines.push(l = { top: b.top, t: '' }); l.t += n.data[i]; } } return lines.sort((x, y) => x.top - y.top).map((x) => x.t.trim()); });
   check(isoHint.includes('25 → 100') && hintLines.some((l) => l.includes('25 → 100')) && hintLines.every((l) => !/[·→]$/.test(l)), 'the hint at the switch carries the score too, whole, and no line ends on "·" or "→": ' + JSON.stringify(hintLines));
@@ -324,7 +325,7 @@ async function run(scheme, browser, step) {
     while ((n = w.nextNode())) { for (let i = 0; i < n.length; i++) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const b = r.getClientRects()[0]; if (!b) continue; let l = lines.find((x) => Math.abs(x.top - b.top) < 4); if (!l) lines.push(l = { top: b.top, t: '' }); l.t += n.data[i]; } }
     return [el.getAttribute('data-hint'), lines.sort((x, y) => x.top - y.top).map((x) => x.t.replace(/\s+/g, ' ').trim())];
   }));
-  const hint9001 = () => page.locator('[data-hint="cert:ISO 9001"]').innerText().then((t) => t.replace(/\s+/g, ' '));
+  const hint9001 = () => hintText('cert:ISO 9001');
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.click('button[data-cert="ISO 9001"]');
   await page.waitForFunction(() => document.querySelector('button[data-cert="ISO 9001"]').getAttribute('aria-checked') === 'false');
@@ -355,7 +356,8 @@ async function run(scheme, browser, step) {
   await visit.mouse.click(isoFirst.x + isoFirst.width / 2, isoFirst.y + isoFirst.height / 2);
   await visit.waitForTimeout(250);
   const firstTap = await visit.evaluate((f) => { const s = document.querySelector('button[data-cert="ISO 27001"]').getBoundingClientRect(), hs = document.querySelector('[data-hint="cert:ISO 27001"]'), h = hs.getBoundingClientRect(), c = document.querySelector('#rescore .rescore-top'), cr = c ? c.getBoundingClientRect() : { top: -1, bottom: -1 }; return { sw: [Math.round(s.top), Math.round(s.bottom)], hint: Math.round(h.bottom), score: hs.textContent.indexOf('25 → 100') >= 0, card: cr.top >= 0 && cr.bottom <= f, on: document.querySelector('button[data-cert="ISO 27001"]').getAttribute('aria-checked') === 'true' }; }, floor1);
-  check(firstTap.on && firstTap.sw[0] >= 0 && firstTap.sw[1] <= floor1 && (firstTap.card || (firstTap.score && firstTap.hint <= floor1)), 'the first change of a visit, tapped just above the tab bar with scroll anchoring off: the switch stays in view and the score is seen (' + JSON.stringify(firstTap) + ', tab bar at ' + Math.round(floor1) + ')');
+  firstTap.y0 = Math.round(isoFirst.y);
+  check(firstTap.on && firstTap.sw[0] >= 0 && firstTap.sw[1] <= floor1 && (firstTap.card ? Math.abs(firstTap.sw[0] - firstTap.y0) <= 1 : firstTap.score && firstTap.hint <= floor1), 'the first change of a visit, tapped just above the tab bar with scroll anchoring off: the switch stays where the finger left it while the card is in view, and the score is seen (' + JSON.stringify(firstTap) + ', tab bar at ' + Math.round(floor1) + ')');
   await visit.waitForTimeout(800);
   await visit.close();
   await page.click('button[data-cert="ISO 27001"]'); // and on again here, so this page and the stored state agree
@@ -504,7 +506,7 @@ async function run(scheme, browser, step) {
   check(page.url().endsWith('#/bids'), 'deep link #/insights: Back lands on Bids');
   await load('', '#/company');
   await page.waitForSelector('.co-head');
-  check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Landkreis Hohenau becomes Maybe'), 'without the answer the hint says Maybe');
+  check((await page.locator('[data-hint="cert:ISO 27001"]').evaluate((el) => el.textContent.replace(/\s+/g, ' '))).includes('Landkreis Hohenau becomes Maybe'), 'without the answer the hint says Maybe');
   await page.click('button[data-cert="ISO 27001"]');
   await page.waitForSelector('.rescore[data-rescore]');
   check((await page.locator('#rescore .sr-only').innerText()).startsWith('Landkreis Hohenau: No-go → Maybe'), 'ISO 27001 alone: re-score card says No-go → Maybe');

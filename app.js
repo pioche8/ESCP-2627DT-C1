@@ -757,6 +757,7 @@
   }
   // Apply a profile change and re-score live, without re-rendering (so switches and counts animate).
   function applyLever(lever, mutate, fromEl) {
+    var at = fromEl && fromEl.getBoundingClientRect ? fromEl.getBoundingClientRect() : null; // where the finger is
     var before = E.verdicts(D.TENDERS, S.profile, TODAY, S.overrides);
     mutate(S.profile); save();
     var changes = E.diff(before, E.verdicts(D.TENDERS, S.profile, TODAY, S.overrides)).filter(function (c) { return !S.skipped[c.tenderId]; });
@@ -781,6 +782,12 @@
       mountRescore(fromEl);
     }, reduceMotion ? 0 : 60);
     paintHints();
+    // Keep the control just tapped where the finger left it, before the next frame: a hint that gains or loses a line
+    // re-centres the control in its row, and Safari has no scroll anchoring to undo that (pass 5).
+    if (at && document.body.contains(fromEl)) {
+      var now = fromEl.getBoundingClientRect();
+      if (Math.abs(now.top - at.top) >= 1) window.scrollBy(0, now.top - at.top);
+    }
   }
   // Re-score card = one object changing shape (design/MOTION.md rule 2): the card grows out of the control that changed
   // (FLIP, 700 ms --ease-morph) while its contents fade in over the second half, and a faint dashed ghost stays on the
