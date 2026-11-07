@@ -2,10 +2,12 @@ import tokens from '@/generated/tokens';
 
 export type VerdictKey = 'go' | 'maybe' | 'nogo' | 'check';
 export const VERDICT = tokens.verdict;
+/** The site's colours: the dark scheme of the shared token set. Text on a verdict fill is always `bg`. */
+export const C = tokens.color.themes[tokens.color.site];
 
-/** ● Go · ▲ Maybe · ■ No-go · ◆ Needs your check. Shape and label always travel with the colour. */
-export function VerdictShape({ verdict, size = 8, color = 'currentColor', className = '' }: { verdict: VerdictKey; size?: number; color?: string; className?: string }) {
-  const base: React.CSSProperties = { display: 'inline-block', flex: 'none', width: size, height: size, background: color };
+/** ● Go · ▲ Maybe · ■ No-go · ◆ Needs your check. The shape always travels with the word. Colour comes from the parent's --v. */
+export function VerdictShape({ verdict, size = 8, color, className = '' }: { verdict: VerdictKey; size?: number; color?: string; className?: string }) {
+  const base: React.CSSProperties = { display: 'inline-block', flex: 'none', width: size, height: size, background: color ?? 'var(--v, currentColor)' };
   const style: React.CSSProperties =
     verdict === 'go' ? { ...base, borderRadius: '50%' }
     : verdict === 'maybe' ? { ...base, width: Math.round(size * 1.1), clipPath: tokens.verdict.maybe.clip }
