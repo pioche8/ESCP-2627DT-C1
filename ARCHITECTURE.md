@@ -67,13 +67,13 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 | `#/t/:id/skip` | `detail` + `sub: skip` | `skipSheet()` | `skipConfirm()` → `skipped`, back to the Feed |
 | `#/bids` | `bids` | `bids()`, `bidCard()`, `insightsLink()` | `Engine.evaluate`, `Insights.summary` |
 | `#/insights` | `insights` | `insightsScreen()` | `Insights.summary` (no engine call) |
-| `#/company` | `company` | `company()`, `rescoreCard()`, `hints()` | every lever → `applyLever()` → `Engine.verdicts` + `Engine.diff`; hints → `Engine.whatIf` |
+| `#/company` | `company` | `company()`, `rescoreCard()`, `hints()`, `mountRescore()` | every lever → `applyLever()` → `Engine.verdicts` + `Engine.diff`; hints → `Engine.whatIf` |
 | `#/settings`, `#/about` | `settings` | `settings()` | Reset writes a fresh state |
 | anything else | `notfound` | `notFound()` | |
 
 - **Onboarding guard:** until `onboarded` is true, every route except Welcome, Company and Settings (or `#/about`) is replaced by `#/welcome/1`.
 - **Sheets are history entries.** In-app Back, closing a sheet and Skip go *back* through a small stack (`backTo()`) instead of stacking new entries; Escape and the scrim close a sheet to its parent tender; while a sheet is open the screen and the tab bar are `inert`.
-- **Re-renders are cheap and local:** a lever on Company re-scores all six tenders in the engine and re-renders the screen; same-screen re-renders do not replay entrances. The card → tender morph uses the View Transitions API when the browser has it and a plain hash change otherwise.
+- **Re-renders are cheap and local:** a lever on Company re-scores all six tenders in the engine and updates the screen in place (the switches, the counts, the hints and the re-score card, which shows the score from `Engine.diff`), so they animate. The control just tapped stays where the finger left it, and the card is brought back into view only when that control stays in view. Other same-screen re-renders do not replay entrances. A toast belongs to the screen that raised it: `render()` removes it when the screen changes, and a sheet removes the one behind it. The card → tender morph uses the View Transitions API when the browser has it and a plain hash change otherwise.
 
 ## 3. State
 

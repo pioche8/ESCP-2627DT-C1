@@ -96,7 +96,7 @@ Open `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` (`?demo=fast` a
 2. Feed: "1 Go · 2 Maybe · 3 No-go, read 777 pages in 4 languages" (5 s)
 3. Open the **Go** tender → the qualification check → tap a line → original German sentence + translation + page (15 s)
 4. Back, open **Landkreis Hohenau (No-go)**: missing ISO 27001 plus an unclear "comparable qualification" (?) line → sheet → "We meet it" (15 s)
-5. **Company** tab → toggle ISO 27001 → green banner "Hohenau: No-go → Go" (10 s). *This is the live code, not a mock.*
+5. **Company** tab → toggle ISO 27001 → the re-score card "Landkreis Hohenau · 25 → 100 · No-go → Go" grows out of the switch, the score counting up (10 s). *This is the live code, not a mock.*
 6. "Ask this tender" → "Can we subcontract?" → answer with page (10 s)
 7. Skip the Dutch libraries tender with "Missing a certificate" → Bids (10 s)
 

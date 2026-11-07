@@ -510,8 +510,10 @@ async function run(scheme, browser, step) {
   await page.click('button[data-cert="ISO 27001"]');
   await page.waitForSelector('.rescore[data-rescore]');
   check((await page.locator('#rescore .sr-only').innerText()).startsWith('Landkreis Hohenau: No-go → Maybe'), 'ISO 27001 alone: re-score card says No-go → Maybe');
+  await page.waitForFunction(() => (document.querySelector('#rescore .rescore-score .to') || {}).textContent === '90', null, { timeout: 3000 }).catch(() => {});
+  await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
   await page.evaluate(() => window.scrollTo(0, 0));
-  await shot('company-iso-alone');
+  await shot('company-iso-alone'); // the count settled at 90, so the frame shows the score, not a number on the way
 
   // ?demo=fast: the simulated waits shrink (tender reading in about 300 ms) and nothing else changes
   await page.goto(url('demo=reset,fast'));

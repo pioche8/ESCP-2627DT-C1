@@ -7,7 +7,7 @@ ESCP Digital Transformation (MG34) · Digital Product Design · Group C · Works
 Team: <!-- TEAM NAMES -->[names] · GitHub collaborators: `pioche8`, `Astridheyerdahldel`, `WilliamDMJ`, `diegoluh1508`, `iidir`, `benediktkruse-cpu` · Lecturer: `@drdml`
 
 ## Live now
-Sat 7 Nov 2026 (pass 4). The app is on GitHub Pages, served from `main`. After every Pages deploy, the `post-deploy` workflow compares the served files with `main` byte for byte and runs the smoke test against the live URL on GitHub's runner (Actions → post-deploy). The run IDs of the latest check are in [`docs/reports/2026-11-07-pass-4.md`](docs/reports/2026-11-07-pass-4.md#live-now).
+Sun 8 Nov 2026 (pass 5). The app is on GitHub Pages, served from `main`. After every Pages deploy, the `post-deploy` workflow compares the served files with `main` byte for byte and runs the smoke test against the live URL on GitHub's runner (Actions → post-deploy). The run IDs of the latest check are in [`docs/reports/2026-11-08-pass-5.md`](docs/reports/2026-11-08-pass-5.md#live-now).
 
 | Link | What it is |
 |---|---|
@@ -27,6 +27,9 @@ What changed in the live app since the 5 Nov workshop (all buyers, tenders and p
 - **6 Nov:** Add to Home Screen is set up to give an app icon and a full-screen launch that starts the demo from a clean state (no offline copy). Not yet tried on a real iPhone: Tuesday's rehearsal checks it.
 - **6 Nov:** Settings → Demo → "Copy test-session log", for a moderated test on the phone; nothing is sent.
 - **6 Nov:** once a requirement is answered, "We don't meet it" fits its button, and the Feed's filter tabs fit on a 320 px phone.
+- **7 Nov:** a message at the bottom of the screen ("Answer saved · Undo", "Saved to Bids · View") stays on the screen that raised it, so it no longer sits under the next screen's controls. On an unclear line the two answers are filled in the ◆ check colour at the same width, and a closed tender's score "0" is readable in light mode.
+- **7 Nov:** a tender opens on its proof: the qualification check right under the title, then the summary, the questions and Competition, with the photo at the end. Each line's page reference is in the brand colour.
+- **8 Nov:** the card on Company shows the score ("Landkreis Hohenau · 25 → 100", counting up). The hint under each switch names the verdict with its shape and word, and carries the score once the switch moves a tender up. The switch just tapped stays where the finger left it.
 
 The demo numbers did not move. The website's changes since the workshop (the decluttered look with the original 3 Nov motion and map, the five-tab phone demo) go online with Vercel; until then [`docs/site/`](docs/site/) has recordings of it.
 
