@@ -5,8 +5,8 @@
  *   node tests/ui-frames.js            → rewrites the eleven frames below in docs/ui/ (390×844 at 2×)
  *   node tests/ui-frames.js <folder>   → writes them to <folder> instead
  *
- * The smoke test's own screenshots (node tests/smoke.js <folder>) cover every other frame in UI_DESIGN.md §6, but its
- * path leaves a "Saved to Bids" or "Answer saved" toast on these screens. Here each frame gets a fresh page: the stored
+ * The smoke test's own screenshots (node tests/smoke.js <folder>) cover every other frame in UI_DESIGN.md §6; these need
+ * a state of their own (until 7 Nov its path also left a toast on them). Here each frame gets a fresh page: the stored
  * tenderscout.v2 is seeded before load (load() merges it onto fresh(), so a partial state is enough), the route opens
  * with ?demo=fast&theme=<scheme>, and the shot waits until no toast is showing. Nothing in the app changes for it.
  */
