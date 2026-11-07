@@ -14,7 +14,7 @@ The skeleton plane of Garrett's *Elements of User Experience*: where things sit 
   - the **tab bar** (60 px, full width, Feed · Bids · Company · Profile · Settings, icon + label, the active tab in brand colour) on those five screens and on Win/loss insights (with Bids active), after onboarding;
   - the **action bar** (52 px buttons; one primary action, on the right and twice as wide as the secondary one) on Check your profile, the tender, and Company before onboarding.
 - **Sheets** rise from the bottom over a scrim; their buttons sit in the sheet's own footer, in the same thumb zone.
-- **Toast:** a 52 px strip at the bottom with one 44 px action (Undo or View).
+- **Toast:** a 52 px strip at the bottom with one 44 px action (Undo or View). It belongs to the screen that raised it and goes at once when you leave that screen or open a sheet over it (Skip's toast belongs to the Feed, where Skip lands), so it never covers a control on the next screen and its Undo never acts behind a sheet.
 - **Overlay:** the morning notification covers the whole app, bars included, once a day; it has no route and no bar of its own, only its ✕.
 - Every tap target is 44 px or more, and every verdict is a shape and a word.
 
@@ -312,7 +312,8 @@ How Back, Escape and the scrim close sheets, deep links and focus after a screen
 | Control | Size | Used for |
 |---|---|---|
 | Primary button | 52 px, brand fill | Draft my profile, Looks right, Save to Bids, We meet it (once answered), Skip tender, Open Feed, Restart |
-| Secondary button | 52 px (Restore 44 px), muted fill | Skip, Edit, Cancel, Restore, In Bids · …, the two answers while a line is unresolved, Edit on Company, Show this morning’s notification |
+| Secondary button | 52 px (Restore 44 px), muted fill | Skip, Edit, Cancel, Restore, In Bids · …, We don't meet it (once answered), Edit on Company, Show this morning’s notification |
+| Answer pair | 52 px, check fill, equal width | We meet it / We don't meet it while a ◆ line is unresolved: the owner's decision, so neither looks preselected or disabled |
 | Icon button | 44 × 44 | ‹, ◐, ⓘ, ✕ on the morning notification |
 | Text button | 44 px tall | Undo, Show all, Check →, see in Bids, toast actions |
 | Text tabs (radio group) | 44 px tall | Feed filters, Bids stages, Appearance |

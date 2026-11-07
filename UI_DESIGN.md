@@ -85,7 +85,7 @@ Values from [`shared/tokens.json`](shared/tokens.json) (version 2026-11-04). The
 | go | `#13724B` | `#5ED69C` | ● Go, ● Meets |
 | maybe | `#8A5300` | `#F7C25E` | ▲ Maybe, ▲ Risk |
 | nogo | `#B23720` | `#FF8B80` | ■ No-go, ■ Fails, Reset demo |
-| check | `#4B31C2` | `#B3A5FF` | ◆ Needs your check |
+| check | `#4B31C2` | `#B3A5FF` | ◆ Needs your check; the two answer buttons while a line is unresolved |
 
 Every pair in use passes WCAG AA in both schemes (`node shared/check-contrast.js`).
 
@@ -122,7 +122,7 @@ Sizes and where each control is used: [`SKELETON.md`](SKELETON.md) §5.
 - **Status line:** shape + word in the verdict colour, then "· kind" in muted text ("■ Fails · Knock-out").
 - **Requirement line:** status line, the requirement, our check (or "58% sure. Only you can answer."), the citation in plain text, and "Check →" in brand colour on unclear lines.
 - **Quote block:** "Original (German) · document, page, section", the sentence with the decisive phrase underlined and bold in the status colour, then "Translation".
-- **Buttons:** primary = brand fill with background-coloured text; secondary = muted fill with background-coloured text; disabled = surface fill with muted text; text buttons in brand colour, underlined where they are links.
+- **Buttons:** primary = brand fill with background-coloured text; secondary = muted fill with background-coloured text; the unresolved answer pair = check fill with background-coloured text, equal width; disabled = surface fill with muted text; text buttons in brand colour, underlined where they are links.
 - **Text tabs:** filters, Bids stages, Appearance; the selected one is underlined in brand colour.
 - **Switch:** brand when on; **stepper** and **money field:** background-coloured boxes on the surface.
 - **Sheet:** a surface panel from the bottom over a scrim, the parent screen still visible.
@@ -143,5 +143,5 @@ Sizes and where each control is used: [`SKELETON.md`](SKELETON.md) §5.
 
 - The storyboard frames come from `node tests/demo-record.js` (it rewrites `docs/demo/`).
 - Most other frames are copies of what `node tests/smoke.js <folder>` writes (`<scheme>-NN-<name>.png`): `docs/ui/reading.png` ← `dark-02-reading`, `check-profile` ← `dark-03-check-profile`, `tender-loading` ← `dark-05-detail-loading`, `tender-go` ← `dark-06-detail-go`, `tender-nogo` ← `dark-08-detail-nogo`, `skip-sheet` ← `dark-15-skip-sheet`, `tender-saved` ← `dark-17-saved`, `tender-maybe` ← `dark-24-detail-maybe`, `tender-closed` ← `dark-25-detail-closed`, `feed-closed` ← `dark-26-feed-closed`, `feed-offline` ← `dark-27-feed-offline`, `not-found` ← `dark-28-not-found`, `bids-empty` ← `dark-29-bids-empty`, `company-iso-alone` ← `dark-30-company-iso-alone`, `morning-notification` ← `dark-31-morning-notification`; `light-feed` ← `light-04-feed`, `light-tender-nogo` ← `light-08-detail-nogo`, `light-sheet-check` ← `light-10-sheet-check`.
-- The smoke path leaves a toast on Bids, Win/loss, Profile, Settings, the Company flip and the Competition frame, so those eleven come from `node tests/ui-frames.js` (6 Nov; it rewrites them in `docs/ui/`): a fresh page per frame at 390 × 844 (2×) with `?demo=fast&theme=<scheme>`, `tenderscout.v2` seeded before load (onboarded, plus the state the frame needs: Stadt Ellerbach in Bidding and the Dutch libraries skipped with "Missing a certificate" for Bids; the answer on Hohenau's unclear line for the Company flip, then a tap on ISO 27001), and the shot taken once any toast is gone: `bids-stages`, `light-bids`, `insights`, `insights-full` (full page), `light-insights`, `profile`, `light-profile`, `about` (the Settings tab), `light-settings`, `light-company-rescore`, `tender-competition` (Hohenau, scrolled to Competition).
+- Eleven frames need a state of their own (Bids stages and a skipped tender, the Company flip after the answer, Competition in view; until 7 Nov the smoke path also left a toast on them), so they come from `node tests/ui-frames.js` (6 Nov; it rewrites them in `docs/ui/`): a fresh page per frame at 390 × 844 (2×) with `?demo=fast&theme=<scheme>`, `tenderscout.v2` seeded before load (onboarded, plus the state the frame needs: Stadt Ellerbach in Bidding and the Dutch libraries skipped with "Missing a certificate" for Bids; the answer on Hohenau's unclear line for the Company flip, then a tap on ISO 27001), and the shot taken once any toast is gone: `bids-stages`, `light-bids`, `insights`, `insights-full` (full page), `light-insights`, `profile`, `light-profile`, `about` (the Settings tab), `light-settings`, `light-company-rescore`, `tender-competition` (Hohenau, scrolled to Competition).
 - A change that alters how a screen looks updates its screenshot and its wireframe in [`SKELETON.md`](SKELETON.md) in the same commit.

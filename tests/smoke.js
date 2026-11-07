@@ -205,7 +205,8 @@ async function run(scheme, browser, step) {
   await page.click(reqSel); await waitSheet(true);
   check(await page.locator('.sheet .btn-check').count() === 2, 'unresolved sheet: both answers equal weight, none preselected');
   const pairW = await page.locator('.sheet .row-btns .btn').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().width)));
-  check(pairW.length === 2 && Math.abs(pairW[0] - pairW[1]) <= 1 && await css('.sheet .row-btns .btn', 'backgroundColor') === rgb(await token('--c-muted')), 'unresolved answers are the same width and both secondary (muted fill): ' + pairW.join(' / '));
+  const pairBg = await page.locator('.sheet .row-btns .btn').evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
+  check(pairW.length === 2 && Math.abs(pairW[0] - pairW[1]) <= 1 && pairBg.every((c) => c === pairBg[0]) && pairBg[0] === rgb(await token('--c-check')), 'unresolved answers are the same width and both filled in the check colour (none looks disabled): ' + pairW.join(' / '));
   check((await text('.sheet .confidence')).includes('58%'), 'confidence readout 58%');
   check((await text('.sheet .sheet-top')).includes('Needs your check') && (await text('.sheet .sheet-top')).includes('Simulated AI'), 'status and "Simulated AI" as plain text in the sheet');
   await scan('sheet-check'); await shot('sheet-check');
@@ -224,6 +225,7 @@ async function run(scheme, browser, step) {
   // 09 Company: ISO 27001 → Hohenau No-go → Go (BRIEF step 5, the hero moment)
   await page.click('button[data-act="back"]');
   await page.waitForSelector('.feed-list');
+  check(await page.locator('#toast-root .toast').count() === 0, 'toast: the answer toast stays on its tender, gone from the Feed at once (never over the next screen)');
   await page.evaluate(() => window.scrollTo(0, 300)); await page.waitForTimeout(100); // leave the Feed scrolled, to check it is remembered
   await page.click('.tabbar a[href="#/company"]');
   await page.waitForSelector('.co-head');
@@ -284,6 +286,7 @@ async function run(scheme, browser, step) {
   await shot('saved');
   await page.click('button[data-act="back"]');
   await page.waitForSelector('.tabbar');
+  check(await page.locator('#toast-root .toast').count() === 0, 'toast: "Saved to Bids" stays on its tender (it cannot cover Restore on Bids)');
   check((await text('.feed-list')).includes('Saved'), 'the saved card carries a plain "Saved" marker');
   await page.click('.tabbar a[href="#/bids"]');
   await page.waitForSelector('.bids-head');
@@ -396,6 +399,13 @@ async function run(scheme, browser, step) {
   await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
   const readMs = Date.now() - t0;
   check(readMs < 1200 && await page.locator('.vhead .ai').count() === 1, 'fast mode: the tender is read in ' + readMs + ' ms with the "Simulated AI" label in place');
+  // A sheet is modal: a toast raised on the tender behind it goes when a sheet opens
+  await page.click('button[data-act="save"]');
+  await page.waitForSelector('#toast-root .toast');
+  await page.click('a.req >> nth=0');
+  await waitSheet(true);
+  check(await page.locator('#toast-root .toast').count() === 0, 'toast: opening a sheet removes the toast behind it (its Undo would act outside the sheet)');
+  await page.keyboard.press('Escape'); await waitSheet(false);
 
   // iPhone home-screen insets (viewport-fit=cover, 47 px top / 34 px bottom): the top inset is applied once
   const inset = await ctx.newPage();

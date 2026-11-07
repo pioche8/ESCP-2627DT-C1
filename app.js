@@ -965,12 +965,17 @@
   function closeSheet() { var r = parse(); if (r.sub) backTo('#/t/' + r.id, 1); }
 
   var curKey = null, scrollPos = {}, firstRender = true;
+  // One key per screen: a tender's sheets share its key, so a toast raised in a sheet stays on the tender it closes to.
+  function screenKey(r) { return r.name === 'detail' ? 'detail:' + r.id : r.name + (r.step ? ':' + r.step : ''); }
   function render(force) {
     if (crashed) return; // the error screen stays until Restart
     var r = parse();
     if (!S.onboarded && ['onb', 'company', 'settings'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
-    var key = r.name === 'detail' ? 'detail:' + r.id : r.name + (r.step ? ':' + r.step : '');
+    var key = screenKey(r);
     var isNew = key !== curKey;
+    // A toast belongs to the screen that raised it (pass 5): leaving that screen removes it at once, so an Undo can never
+    // sit over a control on the next screen (the ISO 27001 switch in demo step 5, Restore on Bids).
+    if (isNew && toastScope && toastScope !== key) hideToast(true);
     if (force || dirty || isNew) {
       if (curKey && isNew) scrollPos[curKey] = window.scrollY;
       var html;
@@ -1031,6 +1036,7 @@
     var t = tender(r.id);
     var html = t ? (r.sub.kind === 'req' ? reqSheet(t, r.sub.id) : skipSheet(t)) : null;
     if (!html) { replaceTo(t ? '#/t/' + r.id : '#/feed'); return; }
+    hideToast(true); // a sheet is modal: a toast raised on the screen behind it goes (its Undo would act outside the sheet)
     clearTimeout(sheetTimer);
     if (!sheetKey) lastFocus = document.activeElement;
     sheetKey = want;
@@ -1054,21 +1060,24 @@
   }
 
   // ---------- toast ----------
-  var toastTimer = null, toastFn = null;
-  function toast(msg, action) {
+  var toastTimer = null, toastFn = null, toastScope = null;
+  // scope: the screen key the toast belongs to (default: the screen showing now; Skip passes 'feed', where it lands).
+  function toast(msg, action, scope) {
     clearTimeout(toastTimer);
     toastFn = action ? action.fn : null;
+    toastScope = scope || curKey;
     $toast.innerHTML = '<div class="toast"><span class="msg">' + esc(msg) + '</span>' +
       (action ? '<button type="button" data-act="toast-action">' + esc(action.label) + '</button>' : '') + '</div>';
     var el = $toast.firstChild;
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('show'); }); });
     toastTimer = setTimeout(hideToast, 4000);
   }
-  function hideToast() {
+  function hideToast(now) {
+    clearTimeout(toastTimer); toastScope = null; toastFn = null;
     var el = $toast.firstChild; if (!el) return;
+    if (now) { $toast.removeChild(el); return; } // the screen changed: gone at once, no fade over the new screen
     el.classList.remove('show');
     setTimeout(function () { if (el.parentNode === $toast) $toast.removeChild(el); }, reduceMotion ? 0 : 250);
-    toastFn = null;
   }
 
   // ---------- actions ----------
@@ -1093,7 +1102,7 @@
     backTo('#/feed', 2);
     toast(reasons.length ? 'Skipped. Reason saved.' : 'Skipped.', { label: 'Undo', fn: function () {
       delete S.skipped[id]; if (prevSaved) S.saved[id] = prevSaved; logEvent('undo', id, { d: !!prevSaved }); render(true);
-    } });
+    } }, 'feed');
   }
   function restore(id) {
     delete S.skipped[id]; S.saved[id] = 'Deciding'; enteringId = id; logEvent('restore', id); render(true);

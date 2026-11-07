@@ -82,7 +82,7 @@ Any line read with confidence under 0.7 is **Needs your check** first, whatever 
 | Feed pages line | "Thu 5 Nov · read 777 pages in 4 languages · Simulated AI" | `app.js` from `data.js` (sum of `pages`, distinct `language`, `DEMO_TODAY`) | Engine-style count over AI-read data | The real count of documents read overnight |
 | Unlock hints (Company) | "Turn on → Gemeente Vlietdam becomes Maybe", "Unlocked Landkreis Hohenau" | `app.js` on `engine.js` `whatIf` | Engine | Nothing new |
 | Re-score card | "Landkreis Hohenau · No-go → Maybe · just now"; "Change anything below / Every tender re-scores at once."; "Re-scored 6 tenders. No verdict changed." | `app.js` on `engine.js` `diff` | Engine (change), static (frame) | Nothing new |
-| Toasts | "Answer saved · now No-go" (Undo), "Saved to Bids" (View), "Skipped. Reason saved." (Undo), "Restored to Deciding" | `app.js` | Static on engine output | Nothing new |
+| Toasts | "Answer saved · now No-go" (Undo), "Saved to Bids" (View), "Skipped. Reason saved." (Undo), "Restored to Deciding"; each goes at once when you leave the screen that raised it or open a sheet over it | `app.js` | Static on engine output | Nothing new |
 | Effort estimate | computed (hours), **not shown** since the 4 Nov declutter (item 59) | `engine.js` `evaluate().effortHours` | Engine (labelled unvalidated heuristic) | Evidence from interviews before it is ever shown |
 
 ## 4. Company profile fields

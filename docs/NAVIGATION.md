@@ -105,7 +105,7 @@ Morning notification or open the app → Feed (the counts are the filter tabs) �
 
 Detail → the ◆ "Needs your check" line sorts right after any fails → tap → sheet shows the original sentence, translation and page → "We meet it" → the sheet closes, the verdict recalculates, and a toast says "Answer saved · now …" with Undo.
 - **Leave without answering:** Back, Escape or a tap on the scrim close the sheet to the tender. Proof: smoke `Back closes the sheet to the detail`, `Escape closes the sheet` and `scrim tap closes the sheet`.
-- **Change your mind:** Undo in the toast, or "Undo" next to "You answered" on the sheet. Not locked by a test.
+- **Change your mind:** Undo in the toast while you are still on the tender, or "Undo" next to "You answered" on the sheet. Not locked by a test. The toast goes as soon as you leave the tender. Proof: smoke `toast: the answer toast stays on its tender, gone from the Feed at once (never over the next screen)`.
 - **A link that no longer matches:** an unknown requirement id opens the tender instead; an unknown tender id shows Not found (and its sheet links open the Feed). Not locked by a test.
 
 **Flow 3: Learn what's blocking you**
