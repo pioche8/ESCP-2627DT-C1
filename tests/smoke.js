@@ -156,7 +156,8 @@ async function run(scheme, browser, step) {
   check(await css('.action-bar .btn-secondary', 'backgroundColor') === rgb(await token('--c-muted')) && await css('.action-bar .btn-secondary', 'color') === rgb(await token('--c-bg')) && await css('.action-bar .btn-primary', 'backgroundColor') === rgb(await token('--c-brand')), 'action bar: secondary = muted fill with ground text, primary = brand');
   const barBtns = await page.locator('.action-bar .btn').evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return [Math.round(r.height), Math.round(r.width)]; }));
   check(barBtns.length === 2 && barBtns.every((b) => b[0] === 52) && barBtns[1][1] > barBtns[0][1] * 1.6, 'action bar buttons are 52 px tall, Save about twice as wide as Skip: ' + JSON.stringify(barBtns));
-  check(await page.locator('.detail-photo').count() === 1 && await page.locator('.detail-photo').evaluate((el) => el.previousElementSibling.classList.contains('vhead')), 'the photo is its own block under the verdict header');
+  check(await page.locator('.detail-photo').count() === 1 && await page.locator('.detail-photo').evaluate((el) => !!(el.compareDocumentPosition(document.querySelector('.cards')) & Node.DOCUMENT_POSITION_PRECEDING)), 'the photo is its own block, after the checklist (proof first)');
+  if (VH >= 800) { const fold = await page.evaluate(() => { window.scrollTo(0, 0); const r = document.querySelector('a.req').getBoundingClientRect(), bar = document.querySelector('.action-bar').getBoundingClientRect(); return [Math.round(r.bottom), Math.round(bar.top)]; }); check(fold[0] <= fold[1], 'the first requirement is on screen without a scroll, above the action bar (' + fold.join(' ≤ ') + ' px)'); }
   await scan('detail-go'); await shot('detail-go');
   await page.click('a.req[href="#/t/ell-schools/req/r1"]');
   await waitSheet(true);
@@ -179,7 +180,8 @@ async function run(scheme, browser, step) {
   check(await css('.vhead-score .num', 'color') === rgb(await token('--c-nogo')) && await css('.vhead-score .num', 'letterSpacing') === 'normal', 'score in the verdict colour with no negative tracking');
   check(await css('.vhead', 'backgroundColor') === 'rgba(0, 0, 0, 0)', 'the verdict header is plain text on the ground (no block, no glass)');
   check(await page.locator('.in-short.reveal .w').count() > 10, 'In short is a word-by-word reveal');
-  check((await text('.sec-h h2')).length > 0 && (await page.locator('.sec-h').nth(1).innerText()).replace(/\s+/g, ' ') === 'Can you qualify? 1 of 3 met', '"Can you qualify?" with "1 of 3 met"');
+  check((await text('.sec-h h2')).length > 0 && (await page.locator('.sec-h').nth(0).innerText()).replace(/\s+/g, ' ') === 'Can you qualify? 1 of 3 met', '"Can you qualify?" with "1 of 3 met"');
+  if (VH >= 800) { const fold = await page.evaluate(() => { window.scrollTo(0, 0); const r = document.querySelector('a.req').getBoundingClientRect(), bar = document.querySelector('.action-bar').getBoundingClientRect(); return [Math.round(r.bottom), Math.round(bar.top)]; }); check(fold[0] <= fold[1], 'Hohenau: the knock-out line is on screen without a scroll (' + fold.join(' ≤ ') + ' px)'); }
   const order = await page.locator('a.req .status b').allInnerTexts();
   check(order.join(' > ') === 'Fails > Needs your check > Meets', 'requirement order fail → check → met');
   check((await page.locator('a.req .cite').first().innerText()) === 'Vergabeunterlagen, p. 12, §3.1', 'citation as regular text "Vergabeunterlagen, p. 12, §3.1"');
@@ -352,6 +354,7 @@ async function run(scheme, browser, step) {
   await page.goto(url('today=2026-12-23', '#/t/ell-schools'));
   await page.waitForSelector('.vhead.v-closed', { timeout: 8000 });
   check((await text('.vhead')).includes('The deadline passed on 4 Dec.'), 'closed header');
+  check(((await text('.vhead')).match(/Closed/g) || []).length === 1, 'closed header says "Closed" once');
   check(await page.locator('.action-bar button[disabled]').count() === 1 && (await text('.action-bar')).includes('Closed tenders can’t be saved'), 'Save disabled with the lock line');
   await scan('detail-closed'); await shot('detail-closed');
   await page.goto(url('today=2026-12-23', '#/feed'));

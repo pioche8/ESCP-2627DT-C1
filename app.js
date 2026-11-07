@@ -354,7 +354,7 @@
     var r = evalT(t), v = r.verdict, closed = v === 'closed', saved = S.saved[id], skipped = S.skipped[id];
     var checks = r.checks.slice().sort(function (a, b) { return ORDER[a.status] - ORDER[b.status]; });
     var head = closed
-      ? '<p class="vhead-verdict">Closed</p><p class="closed-word">Closed</p>'
+      ? '<p class="closed-word">Closed</p>'
       : '<p class="vhead-verdict">' + shape(SHAPE[v], 'lg') + V[v] + '</p>' +
         '<p class="vhead-score" aria-label="Score ' + r.score + ' of 100"><span class="num" aria-hidden="true">' + r.score + '</span><span class="of" aria-hidden="true">/100</span></p>';
     var qa = t.ai.qa || [];
@@ -370,7 +370,6 @@
         '<div class="vhead-nav">' + backBtn() + ai() + '</div>' + head +
         '<p class="vhead-reason">' + esc(E.headline(t, S.profile, r)) + '</p>' +
       '</header>' +
-      (src && !closed ? '<img class="photo detail-photo" src="' + src + '" alt="">' : '') +
       '<div class="detail-head"><h1 class="detail-title" tabindex="-1">' + esc(t.title) + '</h1>' +
         '<p class="orig" lang="' + esc(t.language) + '">' + esc(t.original) + '</p>' +
         '<p class="meta-row"><span class="buyer">' + esc(bare(t.buyer)) + ' · ' + esc(E.countryName(t.country)) + '</span>' + (skipped ? '<span class="nowrap">· skipped</span>' : '') + '</p></div>' +
@@ -379,11 +378,14 @@
         fact('Deadline', E.shortDate(t.deadline) + (closed ? ' · passed' : ' · ' + plural(r.daysLeft, 'day') + ' left'), !closed && r.daysLeft <= 10) +
       '</div>' +
       (offline() ? '<div style="margin-top:12px">' + offlineBanner() + '</div>' : '') +
-      '<div class="sec-h"><h2>In short</h2>' + ai() + '</div><p class="in-short reveal">' + words(t.ai.summary) + '</p>' +
+      // Proof first (pass 5): the checklist, knock-outs on top, comes before the summary, and the photo moves to the end,
+      // so the first requirement is on screen without a scroll on a 390 × 844 phone.
       '<div class="sec-h"><h2>Can you qualify?</h2><span class="aside">' + r.count.pass + ' of ' + r.checks.length + ' met</span></div>' +
       '<div class="cards">' + checks.map(function (c) { return reqCard(t, c); }).join('') + '</div>' +
-      competitionHTML(t, r) +
+      '<div class="sec-h"><h2>In short</h2>' + ai() + '</div><p class="in-short reveal">' + words(t.ai.summary) + '</p>' +
       (qa.length ? '<div class="sec-h"><h2>Ask this tender</h2>' + ai() + '</div><div class="asks" id="asks">' + asksHTML(t) + '</div>' : '') +
+      competitionHTML(t, r) +
+      (src && !closed ? '<img class="photo detail-photo" src="' + src + '" alt="">' : '') +
       fiction() + '</div>' +
       '<div class="action-bar">' + (closed ? '<p class="bar-note">Closed tenders can’t be saved</p>' : '') + actions + '</div>';
   }

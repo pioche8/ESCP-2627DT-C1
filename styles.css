@@ -297,6 +297,8 @@ html.sheet-open { overflow:hidden; }
 .req-check { display:block; margin-top:2px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
 .req-sure { display:block; margin-top:2px; font:600 14px/20px var(--font-ui); color:var(--c-check); }
 .cite { display:block; margin-top:8px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+/* On a requirement line the citation is the way into the proof (pass 5): brand text; the whole line stays the one link. */
+.req .cite { font-weight:600; color:var(--c-brand); }
 .req-cta { display:inline-flex; align-items:center; gap:4px; min-height:44px; margin-top:2px; font:700 15px/1 var(--font-ui); color:var(--c-brand); }
 
 /* Ask this tender (accordion) */
