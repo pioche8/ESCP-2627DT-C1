@@ -29,7 +29,7 @@ This user is a hypothesis until the interviews say otherwise (§7).
 |---|---|---|---|
 | types the firm's website | a drafted company profile (staff, turnover, references, sectors, certificates, bid languages, countries) to confirm or edit | Welcome → Check your profile (`#/welcome/1`–`3`) | simulated AI drafts, the owner confirms |
 | opens the app | every tender ranked Go → Maybe → No-go with its score, title, buyer, value and days left; the counts in the filter tabs; skipped tenders hidden | Feed (`#/feed`) | the rules rank the simulated reading |
-| opens a tender | the verdict, the score, the one-line reason, value and deadline, a short summary, and every hard requirement with its status, failing lines first | Tender (`#/t/:id`) | the rules decide; the summary is simulated AI |
+| opens a tender | the verdict, the score, the one-line reason, value and deadline, every hard requirement with its status, failing lines first, then a short summary | Tender (`#/t/:id`) | the rules decide; the summary is simulated AI |
 | taps a requirement | the original sentence with the decisive phrase marked, its translation, document, page and section, and how confident the reading is | Requirement sheet (`#/t/:id/req/:rid`) | the reading is simulated; the status is the rules' |
 | answers an unclear line | "We meet it" or "We don't meet it" (with Undo); that tender is re-scored at once | same sheet | the rules, with the owner's answer stored per tender |
 | wants to know who else will bid | the likely bidders and similar past awards (a simulated reading of fictional award notices) and a rough chance to win from plain rules, which never changes the score | Tender → Competition | simulated AI for the reading; plain rules for the chance |

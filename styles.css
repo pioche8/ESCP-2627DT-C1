@@ -275,8 +275,8 @@ html.sheet-open { overflow:hidden; }
 .vhead-score .of { font:700 20px/1 var(--font-ui); color:var(--c-muted); }
 .vhead-reason { margin-top:12px; font:600 18px/25px var(--font-ui); max-width:32ch; color:var(--c-ink); }
 .v-closed .vhead-reason { color:var(--c-muted); }
-.closed-word { margin-top:4px; font:800 48px/1 var(--font-ui); color:var(--c-muted); }
-.detail-photo { width:calc(100% - 32px); margin:16px 16px 0; height:160px; } /* width:100% plus the side margins overflowed the right edge */
+.closed-word { margin-top:18px; font:800 48px/1 var(--font-ui); color:var(--c-muted); } /* the verdict line's top offset, so every tender header starts at the same height */
+.detail-photo { width:calc(100% - 32px); margin:28px 16px 0; height:160px; } /* width:100% plus the side margins overflowed the right edge; 28 px above = the section gap, so at the end of the page it reads as its own block */
 .detail-head { padding:20px 20px 0; }
 .detail-title { font:800 24px/30px var(--font-ui); }
 .detail-head .orig { margin-top:4px; font-size:14px; line-height:20px; }
@@ -297,6 +297,10 @@ html.sheet-open { overflow:hidden; }
 .req-check { display:block; margin-top:2px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
 .req-sure { display:block; margin-top:2px; font:600 14px/20px var(--font-ui); color:var(--c-check); }
 .cite { display:block; margin-top:8px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+/* On a requirement line the citation is the way into the proof (pass 5): brand text; the whole line stays the one link. */
+.req .cite { font-weight:600; color:var(--c-brand); }
+/* One brand element per card: on the ◆ line "Check →" is the call to action, and a Closed tender's checklist is a record. */
+.req.v-check .cite, .req.req-record .cite { font-weight:500; color:var(--c-muted); }
 .req-cta { display:inline-flex; align-items:center; gap:4px; min-height:44px; margin-top:2px; font:700 15px/1 var(--font-ui); color:var(--c-brand); }
 
 /* Ask this tender (accordion) */

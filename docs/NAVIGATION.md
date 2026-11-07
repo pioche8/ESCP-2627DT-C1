@@ -47,7 +47,7 @@ flowchart TD
     ST["#/settings<br/>Appearance, morning notification, Reset demo, About this prototype"]
   end
   WL["#/insights<br/>Win/loss insights (a page of Bids, Bids stays active)"]
-  F --> D["#/t/:id<br/>Tender: verdict, In short, Can you qualify?, Competition, Ask"]
+  F --> D["#/t/:id<br/>Tender: verdict, Can you qualify?, In short, Ask, Competition"]
   B --> D
   D --> RS(["#/t/:id/req/:rid<br/>Requirement sheet: original + translation + page + answer"])
   D --> SK(["#/t/:id/skip<br/>Skip sheet: reasons (optional)"])
@@ -71,7 +71,7 @@ flowchart TD
 | S2 | `#/welcome/2` | Reading (transient) | none | Step list and progress bar, "Simulated AI"; replaced in history, not a back target |
 | S3 | `#/welcome/3` | Check your profile | Looks right | The drafted profile card with its sources; "Edit" goes to S6 |
 | S4 | `#/feed` | Feed | Open a tender | The filter tabs All / Go / Maybe / No-go carry the counts; skipped tenders are hidden; a saved tender shows a plain "Saved". Cards show verdict (shape + word + score), title, buyer, value and days left, nothing else (4 Nov declutter). Tapping a card morphs it into the tender's header where the browser supports view transitions |
-| S5 | `#/t/:id` | Tender detail | Save to Bids | First open per session shows "Reading N pages (lang)…" with progress. The verdict header is plain text: shape + word, the score in the verdict colour and one sentence of why; the tender's photo, where it has one, is its own block beneath it. Requirements sorted Fails → Needs your check → Risk → Meets. Then **Competition** (5 Nov): likely bidders and similar past awards, labelled "Simulated AI", and a rough chance to win from plain rules ("not AI. It does not change the score."); hidden on a Closed tender. Then Ask this tender, where the tender has questions |
+| S5 | `#/t/:id` | Tender detail | Save to Bids | First open per session shows "Reading N pages (lang)…" with progress. The verdict header is plain text: shape + word, the score in the verdict colour and one sentence of why. Proof first (7 Nov): the requirements come next, sorted Fails → Needs your check → Risk → Meets, each with its citation in brand text (muted under "Check →"), so the first line is on screen without a scroll at 390 × 844. Then In short, then Ask this tender, where the tender has questions. Then **Competition** (5 Nov): likely bidders and similar past awards, labelled "Simulated AI", and a rough chance to win from plain rules ("not AI. It does not change the score."); hidden on a Closed tender. The tender's photo, where it has one, is its own block at the end |
 | S5a | `#/t/:id/req/:rid` | Requirement sheet | We meet it / We don't meet it | Own history entry. Shows status, AI confidence, the original sentence with the decisive phrase underlined, the page, and the translation |
 | S5b | `#/t/:id/skip` | Skip sheet | Skip tender | Pick any number of reasons, or none. Feeds tomorrow's ranking (future: the reasons are stored, not used yet) |
 | S6 | `#/company` | Company | (live) | Re-score card "Landkreis Hohenau · No-go → Go" and unlock hints such as "Turn on → Gemeente Vlietdam becomes Maybe". Before onboarding it has an action bar, "Save and see my feed", instead of the tab bar |
@@ -83,7 +83,7 @@ flowchart TD
 | S10 | – (no route) | Error fallback (5 Nov) | Restart | "Something went wrong · Your profile, answers and saved tenders are kept." Restart reloads on the Feed (Welcome before onboarding) |
 | – | anything else | Not found | Open Feed | "Page not found · That link matches no screen in TenderScout." |
 
-**Later (not in prototype):** sending the morning notification as a real push to the phone (the prototype shows it inside the app, S9; real push is out of scope, `CLAUDE.md` §10); consortium-partner finder; calendar export of deadlines and site visits; share a verdict to a colleague by WhatsApp; opening the tender PDF at the cited page (today the citation is plain text and the whole requirement line opens the sheet).
+**Later (not in prototype):** sending the morning notification as a real push to the phone (the prototype shows it inside the app, S9; real push is out of scope, `CLAUDE.md` §10); consortium-partner finder; calendar export of deadlines and site visits; share a verdict to a colleague by WhatsApp; opening the tender PDF at the cited page (today the citation is brand-coloured text on the line, and the whole requirement line opens the sheet).
 
 ## Core flows
 **Entry points.** The owner reaches the Feed in one of three ways: the **morning notification** (once a day, the first time the Feed opens on a new day after onboarding; tapping it opens the Feed with the filter on All; ✕, Escape or a tap on the empty lock screen close it and leave the Feed as it was); opening the app (the Feed after onboarding, Welcome before); or a deep link (`#/t/:id` and the other routes, see "Deep linking" below). Proof: smoke `morning notification: first Feed open of a new day shows the simulated lock screen (dialog, "Simulated notification", the date)`, `morning notification: "1 Go · 2 Maybe · 3 No-go" from the engine, each with its shape`, `morning notification: tapping it opens the Feed` and `morning notification: once a day (a reload the same day does not show it again)`. That the filter is set back to All is not locked by a test.

@@ -81,7 +81,7 @@ Values from [`shared/tokens.json`](shared/tokens.json) (version 2026-11-04). The
 | surface | `#FFFFFF` | `#0B111C` | cards, sheets, fields, rows |
 | ink | `#0E1B2B` | `#FFFFFF` | titles and body text |
 | muted | `#5A6474` | `#8A93A3` | meta text, captions, secondary button fill |
-| brand | `#0862AC` | `#5DB8F5` | primary button, active tab, switches on, links, "Check →" |
+| brand | `#0862AC` | `#5DB8F5` | primary button, active tab, switches on, links, "Check →", the citation on a requirement line (muted on the ◆ line and on a Closed tender, so each card has one brand element) |
 | go | `#13724B` | `#5ED69C` | ● Go, ● Meets |
 | maybe | `#8A5300` | `#F7C25E` | ▲ Maybe, ▲ Risk |
 | nogo | `#B23720` | `#FF8B80` | ■ No-go, ■ Fails, Reset demo |
@@ -120,7 +120,7 @@ Sizes and where each control is used: [`SKELETON.md`](SKELETON.md) §5.
 
 - **Tender card:** a surface block; the score tile on the left filled in the verdict colour with the score in the background colour; then the status (shape + word), the title, and "buyer · value · days left" in muted text; a plain "Saved" when saved.
 - **Status line:** shape + word in the verdict colour, then "· kind" in muted text ("■ Fails · Knock-out").
-- **Requirement line:** status line, the requirement, our check (or "58% sure. Only you can answer."), the citation in plain text, and "Check →" in brand colour on unclear lines.
+- **Requirement line:** status line, the requirement, our check (or "58% sure. Only you can answer."), the citation in brand text, and "Check →" in brand colour on unclear lines, where the citation stays muted so the card has one call to action.
 - **Quote block:** "Original (German) · document, page, section", the sentence with the decisive phrase underlined and bold in the status colour, then "Translation".
 - **Buttons:** primary = brand fill with background-coloured text; secondary = muted fill with background-coloured text; the unresolved answer pair = check fill with background-coloured text, equal width; disabled = surface fill with muted text; text buttons in brand colour, underlined where they are links.
 - **Text tabs:** filters, Bids stages, Appearance; the selected one is underlined in brand colour.
