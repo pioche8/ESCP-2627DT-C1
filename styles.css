@@ -451,7 +451,7 @@ html.sheet-open { overflow:hidden; }
 .rescore-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
 .rescore-top .rescore-buyer { min-width:0; }
 .rescore-score { flex:none; display:flex; align-items:baseline; gap:6px; font:700 15px/1 var(--font-ui); color:var(--c-muted); font-variant-numeric:tabular-nums; }
-.rescore-score .to { font:800 28px/1 var(--font-ui); color:var(--v); }
+.rescore-score .to { font:800 28px/1 var(--font-ui); color:var(--v); text-align:right; } /* min-width (inline, in ch) holds the final width, so the old score and the arrow stay still while it counts */
 .group { margin:0 16px; padding:4px 16px; border-radius:var(--r); background:var(--c-surface); }
 .row { display:flex; align-items:center; gap:12px; min-height:60px; padding:10px 0; }
 .row .txt { flex:1; min-width:0; }
@@ -468,6 +468,7 @@ html.sheet-open { overflow:hidden; }
 .hint { margin-top:2px; font:600 13px/18px var(--font-ui); color:var(--c-muted); }
 .hint .status { display:inline; font-size:13px; white-space:nowrap; } /* the shape and its word wrap as one */
 .hint .status .shape { display:inline-block; margin-right:4px; vertical-align:0; }
+.row-sub + .hint { margin-top:6px; } /* a what-if line, not more of the row's description */
 .money-field { cursor:text; display:inline-flex; align-items:center; gap:2px; height:44px; padding:0 12px; border-radius:var(--r); background:var(--c-bg); font:800 18px/1 var(--font-ui); }
 .money-field input { width:3.2em; border:0; background:transparent; outline:none; text-align:right; font:800 18px/1 var(--font-ui); color:var(--c-ink); padding:0; height:44px; }
 .money-field:focus-within { outline:var(--focus-w) solid var(--c-brand); outline-offset:var(--focus-o); }

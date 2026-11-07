@@ -700,7 +700,7 @@
     // The score is the payoff (pass 5): "25 → 100" with the new score in the new verdict's colour, from Engine.diff.
     return '<div class="rescore' + (enter ? ' enter' : '') + '" data-rescore="' + c.tenderId + ':' + c.from + ':' + c.to + '">' +
       '<div class="rescore-top"><p class="rescore-buyer" aria-hidden="true">' + esc(bare(t.buyer)) + '</p>' +
-        '<p class="rescore-score" aria-hidden="true"><span class="from">' + c.fromScore + '</span><span class="arrow">→</span><b class="to v-' + c.to + '" data-from="' + c.fromScore + '">' + c.toScore + '</b></p></div>' +
+        '<p class="rescore-score" aria-hidden="true"><span class="from">' + c.fromScore + '</span><span class="arrow">→</span><b class="to v-' + c.to + '" data-from="' + c.fromScore + '" style="min-width:' + String(Math.max(c.fromScore, c.toScore)).length + 'ch">' + c.toScore + '</b></p></div>' +
       '<p class="change-row" aria-hidden="true">' + status(c.from, V[c.from]) + '<span class="arrow">→</span>' + status(c.to, V[c.to]) + '<span>just now' + esc(more) + '</span></p>' +
       '<p class="sr-only">' + esc(bare(t.buyer)) + ': ' + V[c.from] + ' → ' + V[c.to] + ', score ' + c.fromScore + ' → ' + c.toScore + esc(more) + '</p></div>';
   }
@@ -717,7 +717,11 @@
     if (!lastChange || lastChange.lever !== lever) return null;
     var u = ups(lastChange.changes); if (!u.length) return null;
     var c = u[0], name = bare(tender(c.tenderId).buyer);
-    return { ok: true, text: esc(c.to === 'go' ? 'Unlocked ' + name + ' · ' : name + ' moved up to ') + status(c.to, V[c.to]) + (u.length > 1 ? esc(' +' + (u.length - 1) + ' more') : '') };
+    // The score rides with the switch (pass 5): where the card cannot come back without hiding the switch (iPhone SE),
+    // "25 → 100" is still where the eye is. Each "·" stays with what follows it, so no line ends on a separator.
+    return { ok: true, text: esc(c.to === 'go' ? 'Unlocked ' + name + ' ' : name + ' moved up to ') +
+      '<span class="nowrap">' + (c.to === 'go' ? '· ' : '') + status(c.to, V[c.to]) + '</span> <span class="nowrap">· ' + c.fromScore + ' → ' + c.toScore + '</span>' +
+      (u.length > 1 ? esc(' +' + (u.length - 1) + ' more') : '') };
   }
   function hints() {
     var p = S.profile, out = {};

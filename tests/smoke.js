@@ -249,6 +249,8 @@ async function run(scheme, browser, step) {
   const isoFloor = await page.evaluate(() => { const t = document.querySelector('.tabbar'); return t ? t.getBoundingClientRect().top : innerHeight; });
   const fits = await page.evaluate((f) => { const sw = document.querySelector('button[data-cert="ISO 27001"]').getBoundingClientRect(), rs = document.getElementById('rescore').getBoundingClientRect(); return sw.bottom - rs.top + 12 <= f; }, isoFloor);
   await page.click('button[data-cert="ISO 27001"]');
+  // the old score and the arrow hold still while the new score counts up (layout position, so the morph's transform does not count)
+  const steady = page.evaluate(() => new Promise((res) => { const xs = [], t0 = performance.now(); (function tick() { const f = document.querySelector('#rescore .rescore-score .from'); if (f) xs.push(f.offsetLeft); if (performance.now() - t0 < 1600) requestAnimationFrame(tick); else res(xs); })(); }));
   const ghost = await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false);
   const isoBox = await page.locator('button[data-cert="ISO 27001"]').boundingBox();
   if (fits) check(ghost, 'a dashed ghost is left on the switch while the re-score card grows out of it');
@@ -265,6 +267,10 @@ async function run(scheme, browser, step) {
   check(await page.locator('button[data-cert="ISO 27001"][aria-checked="true"]').count() === 1, 'switch is on (role=switch, aria-checked)');
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company counts move to 2 : 2 : 2');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
+  const isoHint = (await page.locator('[data-hint="cert:ISO 27001"]').innerText()).replace(/\s+/g, ' ');
+  check(isoHint.includes('25 → 100') && await page.locator('[data-hint="cert:ISO 27001"] .nowrap').count() === 2, 'the hint at the switch carries the score too, each "·" kept with what follows it: "' + isoHint + '"');
+  const xs = await steady;
+  check(xs.length > 0 && new Set(xs).size === 1, 'the old score and the arrow hold still while the new score counts up (' + xs.length + ' frames, x = ' + Array.from(new Set(xs)).join(', ') + ')');
   await page.evaluate(() => window.scrollTo(0, 0)); // show the re-score card
   // scan the settled card: on a slow runner the 700 ms morph can still be running here (radius between the switch's and 8 px)
   await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
