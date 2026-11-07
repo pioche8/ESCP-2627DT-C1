@@ -1,17 +1,18 @@
 # TenderScout · marketing website
 
-The one-page marketing website for the TenderScout prototype (ESCP Digital Product Design, Group C). Built from the designer's v3 handoff in `../design/website/` with Next.js 16 (App Router), TypeScript, Tailwind v4 and Framer Motion, and decluttered on 4 Nov 2026 onto the app's nine-colour token set (one radius, one typeface, no gradients, shadows, pills or eyebrows; `../tests/declutter-scan.js` checks it). It runs the app's real `engine.js` on the app's fictional `data.js`, so every number on the page is the app's.
+The one-page marketing website for the TenderScout prototype (ESCP Digital Product Design, Group C). Built from the designer's v3 handoff in `../design/website/` with Next.js 16 (App Router), TypeScript, Tailwind v4 and Framer Motion, and decluttered on 4 Nov 2026 onto the app's nine-colour token set (one radius, one typeface, no gradients, shadows, pills or eyebrows; `../tests/declutter-scan.js` checks it). Since 7 Nov 2026 it plays the motion and the map of its original 3 Nov design in solid shapes and colours (`../docs/adr/0004-website-current-look-original-motion.md`); the timings live in `../shared/tokens.json` under `siteMotion`. It runs the app's real `engine.js` on the app's fictional `data.js`, so every number on the page is the app's.
 
 ```
 npm install
 npm run dev          # http://localhost:3000
 npm run check        # lint + typecheck + build; `prebuild` re-syncs tokens, engine, data, fonts and photos from ../ (no-op on Vercel)
-npm run audit        # static export (out/), then scripts/how-check.cjs (the /how page incl. 25 → 90 → 100) and scripts/audit.cjs
+npm run audit        # static export (out/), then scripts/how-check.cjs (the /how page incl. 25 → 90 → 100), scripts/a11y-motion.cjs and scripts/audit.cjs
                      # (Lighthouse ≥ 95 in all four categories as the median of 3 runs, axe-core 0 violations; both pages, dark + light)
 npm run how          # regenerate src/generated/how-it-decides.json and ../docs/HOW_IT_DECIDES.md from ../engine.js + ../data.js
 npm run images       # re-render the Open Graph image and the icons from ../shared/tokens.json (Playwright)
 node scripts/shots.cjs            # screenshots at 1440 / 1024 / 768 / 390 with console, horizontal-scroll and declutter-scan checks
-node scripts/a11y-motion.cjs      # reduced-motion and keyboard checks
+node scripts/a11y-motion.cjs      # every item of the motion inventory, reduced motion, keyboard and touch
+node scripts/record.cjs           # ../docs/site/ recordings at 1440 and 390 (BEFORE_URL=… adds the before/after strip)
 node scripts/contact-sheet.cjs    # the PhoneDemo next to the real app in the same states
 ```
 

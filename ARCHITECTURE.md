@@ -23,7 +23,7 @@ flowchart LR
     tj["shared/tokens.json<br/>nine colours per scheme, type, 8 px radius, easing, durations"]
     bt["shared/build-tokens.js"]
     tcss["shared/tokens.css"]
-    scss["site/src/styles/tokens.css (Tailwind @theme)<br/>site/src/generated/tokens.ts<br/>frozen 3 Nov originals, edited by hand"]
+    scss["site/src/styles/tokens.css (Tailwind @theme)<br/>site/src/generated/tokens.ts<br/>generated, plus the website-only siteMotion timings"]
     tj --> bt --> tcss
     tcss --> styles["styles.css (components only)"] --> appjs
   end
@@ -93,7 +93,7 @@ The live demo opens `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` 
 
 ## 5. Design tokens: one source, two products
 
-`shared/tokens.json` is the only place colours, type, the one 8 px radius, easing and durations are written: nine solid colours per scheme (background, surface, ink, muted, brand and the four verdict colours), one typeface. `node shared/build-tokens.js` emits `shared/tokens.css` for the app. Since 6 Nov the website keeps its original 3 Nov design and its own frozen token files, `site/src/styles/tokens.css` (a Tailwind v4 `@theme` block) and `site/src/generated/tokens.ts` (`CLAUDE.md` §11 item 139). `styles.css` contains components only and no hand-typed colour. `node shared/check-contrast.js` audits every app text/background pair in both schemes against WCAG AA, and the website's 33 original pairs from its frozen tokens; `tests/declutter-scan.js` proves the absence of the eighteen banned patterns (gradients, shadows, borders, pills, uppercase, italics, mono, eyebrows, numbering, code names in visible text, …) both in the app's stylesheets and in every rendered app screen (the website is out of its scope since 6 Nov). Verdicts are never colour alone: shape + word everywhere (● Go, ▲ Maybe, ■ No-go, ◆ Needs your check).
+`shared/tokens.json` is the only place colours, type, the one 8 px radius, easing and durations are written: nine solid colours per scheme (background, surface, ink, muted, brand and the four verdict colours), one typeface. `node shared/build-tokens.js` emits `shared/tokens.css` for the app and, for the website, `site/src/styles/tokens.css` (a Tailwind v4 `@theme` block) and `site/src/generated/tokens.ts`. The website's motion timings (`siteMotion`, the original 3 Nov site's, played in solid colours since 7 Nov: [ADR-0004](docs/adr/0004-website-current-look-original-motion.md)) are written to the website's files only, so they never change an app byte. `styles.css` contains components only and no hand-typed colour. `node shared/check-contrast.js` audits every text/background pair in both schemes against WCAG AA (the website uses the dark scheme) and the shapes the website's map draws (51 pairs); `tests/declutter-scan.js` proves the absence of the eighteen banned patterns (gradients, shadows, borders, pills, uppercase, italics, mono, eyebrows, numbering, code names in visible text, …) in the app's and the website's stylesheets, in every rendered app screen (`tests/smoke.js`) and on the website at four widths (`site/scripts/shots.cjs`). Verdicts are never colour alone: shape + word everywhere (● Go, ▲ Maybe, ■ No-go, ◆ Needs your check).
 
 ## 6. The website shares the code
 

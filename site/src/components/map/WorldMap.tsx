@@ -177,7 +177,7 @@ export function WorldMap() {
                   <g transform={`translate(${geo.home[0]},${geo.home[1]})`} aria-hidden="true">
                     {!reduce && <circle className="pulse" r={6} />}
                     <circle className="home-dot" r={7} />
-                    <text x={labelsOn ? 13 : -13} y={-10} textAnchor={labelsOn ? 'start' : 'end'} className="map-home">You · Leipzig</text>
+                    {labelsOn && <text x={13} y={-10} className="map-home">You · Leipzig</text>}
                   </g>
                   {pins.map((p, i) => {
                     const [x, y] = geo.proj(p.at)!, v = shapeOf(p.v.verdict), [lx, ly, anchor] = p.lab, on = showTip === p.id;

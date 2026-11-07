@@ -60,7 +60,7 @@ audit) generates:
 | `shared/tokens.css` | the app (`index.html` loads it before `styles.css`) | `:root, [data-scheme="dark"] { --c-bg: #02040A; … }`, `[data-scheme="light"] { … }`, plus `--font-ui`, `--r: 8px`, `--ease-*`, `--dur-*`, `--app-*` layout values, `--safe-top` / `--safe-bottom` |
 | `.design-cache/tenderscout.md` | the design-drift lock (gitignored) | token summary |
 
-Since 6 Nov 2026 the website is back to its original 3 Nov design and keeps its own frozen `site/src/styles/tokens.css` and `site/src/generated/tokens.ts`, which the build no longer writes (`CLAUDE.md` §11 item 139). Figma mirrors the app's tokens.
+The website's `site/src/styles/tokens.css` and `site/src/generated/tokens.ts` are generated from the same `shared/tokens.json` (again since 7 Nov, [ADR-0004](adr/0004-website-current-look-original-motion.md)). Figma mirrors the app's tokens.
 
 The structure (abridged):
 
@@ -188,7 +188,7 @@ sets "Status", "Score tile" and "Button" to `VerdictShape` + label, `VerdictTile
 
 ```
 index.html  styles.css  app.js  engine.js  data.js  ai.js     the app (classic scripts, no build)
-shared/     tokens.json → build-tokens.js → tokens.css (the website keeps frozen 3 Nov copies); check-contrast.js; how-it-decides.js
+shared/     tokens.json → build-tokens.js → tokens.css (and the website's token files); check-contrast.js; how-it-decides.js
 fonts/      assets/img/                                        vendored fonts and photos
 tests/      engine, data, golden and invariant tests; smoke.js; declutter-scan.js; preflight.js; demo-record.js
 site/       Next.js website (src/app, src/components/{ui,sections,phone,how}, src/generated, public/assets)
