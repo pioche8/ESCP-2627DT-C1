@@ -480,3 +480,12 @@ Pass 5, the app (7–9 Nov 2026; same brief, the app part: UI slices before the 
     - on the iPhone SE, a switch tapped within 12 px of the tab bar left the hint's score under it.
 
     All four were fixed: `.hint .nowrap`, the spare width at the card's edge for a drop, "· +1 more" in its own group, and a scroll by the hint's overhang when the card cannot be seen. The smoke checks now measure the rendered lines and positions, and each new check fails on the code before its fix. Left as it is: on a Closed tender (test-only `?today=`) the ◆ line still reads "Only you can answer." and its sheet still takes an answer, as it did before the slices; only the call to action is gone.
+
+    A second verification round (16 agents) found the four fixes holding. Measuring the behaviour around them, it also found three older problems, all fixed here:
+    - the neutral card ("Change anything below", 77 px) grew to 85 px at the first change. That pushed a switch tapped just above the tab bar under the bar: on the iPhone 13 on the demo path, and on the iPhone SE without scroll anchoring (Safari does not support it), where the score was then seen nowhere;
+    - the scroll decisions read the card in the first frame of its pop (scaled .86), so a card showing 0–2 px still counted as in view;
+    - "+1 more" had two forms on one screen, and the what-if hints could end a line on "→" or "+1".
+
+    Now both cards are one height (a 30 px top row). The decisions read the card's own box and whether its score row is whole on screen, and the morph now starts exactly on the switch (it started from the pop's first frame, 16 % too large). The hint scroll runs only when the hint carries the score, that is a change up; a drop's hint names no score, so nothing moves. Every hint keeps its arrow with the buyer's name and "· +1 more" whole. Three smoke checks lock this (`the neutral card and the score card are one height, so a change does not push down the switch just tapped`, the hint lines after ISO 9001 off and on, and the first change of a visit tapped just above the tab bar with scroll anchoring off), and each fails on the code before. Left as they are:
+    - the bring-back scroll (since 4 Nov, item 74) and the hint scroll move the switch under the finger, by 18–38 px for the hint, so a quick second tap in the same place can miss it;
+    - on the iPhone SE a drop's new score is only on the card above; its hint says how to undo the change.

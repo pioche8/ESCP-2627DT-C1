@@ -450,6 +450,7 @@ html.sheet-open { overflow:hidden; }
    under reduced motion). On the same line, so the card stays about as tall as before and the morph still fits a short phone. */
 .rescore-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
 .rescore-top .rescore-buyer { min-width:0; }
+.rescore-top, .rescore.neutral .rescore-buyer { min-height:30px; } /* the neutral card and the score card are one height, so a change never pushes down the switch just tapped */
 .rescore-score { flex:none; display:flex; align-items:baseline; gap:6px; font:700 15px/1 var(--font-ui); color:var(--c-muted); font-variant-numeric:tabular-nums; }
 .rescore-score .to { font:800 28px/1 var(--font-ui); color:var(--v); text-align:right; }
 .rescore-score .to.down { text-align:left; } /* a score that drops (100 → 25): the spare width goes to the card's edge, not between the arrow and the score */ /* min-width (inline, in ch) holds the final width, so the old score and the arrow stay still while it counts */

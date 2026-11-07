@@ -707,7 +707,9 @@
   // Unlock hints: "Turn on → Gemeente Vlietdam becomes Maybe". Computed by Engine.whatIf (no state change).
   function hintText(changes, lead, verb) {
     var c = changes[0];
-    return esc(lead + ' → ' + bare(tender(c.tenderId).buyer) + ' ' + verb + ' ') + status(c.to, V[c.to]) + (changes.length > 1 ? esc(' +' + (changes.length - 1) + ' more') : '');
+    // The arrow stays with the buyer's name and "· +1 more" stays whole, as in the unlocked hint, so no line ends on "→" or "+1".
+    return esc(lead + ' →') + '&nbsp;' + esc(bare(tender(c.tenderId).buyer) + ' ' + verb + ' ') + status(c.to, V[c.to]) +
+      (changes.length > 1 ? ' <span class="nowrap">· +' + (changes.length - 1) + ' more</span>' : '');
   }
   function whatIf(patch) {
     return E.whatIf(D.TENDERS, S.profile, TODAY, S.overrides, patch).filter(function (c) { return !S.skipped[c.tenderId]; });
@@ -794,21 +796,31 @@
     if (to) to.textContent = to.getAttribute('data-from');
     var count = function (delay) { if (to) setTimeout(function () { countUp(to, +to.getAttribute('data-from'), target); }, reduceMotion ? 0 : delay); };
     if (!card || !fromEl) { count(0); return; }
-    var a = fromEl.getBoundingClientRect(), b = card.getBoundingClientRect();
+    var a, b, s, row = card.querySelector('.rescore-top');
+    // Measure the card's own box, not the first frame of its pop (scaled .86): with the animation off for the read, the
+    // decisions and the morph below start from where the card really sits. Putting it back restarts the pop from its start.
+    var measure = function () {
+      card.style.animation = 'none';
+      a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect(); s = row ? row.getBoundingClientRect() : b;
+      card.style.animation = '';
+    };
+    measure();
     var bar = $tabs.querySelector('.tabbar'), floor = (bar && bar.getBoundingClientRect().top) || window.innerHeight; // the fixed tab bar hides what is under it
-    // Short screens (iPhone 13 / SE): the card can sit just above the fold when the switch is tapped. Bring it back in with
-    // an instant scroll so the re-score is seen, but only for a card that names a change, and only when the control just
-    // tapped stays fully in view above the tab bar afterwards; otherwise the hint next to the control tells (pass 5).
-    if (lastChange && lastChange.changes.length && b.bottom < 0 && a.top >= 0 && a.bottom + 12 - b.top <= floor) {
+    // Short screens (iPhone 13 / SE): the card can sit above the fold when the switch is tapped. When its score row is not
+    // whole on screen, bring the card back in with an instant scroll so the re-score is seen, but only for a card that names
+    // a change, and only when the control just tapped stays fully in view above the tab bar afterwards; otherwise the hint
+    // next to the control tells (pass 5).
+    var unseen = lastChange && lastChange.changes.length && s.top < 0 && a.top >= 0;
+    if (unseen && a.bottom + 12 - b.top <= floor) {
       window.scrollBy(0, b.top - 12);
-      a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
-    } else if (lastChange && lastChange.changes.length && b.bottom < 0 && a.top >= 0) {
-      // The card stays out of view (iPhone SE: it never fits on one screen with the switch), so the hint under the control,
-      // which carries the score, must not sit under the tab bar: scroll by its overhang (a few px; the control stays in view).
-      var hint = $screen.querySelector('[data-hint="' + lastChange.lever + '"]'), h = hint && !hint.hidden && hint.getBoundingClientRect();
+      measure();
+    } else if (unseen) {
+      // The card stays out of view (iPhone SE: it never fits on one screen with the switch). When the hint under the control
+      // carries the score (a change up), it must not sit under the tab bar: scroll by its overhang, keeping the control in view.
+      var hint = $screen.querySelector('[data-hint="' + lastChange.lever + '"]'), h = hint && !hint.hidden && hint.classList.contains('ok') && hint.getBoundingClientRect();
       if (h && h.height && h.bottom > floor - 4 && a.top - (h.bottom - floor + 8) >= 0) {
         window.scrollBy(0, h.bottom - floor + 8);
-        a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
+        measure();
       }
     }
     if (reduceMotion || typeof card.animate !== 'function') { count(0); return; }
