@@ -183,7 +183,7 @@ html.sheet-open { overflow:hidden; }
   width:48px; height:48px; border-radius:var(--r); background:var(--v); color:var(--c-bg); flex:none;
   display:grid; place-items:center; font:800 20px/1 var(--font-ui);
 }
-.v-closed .score { color:var(--c-ink); }
+.v-closed .score { color:var(--c-bg); } /* bg on muted: 6.62:1 dark, 5.36:1 light (ink was 2.90:1 in light, pass 5) */
 .pulse { animation:pulse var(--dur-rescore-pulse) var(--ease-out) 1; }
 @keyframes pulse { 0% { transform:scale(1); } 35% { transform:scale(1.12); } 100% { transform:scale(1); } }
 /* "1 Go · 2 Maybe · 3 No-go": plain text, each count in its verdict colour */
@@ -332,6 +332,9 @@ html.sheet-open { overflow:hidden; }
 /* answered: "We meet it" is the primary and takes the rest of the row, "We don't meet it" keeps its label's width (as a third
    of the row it touched both edges at 390 px and spilled out of its button at 320 px; pass 3 WebKit visual audit) */
 .sheet-foot .row-btns.pair > .btn-secondary:not(.btn-check) { flex:0 0 auto; }
+/* The unresolved answer pair is the owner's decision: both buttons in the ◆ "Needs your check" colour, equal width, so neither
+   looks disabled or preselected (pass 5; bg on check: 9.51:1 dark, 7.47:1 light). */
+.btn-secondary.btn-check { background:var(--c-check); color:var(--c-bg); }
 
 /* ---------- morning notification (simulated lock screen, once a day; app.js morningHTML) ----------
    The phone's lock screen in the app's own colours: the ground, the clock in ink, the notification as a flat surface
