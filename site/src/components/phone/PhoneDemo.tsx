@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Engine, PROFILE, TODAY, WINLOSS, WINLOSS_MONTHS, counts, evaluateAll, evaluateOne, money, withCert, type Overrides, type TenderView } from '@/data/app';
 import { Icon } from '@/components/ui/Icon';
@@ -34,7 +34,9 @@ const ABOUT: [string, string][] = [
  * tabs: Feed / Bids / Company / Profile / Settings. In Company, the ISO 27001 switch re-scores Landkreis Hohenau exactly
  * as the app does: No-go 25 → Maybe 90 (one line still needs the owner's answer) → Go 100 after "We meet it". Feed, Bids
  * and Profile update with it (Profile shows the firm, Company changes it). Bids opens with the app's Win/loss row,
- * computed by the app's insights.js.
+ * computed by the app's insights.js. Since pass 5 the original's motion is back in solid colours: a brand block slides
+ * under the active tab (450 ms, the spring curve), Skip wipes in from the left and Save to Bids fills from the pointer.
+ * The screen scrolls when a tab is taller than it (keyboard included) and every tab opens at its top.
  */
 export function PhoneDemo() {
   const [tab, setTab] = useState(1);
@@ -55,11 +57,15 @@ export function PhoneDemo() {
   const hv = tileVerdict(hoh.verdict);
   const reduce = useReducedMotion();
   const stage = (v: TenderView) => (v.id === 'ell-schools' ? 'Bidding' : v.verdict === 'nogo' ? 'Not bidding' : 'Deciding');
+  // Every tab opens at its top, like the app; "Edit on Company" moves keyboard focus with it, so focus is not lost.
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (panelRef.current) panelRef.current.scrollTop = 0; }, [tab]);
+  const editOnCompany = () => { setTab(2); document.getElementById('dock-tab-2')?.focus(); };
 
   return (
     <div className="phone" role="group" aria-label="TenderScout app demo">
       <div className="phone-screen">
-        <div className="pscreen" role="tabpanel" id="phone-panel" aria-labelledby={`dock-tab-${tab}`}>
+        <div ref={panelRef} className="pscreen" role="tabpanel" id="phone-panel" aria-labelledby={`dock-tab-${tab}`} tabIndex={0}>
           {tab === 0 && (
             <>
               <div className="phead">
@@ -143,8 +149,8 @@ export function PhoneDemo() {
                 </div>
               </motion.div>
               <div className="pbtns">
-                <Button tone="secondary">Skip</Button>
-                <Button>Save to Bids</Button>
+                <Button tone="secondary" fill="wipe" className="pbtn-skip">Skip</Button>
+                <Button fill="radial" className="pbtn-save">Save to Bids</Button>
               </div>
             </>
           )}
@@ -167,7 +173,7 @@ export function PhoneDemo() {
                   <dt>Countries</dt><dd>{profile.countries.map(Engine.countryName).join(', ')}{profile.crossBorder ? ', cross-border' : ''}</dd>
                 </dl>
               </div>
-              <Button tone="secondary" className="pfull" onClick={() => setTab(2)}>Edit on Company</Button>
+              <Button tone="secondary" fill="wipe" className="pfull" onClick={editOnCompany}>Edit on Company</Button>
             </>
           )}
           {tab === 4 && (
@@ -194,9 +200,14 @@ export function PhoneDemo() {
   );
 }
 
-/** Full-width bottom tab bar: icon + label; the active tab is brand-coloured with a filled icon and a bolder label. */
+/**
+ * Full-width bottom tab bar: icon + label. The active tab sits on a brand block that slides from tab to tab (450 ms, the
+ * spring curve: the original dock's moving pill, as a solid 8 px block), with a filled icon and its label in the ground
+ * colour. Arrow keys move between tabs and wrap.
+ */
 function TabBar({ tab, onTab }: { tab: number; onTab: (i: number) => void }) {
   const tabs = TABS;
+  const reduce = useReducedMotion();
   const onKey = (e: React.KeyboardEvent) => {
     if (!/^Arrow(Left|Right)$/.test(e.key)) return;
     e.preventDefault();
@@ -206,6 +217,8 @@ function TabBar({ tab, onTab }: { tab: number; onTab: (i: number) => void }) {
   };
   return (
     <div className="ptabs" role="tablist" aria-label="App sections" onKeyDown={onKey}>
+      <motion.span className="ptab-thumb" aria-hidden="true" initial={false} animate={{ left: `${(tab * 100) / tabs.length}%` }} style={{ width: `${100 / tabs.length}%` }}
+        transition={reduce ? { duration: 0 } : { duration: tokens.duration.spring / 1000, ease: EASE.spring }} />
       {tabs.map(([icon, label], i) => {
         const on = i === tab;
         return (

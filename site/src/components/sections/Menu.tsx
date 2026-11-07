@@ -9,8 +9,8 @@ import { Wordmark } from '@/components/ui/Primitives';
 import { CountsLine } from '@/components/ui/VerdictTile';
 
 /**
- * Full-screen menu: slides down over 750 ms (the `menu` curve), six links, tonight's counts and the next deadline as plain
- * text. It is a modal dialog: focus moves in, Tab cycles inside, Escape or a link closes it, focus returns.
+ * Full-screen menu: slides down over 750 ms (the `menu` curve), six links (on hover or focus a link moves right and its
+ * arrow appears, as on the original), tonight's counts and the next deadline as plain text. It is a modal dialog: focus moves in, Tab cycles inside, Escape or a link closes it, focus returns.
  */
 export function Menu({ open, onClose, counts, nextDeadline, dateLabel, returnTo }: {
   open: boolean; onClose: () => void; counts: { go: number; maybe: number; nogo: number }; nextDeadline: { buyer: string; days: number } | null; dateLabel: string;
@@ -48,7 +48,7 @@ export function Menu({ open, onClose, counts, nextDeadline, dateLabel, returnTo 
       <div className="menu-body">
         <nav className="menu-nav" aria-label="Sections">
           {menuItems.map((m) => (
-            <a key={m.href} href={m.href} onClick={onClose} className="menu-link">{m.label}</a>
+            <a key={m.href} href={m.href} onClick={onClose} className="menu-link">{m.label}<Icon name="arrow_forward" size={36} className="menu-arrow" /></a>
           ))}
         </nav>
         <aside className="menu-card" aria-label="Tonight’s read">

@@ -3,7 +3,8 @@
  * TenderScout · shared/build-tokens.js
  * Reads shared/tokens.json (the only place colours, type, radius, easing and durations are written) and emits:
  *   shared/tokens.css                 custom properties for the app (plain stylesheet, no build step, works from file://)
- *   site/src/styles/tokens.css        the same values as a Tailwind v4 @theme block + :root for the website
+ *   site/src/styles/tokens.css        the same values as a Tailwind v4 @theme block + :root for the website, plus the
+ *                                     website-only motion timings (siteMotion → --sm-*, pass 5; not in shared/tokens.css)
  *   site/src/generated/tokens.ts      the JSON as a typed TS module (PhoneDemo, Map, VerdictTile read colours from it)
  *   .design-cache/tenderscout.md      token sheet for the design-drift scanner (gitignored, session-local)
  * Run: node shared/build-tokens.js      (also runs from site/: `npm run tokens`)
@@ -88,7 +89,14 @@ function tailwindTheme() {
   l.push('  --container-site: ' + T.layout.site.maxWidth + ';');
   return l.join('\n');
 }
-const siteCss = '/* ' + stamp + ' */\n@theme {\n' + tailwindTheme() + '\n}\n:root {\n' + sharedVars() + '\n' + schemeVars(T.color.site) + '\n}\n';
+// The website's own motion (siteMotion, pass 5): written here only, so the app's shared/tokens.css never changes for it.
+function siteMotionVars() {
+  const M = T.siteMotion || {}, l = ['  /* website motion (siteMotion): the original 3 Nov timings, solid shapes and colours */'];
+  Object.keys(M.easing || {}).forEach((k) => l.push('  --sm-ease-' + kebab(k) + ': ' + M.easing[k] + ';'));
+  flat(M.duration || {}).forEach(([k, v]) => l.push('  --sm-' + k + ': ' + ms(/^\d+$/.test(v) ? +v : v) + ';'));
+  return l.join('\n');
+}
+const siteCss = '/* ' + stamp + ' */\n@theme {\n' + tailwindTheme() + '\n}\n:root {\n' + sharedVars() + '\n' + siteMotionVars() + '\n' + schemeVars(T.color.site) + '\n}\n';
 const siteStyles = path.join(ROOT, 'site', 'src', 'styles');
 if (fs.existsSync(path.join(ROOT, 'site'))) {
   fs.mkdirSync(siteStyles, { recursive: true });

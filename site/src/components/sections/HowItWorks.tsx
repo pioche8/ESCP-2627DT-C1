@@ -7,7 +7,8 @@ import { Icon } from '@/components/ui/Icon';
 import { SimulatedText } from '@/components/ui/Primitives';
 import { StatusLine, VerdictTile } from '@/components/ui/VerdictTile';
 import tokens from '@/generated/tokens';
-import { EASE, easeOutCubic } from '@/lib/motion';
+import { EASE, SM, easeOutCubic } from '@/lib/motion';
+import { SpotGrid } from '@/components/ui/SpotGrid';
 import { useRaf } from '@/lib/useRaf';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 
@@ -22,13 +23,16 @@ function StepVisual({ i, active, children }: { i: number; active: number; childr
 
 /**
  * A sticky left column shows one idea per step (counter, tiles, quote, re-score); the right column holds the four steps.
- * The active step is the one nearest the viewport centre. Step 1's counter counts 0 → 777 over 2.8 s and replays when
- * step 1 re-enters. The counter writes to a ref inside one rAF loop.
+ * The active step is the one nearest the viewport centre. Step 1's counter counts 0 → 777 over 2.8 s while its ring fills,
+ * and replays when step 1 re-enters; the counter and the ring are written inside one rAF loop. Since pass 5 the original's
+ * other motion is back in solid colours: a dot grid whose dots near the cursor light up (the spotlight), a surface disc
+ * behind the visual that changes size and place per step (the orb, 800 ms), and four step bars lit up to the active step.
  */
 export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: number; nogo: number }; quote: TenderView }) {
   const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
   const stickyRef = useRef<HTMLDivElement>(null);
   const numRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<SVGCircleElement>(null);
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(true);
@@ -53,11 +57,14 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
     if (best !== activeRef.current) { activeRef.current = best; setActive(best); }
     const s0 = stepRefs.current[0], r0 = s0?.getBoundingClientRect(), vis0 = !!r0 && r0.top < vh && r0.bottom > 0;
     progress.current = activeRef.current === 0 && vis0 ? Math.min(1, progress.current + dt / (tokens.duration.pagesCountUp / 1000)) : 0;
-    if (numRef.current) numRef.current.textContent = String(Math.round(PAGES_TOTAL * easeOutCubic(progress.current)));
+    const e = easeOutCubic(progress.current);
+    if (numRef.current) numRef.current.textContent = String(Math.round(PAGES_TOTAL * e));
+    if (ringRef.current) ringRef.current.style.strokeDashoffset = String(SM.ring.circumference * (1 - e));
   }, !reduce && visible);
   useEffect(() => {
     if (!reduce) return; // reduced motion: final values, active step from scroll position only
     if (numRef.current) numRef.current.textContent = String(PAGES_TOTAL);
+    if (ringRef.current) ringRef.current.style.strokeDashoffset = '0';
     const onScroll = () => {
       const vh = window.innerHeight, cy = centreY(vh); let best = 0, bd = Infinity;
       stepRefs.current.forEach((el, i) => { if (!el) return; const r = el.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - cy); if (d < bd) { bd = d; best = i; } });
@@ -68,6 +75,7 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
   }, [reduce]);
   return (
     <section id="how" ref={sectionRef} className="how" aria-labelledby="how-h">
+      <SpotGrid />
       <div className="wrap how-head">
         <h2 id="how-h" className="h2 how-title">From {PAGES_TOTAL} pages to one answer.</h2>
         <p className="body"><a className="how-link" href="/how">Every rule, weight and threshold, derived from the decision code, and a live block to try them</a>.</p>
@@ -75,10 +83,17 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
       <div className="wrap how-grid">
         <div className="how-sticky-col">
           <div className="how-sticky" ref={stickyRef}>
+            <div className={`how-orb orb-${active}`} aria-hidden="true" />
             <StepVisual i={0} active={active}>
               <div className="counter">
-                <div ref={numRef} className="counter-num">0</div>
-                <div className="counter-sub">pages read in {LANGUAGES.length} languages</div>
+                <svg viewBox="0 0 220 220" className="ring-svg" aria-hidden="true">
+                  <circle cx="110" cy="110" r="94" className="ring-track" />
+                  <circle ref={ringRef} cx="110" cy="110" r="94" className="ring-fill" style={{ strokeDasharray: SM.ring.circumference, strokeDashoffset: SM.ring.circumference }} />
+                </svg>
+                <div className="counter-text">
+                  <div ref={numRef} className="counter-num">0</div>
+                  <div className="counter-sub">pages read in {LANGUAGES.length} languages</div>
+                </div>
               </div>
             </StepVisual>
             <StepVisual i={1} active={active}>
@@ -107,6 +122,7 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
                 </div>
               </div>
             </StepVisual>
+            <div className="step-bars" aria-hidden="true">{steps.map((_, i) => <span key={i} className={i <= active ? 'on' : ''} />)}</div>
           </div>
         </div>
         <ol className="how-steps">

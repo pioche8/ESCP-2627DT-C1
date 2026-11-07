@@ -26,6 +26,23 @@ img, svg, video { display: block; }
 }
 .ms.fill { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }
 
+/* The original 3 Nov motion, played with solid shapes and solid colours (pass 5, 7 Nov 2026; timings from --sm-* in tokens.css). */
+@keyframes ts-spin { to { transform: rotate(360deg); } }
+@keyframes ts-marq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes ts-d1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(14%, -10%); } }
+@keyframes ts-d2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-16%, 12%); } }
+@keyframes ts-d3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(8%, 6%) scale(1.18); } }
+@keyframes ts-hop { 0%, 55%, 100% { transform: translateY(0); } 25% { transform: translateY(-9px); } }
+@keyframes ts-flow { to { stroke-dashoffset: -14; } }
+@keyframes ts-pin-in { from { transform: scale(0); } to { transform: scale(1); } }
+/* the pan and the sweep step a solid colour along the letters or words (one lit at a time); no gradient */
+@keyframes ts-lit-end { 0%, 24.99% { color: var(--c-brand); } 25%, 100% { color: var(--c-ink); } }
+@keyframes ts-lit-mid { 0%, 24.99% { color: var(--c-ink); } 25%, 49.99% { color: var(--c-brand); } 50%, 74.99% { color: var(--c-ink); } 75%, 100% { color: var(--c-brand); } }
+@keyframes ts-sweep-word { 0%, 19.99% { color: var(--c-brand); } 20%, 100% { color: var(--c-ink); } }
+/* the home pulse and the film ping: a solid ring grows while its stroke thins to nothing (no fade, no alpha) */
+@keyframes ts-pulse { 0% { transform: scale(1); stroke-width: 2.5px; } 100% { transform: scale(3.4); stroke-width: 0; } }
+@keyframes ts-ping { 0% { transform: scale(1); stroke-width: 3px; } 100% { transform: scale(1.8); stroke-width: 0; } }
+
 /* Reduced motion: no animation or transition anywhere; end states stay. Per-frame effects also check the media query in JS. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

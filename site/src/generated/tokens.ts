@@ -251,6 +251,53 @@ export const tokens = {
     "pagesCountUp": 2800,
     "stepCrossfade": 500
   },
+  "siteMotion": {
+    "easing": {
+      "springSoft": "cubic-bezier(.2,.9,.25,1.2)",
+      "wipe": "cubic-bezier(.65,0,.35,1)",
+      "hop": "cubic-bezier(.3,0,.3,1)"
+    },
+    "duration": {
+      "wave": 700,
+      "wipe": 450,
+      "radial": 550,
+      "fold": 500,
+      "strip": 700,
+      "orb": 800,
+      "filmZoom": 1200,
+      "filmBar": 1600,
+      "hop": 1300,
+      "hopStagger": 160,
+      "pan": "24s",
+      "sweep": "4.5s",
+      "spin": "5s",
+      "ping": "2.2s",
+      "arcFlow": "1.6s",
+      "pulseMap": "2.2s",
+      "drift": [
+        "16s",
+        "20s",
+        "12s"
+      ],
+      "marqueeRows": [
+        "110s",
+        "92s"
+      ]
+    },
+    "ring": {
+      "circumference": 591
+    },
+    "heroDrift": {
+      "periodX": 3800,
+      "periodY": 5100,
+      "amplitudeX": 24,
+      "amplitudeY": 8,
+      "centreX": 50,
+      "centreY": 74,
+      "lerp": 0.05,
+      "minCursorY": 55
+    }
+  },
   "layout": {
     "site": {
       "maxWidth": "1200px",
