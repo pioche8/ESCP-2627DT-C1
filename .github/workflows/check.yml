@@ -1,4 +1,4 @@
-# Runs on every push and pull request. Two jobs, both required on main (repository ruleset, 5 Nov 2026):
+# Runs on every push and pull request. Two jobs, meant to be required on main by .github/ruleset-main.json (not applied yet, CLAUDE.md §11 item 92):
 #   check  node only, under a minute: engine tests, win/loss insights tests, data check, docs check (routes, story checks, interview
 #          citations), demo pins, engine invariants, static declutter scan, WCAG AA audit, generated token files in sync, the site's
 #          engine/data/insights copies in sync, the Vercel app build and deploy contract (ADR-0001, ADR-0003), the gates'

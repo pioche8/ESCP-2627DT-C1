@@ -61,8 +61,11 @@ GATES.forEach((g) => {
   if (!ok) failed++;
   console.log(pad(ok ? 'ok' : 'FAIL', 5) + pad(g.name, 78) + ' ' + pad(secs, 7) + ' ' + g.cmd);
   if (!ok) {
-    const tail = ((r.stdout || '') + (r.stderr || '')).trim().split('\n').filter((l) => /FAIL|Error|error|failed|problem/.test(l)).slice(-12);
-    tail.forEach((l) => console.log('       ' + l.trim().slice(0, 160)));
+    // The lines that name a failing check come first, so a long run of "error" lines cannot push them out (pass 4).
+    const lines = ((r.stdout || '') + (r.stderr || '')).trim().split('\n');
+    const named = lines.filter((l) => /^\s*FAIL\b/.test(l));
+    const other = lines.filter((l) => !/^\s*FAIL\b/.test(l) && /FAIL|Error|error|failed|problem/.test(l)).slice(-Math.max(0, 12 - named.length));
+    named.concat(other).forEach((l) => console.log('       ' + l.trim().slice(0, 160)));
   }
 });
 console.log('\n' + (failed ? failed + ' gate(s) failed. Rerun each with the command on its line.' : 'All gates green.'));
