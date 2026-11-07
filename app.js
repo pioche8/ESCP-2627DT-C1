@@ -785,18 +785,22 @@
     var rs = document.getElementById('rescore'); if (!rs) return;
     rs.innerHTML = rescoreCard(true);
     var card = rs.firstElementChild;
-    var to = card && card.querySelector('.rescore-score .to');
-    if (to) { var target = +to.textContent; to.textContent = to.getAttribute('data-from'); setTimeout(function () { countUp(to, +to.getAttribute('data-from'), target); }, reduceMotion ? 0 : 315); }
-    if (!card || !fromEl) return;
+    // The new score counts up: from 315 ms inside the morph, at once when the card pops (no frozen "90 → 90" while it fades in).
+    var to = card && card.querySelector('.rescore-score .to'), target = to ? +to.textContent : 0;
+    if (to) to.textContent = to.getAttribute('data-from');
+    var count = function (delay) { if (to) setTimeout(function () { countUp(to, +to.getAttribute('data-from'), target); }, reduceMotion ? 0 : delay); };
+    if (!card || !fromEl) { count(0); return; }
     var a = fromEl.getBoundingClientRect(), b = card.getBoundingClientRect();
-    // Short screens (iPhone 13 / SE): the card can sit just above the fold when the switch is tapped. Bring it back in
-    // (an instant scroll, at most one screen) so the re-score is seen; further away, the hint next to the control tells.
-    if (b.bottom < 0 && b.top > -window.innerHeight) { // up to one screen (it was 0.6: on iPhone SE the card sat at −342 of −341 px, pass 5)
+    var bar = $tabs.querySelector('.tabbar'), floor = (bar && bar.getBoundingClientRect().top) || window.innerHeight; // the fixed tab bar hides what is under it
+    // Short screens (iPhone 13 / SE): the card can sit just above the fold when the switch is tapped. Bring it back in with
+    // an instant scroll so the re-score is seen, but only for a card that names a change, and only when the control just
+    // tapped stays fully in view above the tab bar afterwards; otherwise the hint next to the control tells (pass 5).
+    if (lastChange && lastChange.changes.length && b.bottom < 0 && a.top >= 0 && a.bottom + 12 - b.top <= floor) {
       window.scrollBy(0, b.top - 12);
       a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
     }
-    if (reduceMotion || typeof card.animate !== 'function') return;
-    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > window.innerHeight || a.bottom < 0 || a.top > window.innerHeight) return; // card or control off-screen: keep the pop
+    if (reduceMotion || typeof card.animate !== 'function') { count(0); return; }
+    if (!a.width || !a.height || !b.width || b.bottom < 0 || b.top > floor || a.bottom < 0 || a.top > floor) { count(0); return; } // card or control off-screen: keep the pop
     card.classList.remove('enter'); card.classList.add('morph');
     var sx = a.width / b.width, sy = a.height / b.height;
     var r = parseFloat(getComputedStyle(fromEl).borderTopLeftRadius) || 8;
@@ -809,6 +813,7 @@
       ch.animate([{ opacity: 0 }, { opacity: 0, offset: .45 }, { opacity: 1 }], { duration: 700, easing: 'ease-out', fill: 'both' });
     });
     ghostAt(a, r);
+    count(315);
   }
   function ghostAt(rect, radius) {
     var g = document.createElement('span');
@@ -823,9 +828,11 @@
   var COUNT_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-rescore-count-up'), 10) || 650;
   var PAGES_MS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dur-pages-count-up'), 10) || 2800; // the site's 777 counter
   function countUp(el, from, to, ms) {
+    var run = el.countRun = (el.countRun || 0) + 1; // a newer count on the same number stops this one (two quick taps)
     if (reduceMotion || from === to) { el.textContent = to; return; }
     var t0 = performance.now();
     (function step(now) {
+      if (el.countRun !== run) return;
       var k = Math.min(1, (now - t0) / (ms || COUNT_MS));
       el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
       if (k < 1) requestAnimationFrame(step);

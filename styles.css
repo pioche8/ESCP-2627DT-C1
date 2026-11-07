@@ -466,7 +466,7 @@ html.sheet-open { overflow:hidden; }
 /* Hints (pass 5): muted text; colour only on the target verdict, which is shape + word ("becomes ▲ Maybe"), so colour keeps
    meaning a verdict and never a direction. */
 .hint { margin-top:2px; font:600 13px/18px var(--font-ui); color:var(--c-muted); }
-.hint .status { display:inline; font-size:13px; }
+.hint .status { display:inline; font-size:13px; white-space:nowrap; } /* the shape and its word wrap as one */
 .hint .status .shape { display:inline-block; margin-right:4px; vertical-align:0; }
 .money-field { cursor:text; display:inline-flex; align-items:center; gap:2px; height:44px; padding:0 12px; border-radius:var(--r); background:var(--c-bg); font:800 18px/1 var(--font-ui); }
 .money-field input { width:3.2em; border:0; background:transparent; outline:none; text-align:right; font:800 18px/1 var(--font-ui); color:var(--c-ink); padding:0; height:44px; }

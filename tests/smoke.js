@@ -238,6 +238,11 @@ async function run(scheme, browser, step) {
   check(hint.includes('Turn on → Landkreis Hohenau becomes Go'), 'impact hint before toggling: ' + hint);
   check((await page.locator('[data-hint="cert:VCA"]').innerText()).includes('Gemeente Vlietdam becomes Maybe'), 'VCA hint: Vlietdam becomes Maybe');
   check(await page.locator('[role="switch"][data-lang]').count() === 5, 'bid languages are rows with switches');
+  const split = await page.evaluate(() => Array.from(document.querySelectorAll('.hint .status')).filter((s) => s.getClientRects().length).filter((s) => {
+    const a = s.querySelector('.shape').getBoundingClientRect(), b = s.querySelector('b').getBoundingClientRect();
+    return Math.abs((a.top + a.bottom) / 2 - (b.top + b.bottom) / 2) > 6;
+  }).map((s) => s.closest('[data-hint]').getAttribute('data-hint')));
+  check(split.length === 0, 'every lever hint keeps its verdict shape and word on one line' + (split.length ? ': split in ' + split.join(', ') : ''));
   await scan('company'); await shot('company');
   await page.click('button[data-cert="ISO 27001"]');
   check(await page.waitForSelector('.morph-ghost', { timeout: 1500 }).then(() => true).catch(() => false), 'a dashed ghost is left on the switch while the re-score card grows out of it');
@@ -257,6 +262,24 @@ async function run(scheme, browser, step) {
   // scan the settled card: on a slow runner the 700 ms morph can still be running here (radius between the switch's and 8 px)
   await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
   await scan('company-rescore'); await shot('company-rescore');
+  // A switch tapped low on the screen stays in view: the card is brought back only when the control stays above the tab bar.
+  const floor = await page.evaluate(() => { const t = document.querySelector('.tabbar'); return t ? t.getBoundingClientRect().top : innerHeight; });
+  await page.evaluate((f) => { const r = document.querySelector('button[data-act="xb"]').getBoundingClientRect(); window.scrollBy(0, r.bottom - f * 0.85); }, floor);
+  await page.waitForTimeout(100);
+  const xbBefore = await page.locator('button[data-act="xb"]').boundingBox();
+  await page.mouse.click(xbBefore.x + xbBefore.width / 2, xbBefore.y + xbBefore.height / 2); // a tap where it is, without Playwright scrolling it into view
+  await page.waitForTimeout(150);
+  const xbAfter = await page.locator('button[data-act="xb"]').boundingBox();
+  check(await page.locator('button[data-act="xb"][aria-checked="false"]').count() === 1 && xbAfter.y >= 0 && xbAfter.y + xbAfter.height <= floor, 'a switch tapped low on the screen stays in view above the tab bar after the re-score (cross-border at ' + Math.round(xbBefore.y) + ' → ' + Math.round(xbAfter.y) + ' px, tab bar at ' + Math.round(floor) + ')');
+  await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
+  await page.click('button[data-act="xb"]'); // cross-border back on
+  await page.waitForFunction(() => document.querySelector('button[data-act="xb"]').getAttribute('aria-checked') === 'true');
+  await page.waitForFunction(() => Array.from(document.querySelectorAll('#co-tiles b')).map((b) => b.textContent).join(',') === '2,2,2', null, { timeout: 3000 }).catch(() => {});
+  check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'cross-border off and on again: counts back at 2 : 2 : 2');
+  await page.click('button[data-cert="VCA"]'); await page.click('button[data-cert="VCA"]'); // two quick taps: on, then off again mid-count
+  await page.waitForTimeout(1200);
+  check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'two quick taps on a switch leave the counts right (2 : 2 : 2): ' + (await page.locator('#co-tiles b').allInnerTexts()).join(','));
+  await page.waitForFunction(() => !document.querySelector('.morph-ghost') && document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 }).catch(() => {});
 
   // Feed after the change
   await page.click('.tabbar a[href="#/feed"]');
