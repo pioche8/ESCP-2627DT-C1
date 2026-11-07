@@ -1036,6 +1036,7 @@
     var t = tender(r.id);
     var html = t ? (r.sub.kind === 'req' ? reqSheet(t, r.sub.id) : skipSheet(t)) : null;
     if (!html) { replaceTo(t ? '#/t/' + r.id : '#/feed'); return; }
+    hideToast(true); // a sheet is modal: a toast raised on the screen behind it goes (its Undo would act outside the sheet)
     clearTimeout(sheetTimer);
     if (!sheetKey) lastFocus = document.activeElement;
     sheetKey = want;

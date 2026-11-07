@@ -399,6 +399,13 @@ async function run(scheme, browser, step) {
   await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
   const readMs = Date.now() - t0;
   check(readMs < 1200 && await page.locator('.vhead .ai').count() === 1, 'fast mode: the tender is read in ' + readMs + ' ms with the "Simulated AI" label in place');
+  // A sheet is modal: a toast raised on the tender behind it goes when a sheet opens
+  await page.click('button[data-act="save"]');
+  await page.waitForSelector('#toast-root .toast');
+  await page.click('a.req >> nth=0');
+  await waitSheet(true);
+  check(await page.locator('#toast-root .toast').count() === 0, 'toast: opening a sheet removes the toast behind it (its Undo would act outside the sheet)');
+  await page.keyboard.press('Escape'); await waitSheet(false);
 
   // iPhone home-screen insets (viewport-fit=cover, 47 px top / 34 px bottom): the top inset is applied once
   const inset = await ctx.newPage();
