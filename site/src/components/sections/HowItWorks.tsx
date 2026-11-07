@@ -4,11 +4,11 @@ import { motion } from 'framer-motion';
 import { PAGES_TOTAL, LANGUAGES, type TenderView } from '@/data/app';
 import { steps } from '@/data/copy';
 import { Icon } from '@/components/ui/Icon';
-import { SectionLabel, SimulatedPill } from '@/components/ui/Primitives';
-import { VerdictShape, VERDICT } from '@/components/ui/VerdictShape';
-import { VerdictTile } from '@/components/ui/VerdictTile';
+import { SimulatedText } from '@/components/ui/Primitives';
+import { StatusLine, VerdictTile } from '@/components/ui/VerdictTile';
 import tokens from '@/generated/tokens';
-import { EASE, easeOutCubic } from '@/lib/motion';
+import { EASE, SM, easeOutCubic } from '@/lib/motion';
+import { SpotGrid } from '@/components/ui/SpotGrid';
 import { useRaf } from '@/lib/useRaf';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 
@@ -22,9 +22,11 @@ function StepVisual({ i, active, children }: { i: number; active: number; childr
 }
 
 /**
- * Spotlight dot grid over the section; a sticky left column shows one visual per step (crossfade, scale .92 → 1); the right
- * column holds the four steps (85vh each). The active step is the one nearest the viewport centre. Step 1's counter counts
- * 0 → 777 over 2.8 s while its ring fills, and replays when step 1 re-enters. The counter writes to refs inside one rAF loop.
+ * A sticky left column shows one idea per step (counter, tiles, quote, re-score); the right column holds the four steps.
+ * The active step is the one nearest the viewport centre. Step 1's counter counts 0 → 777 over 2.8 s while its ring fills,
+ * and replays when step 1 re-enters; the counter and the ring are written inside one rAF loop. Since pass 5 the original's
+ * other motion is back in solid colours: a dot grid whose dots near the cursor light up (the spotlight), a surface disc
+ * behind the visual that changes size and place per step (the orb, 800 ms), and four step bars lit up to the active step.
  */
 export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: number; nogo: number }; quote: TenderView }) {
   const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
@@ -57,7 +59,7 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
     progress.current = activeRef.current === 0 && vis0 ? Math.min(1, progress.current + dt / (tokens.duration.pagesCountUp / 1000)) : 0;
     const e = easeOutCubic(progress.current);
     if (numRef.current) numRef.current.textContent = String(Math.round(PAGES_TOTAL * e));
-    if (ringRef.current) ringRef.current.style.strokeDashoffset = String(tokens.duration.ringCircumference * (1 - e));
+    if (ringRef.current) ringRef.current.style.strokeDashoffset = String(SM.ring.circumference * (1 - e));
   }, !reduce && visible);
   useEffect(() => {
     if (!reduce) return; // reduced motion: final values, active step from scroll position only
@@ -71,34 +73,26 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
     onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [reduce]);
-  const spot = (e: React.MouseEvent<HTMLElement>) => {
-    if (reduce) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty('--mx', e.clientX - r.left + 'px'); e.currentTarget.style.setProperty('--my', e.clientY - r.top + 'px');
-  };
   return (
-    <section id="how" ref={sectionRef} className="how" onMouseMove={spot} aria-labelledby="how-h">
-      <div className="dots" aria-hidden="true" />
-      <div className="dots-sky" aria-hidden="true" />
-      <div className="spot" aria-hidden="true" />
-      <div className="wrap-wide how-head">
-        <SectionLabel n="03">HOW IT WORKS</SectionLabel>
+    <section id="how" ref={sectionRef} className="how" aria-labelledby="how-h">
+      <SpotGrid active={active} />
+      <div className="wrap how-head">
         <h2 id="how-h" className="h2 how-title">From {PAGES_TOTAL} pages to one answer.</h2>
         <p className="body"><a className="how-link" href="/how">Every rule, weight and threshold, derived from the decision code, and a live block to try them</a>.</p>
       </div>
-      <div className="wrap-wide how-grid">
+      <div className="wrap how-grid">
         <div className="how-sticky-col">
           <div className="how-sticky" ref={stickyRef}>
-            <div className="orb" aria-hidden="true" style={{ background: tokens.glow.orbs[active] }} />
+            <div className={`how-orb orb-${active}`} aria-hidden="true" />
             <StepVisual i={0} active={active}>
               <div className="counter">
                 <svg viewBox="0 0 220 220" className="ring-svg" aria-hidden="true">
                   <circle cx="110" cy="110" r="94" className="ring-track" />
-                  <circle ref={ringRef} cx="110" cy="110" r="94" className="ring-fill" />
+                  <circle ref={ringRef} cx="110" cy="110" r="94" className="ring-fill" style={{ strokeDasharray: SM.ring.circumference, strokeDashoffset: SM.ring.circumference }} />
                 </svg>
                 <div className="counter-text">
                   <div ref={numRef} className="counter-num">0</div>
-                  <div className="counter-sub">PAGES READ · {LANGUAGES.length} LANGUAGES</div>
+                  <div className="counter-sub">pages read in {LANGUAGES.length} languages</div>
                 </div>
               </div>
             </StepVisual>
@@ -111,24 +105,20 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
             </StepVisual>
             <StepVisual i={2} active={active}>
               <figure className="quote">
-                <span className="quote-tag">ORIGINAL · {LANGUAGES.length ? 'GERMAN' : ''}</span>
-                <div className="quote-head"><span>{quote.doc}</span><span>{req.cite.replace(/^[^p]*p\./, 'p.')}</span></div>
+                <figcaption className="quote-head">Original (German) · {quote.doc}, {req.cite.replace(/^[^p]*p\./, 'p.')}</figcaption>
                 <blockquote lang={quote.language}>
                   „{hl >= 0 ? <>{req.src.slice(0, hl)}<mark>{req.highlight}</mark>{req.src.slice(hl + (req.highlight?.length ?? 0))}</> : req.src}“
                 </blockquote>
-                <figcaption className="quote-tr"><span>{req.tr}</span><SimulatedPill /></figcaption>
+                <div className="quote-tr"><span>{req.tr}</span><SimulatedText /></div>
               </figure>
             </StepVisual>
             <StepVisual i={3} active={active}>
               <div className="rescore-card">
-                <span className="rescore-icon"><Icon name="trending_up" size={50} /></span>
-                <div>
-                  <div className="rescore-buyer">{quote.buyer}</div>
-                  <div className="rescore-row">
-                    <span className="chip-v" style={{ background: VERDICT.nogo.solid, color: VERDICT.nogo.on }}><VerdictShape verdict="nogo" size={10} color={VERDICT.nogo.on} />No-go</span>
-                    <Icon name="arrow_forward" size={24} className="rescore-arrow" />
-                    <span className="chip-v" style={{ background: VERDICT.go.solid, color: VERDICT.go.on }}><VerdictShape verdict="go" size={11} color={VERDICT.go.on} />Go</span>
-                  </div>
+                <div className="rescore-buyer">{quote.buyer}</div>
+                <div className="rescore-row">
+                  <StatusLine verdict="nogo" size={12} />
+                  <Icon name="arrow_forward" size={22} className="rescore-arrow" />
+                  <StatusLine verdict="go" size={12} />
                 </div>
               </div>
             </StepVisual>
@@ -137,8 +127,7 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
         </div>
         <ol className="how-steps">
           {steps.map((s, i) => (
-            <li key={s.n} ref={(el) => { stepRefs.current[i] = el; }} className={`how-step${active === i ? ' active' : ''}`} aria-current={active === i ? 'step' : undefined}>
-              <p className="label">{s.n}</p>
+            <li key={s.title} ref={(el) => { stepRefs.current[i] = el; }} className={`how-step${active === i ? ' active' : ''}`} aria-current={active === i ? 'step' : undefined}>
               <h3 className="step-title">{s.title}</h3>
               <p className="step-body">{s.body(PAGES_TOTAL)}</p>
             </li>

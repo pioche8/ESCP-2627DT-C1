@@ -1,8 +1,8 @@
 /*
  * tests/declutter-scan.js — proves the 18 declutter patterns (4 Nov 2026) are absent from the CSS and the rendered DOM.
  *
- *   node tests/declutter-scan.js                  static scan of the app's two stylesheets
- *   require('./declutter-scan').scanDom(page)     Playwright: scan the current document (used by tests/smoke.js on every app screen)
+ *   node tests/declutter-scan.js                  static scan of the app's and the site's stylesheets
+ *   require('./declutter-scan').scanDom(page)     Playwright: scan the current document (used by tests/smoke.js and site/scripts/shots.cjs)
  *
  * Patterns: negative letter-spacing, uppercase, italic, gradients (and the SVG grain), monospace, borders and shadows on
  * cards / panels / inputs, radius over 8 px (switches and the 8 px verdict circle excepted), alpha colours and element
@@ -14,9 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-// The app only: since 6 Nov 2026 the website is back to its original 3 Nov design (the owner's decision), which the declutter brief does not cover
-// (CLAUDE.md §11 item 139).
-const CSS_FILES = ['styles.css', 'shared/tokens.css'];
+const CSS_FILES = ['styles.css', 'shared/tokens.css', 'site/src/styles/components.css', 'site/src/styles/tokens.css', 'site/src/app/globals.css'];
 
 /* ---------- static CSS scan ---------- */
 function stripComments(css) { return css.replace(/\/\*[\s\S]*?\*\//g, ''); }

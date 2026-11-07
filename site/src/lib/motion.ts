@@ -16,3 +16,6 @@ export const sec = (ms: number) => ms / 1000;
 export const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
 export const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+// The website's own motion (pass 5): the original 3 Nov timings, played with solid shapes and colours (shared/tokens.json → siteMotion).
+export const SM = tokens.siteMotion;
+export const SM_EASE = { springSoft: bez(SM.easing.springSoft), wipe: bez(SM.easing.wipe), hop: bez(SM.easing.hop) };

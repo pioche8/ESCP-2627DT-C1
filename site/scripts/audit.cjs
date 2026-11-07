@@ -105,6 +105,26 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
       }
     }
   }
+  // States the page-load run never opens (pass 5): each tab of the phone demo, the open menu, a map tooltip.
+  const axeOn = async (page, label) => {
+    await page.addScriptTag({ content: axeSrc }).catch(() => {});
+    const res = await page.evaluate(() => window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] } }));
+    const v = res.violations;
+    ok(v.length === 0, `/ · ${label} · axe: ${v.length} violation(s)` + (v.length ? '\n       ' + v.map((x) => x.impact + ' ' + x.id + ' (' + x.nodes.length + '): ' + x.help + ' → ' + x.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(', ')).join('\n       ') : ''));
+  };
+  for (const [w, h] of [[1280, 900], [390, 844]]) {
+    const ctx = await pw.newContext({ viewport: { width: w, height: h }, colorScheme: 'dark' });
+    const page = await ctx.newPage();
+    await page.goto(base + '/', { waitUntil: 'networkidle' });
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('app').scrollIntoView(); });
+    for (let i = 0; i < 5; i++) { await page.locator('#dock-tab-' + i).click(); await page.waitForTimeout(250); await axeOn(page, `${w}px · phone tab ${i + 1} of 5`); }
+    await page.evaluate(() => document.getElementById('where').scrollIntoView());
+    await page.waitForSelector('.map-svg .pin', { timeout: 10000 }); await page.waitForTimeout(1500);
+    await page.locator('.pin').nth(1).focus(); await page.waitForTimeout(200); await axeOn(page, `${w}px · a map tooltip open`);
+    await page.evaluate(() => window.scrollTo(0, 0)); await page.locator('.menu-btn').click(); await page.waitForTimeout(900);
+    await axeOn(page, `${w}px · the menu open`);
+    await ctx.close();
+  }
   await pw.close();
   if (srv) srv.close();
   console.log('\n' + (failures ? failures + ' audit check(s) failed' : 'Lighthouse ≥ ' + THRESHOLD + ' in all four categories and 0 axe violations on ' + PAGES.length + ' pages × dark + light') + ' · reports in lighthouse/');

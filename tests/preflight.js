@@ -30,7 +30,7 @@ const GATES = [
   { name: 'Demo pins (Hohenau 25 → 90 → 100, storage key, reset)', cmd: 'node tests/demo-golden.test.js' },
   { name: 'Engine invariants (seeded property test)', cmd: 'node tests/engine-invariants.test.js' },
   { name: 'No live AI and no keys (no site server route, no key-shaped string)', cmd: 'node tests/no-live-ai-check.js' },
-  { name: 'Declutter scan (static, the app\'s two stylesheets)', cmd: 'node tests/declutter-scan.js' },
+  { name: 'Declutter scan (static, the app\'s and the website\'s stylesheets)', cmd: 'node tests/declutter-scan.js' },
   { name: 'WCAG AA audit of shared/tokens.json', cmd: 'node shared/check-contrast.js' },
   { name: 'Generated token files match shared/tokens.json', cmd: 'node shared/build-tokens.js && git diff --exit-code --stat -- shared/tokens.css site/src/styles/tokens.css site/src/generated/tokens.ts' },
   { name: 'Generated decision model matches engine.js and data.js', cmd: 'node shared/how-it-decides.js && git diff --exit-code --stat -- site/src/generated/how-it-decides.json docs/HOW_IT_DECIDES.md' },
@@ -42,7 +42,7 @@ const GATES = [
   { name: 'Smoke iPhone 13', cmd: 'SMOKE_DEVICE="iPhone 13" node tests/smoke.js', browser: true },
   { name: 'Smoke iPhone SE', cmd: 'SMOKE_DEVICE="iPhone SE" node tests/smoke.js', browser: true },
   { name: 'Website: lint, typecheck, build', cmd: 'cd site && rm -rf .next && npm run check', site: true }, // a .next left by a build of another branch would fail the typecheck
-  { name: 'Website: static export, the "How it decides" page check, Lighthouse ≥ 95 (median of 3) and axe', cmd: 'cd site && npm run audit', site: true, browser: true }
+  { name: 'Website: static export, the "How it decides" page check, the motion inventory (a11y-motion), Lighthouse ≥ 95 (median of 3) and axe', cmd: 'cd site && npm run audit', site: true, browser: true }
 ];
 
 let failed = 0;

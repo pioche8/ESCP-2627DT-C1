@@ -1,20 +1,24 @@
 import { languagesTile } from '@/data/copy';
 
-/** Two tiles: "Bid." filled with a slowly panning photo (period in sky), and three tilted lines with a moving light sweep. */
+/**
+ * Two plain tiles: "Bid." and the one sentence about languages. The original's motion in solid colours (pass 5): the
+ * photo that panned inside "Bid." becomes one brand-coloured letter travelling B → i → d → i (24 s, the original's 12 s each
+ * way), and the light sweep across the lines becomes one brand-coloured word at a time sweeping across the sentence (4.5 s a sweep).
+ */
 export function Languages() {
+  const words = languagesTile.lines.split(' ');
   return (
-    <section id="languages" className="languages" aria-label="Languages">
-      <div className="wrap-full lang-grid">
-        <div className="lang-tile lang-mask">
-          <div className="lang-bid" aria-hidden="true">Bid<span>.</span></div>
-          <span className="sr-only">Bid.</span>
-          <div className="lang-foot"><span>02 — LANGUAGES</span><span>{languagesTile.codes}</span></div>
+    <section id="languages" className="section" aria-label="Languages">
+      <div className="wrap lang-grid">
+        <div className="lang-tile">
+          <p className="lang-bid"><span className="sr-only">Bid.</span><span aria-hidden="true"><span className="pan-a">B</span><span className="pan-i">i</span><span className="pan-a pan-d">d</span><span className="pan-dot">.</span></span></p>
+          <p className="lang-foot">{languagesTile.codes}</p>
         </div>
-        <div className="lang-tile lang-sweep">
-          <div className="sweep-lines" aria-hidden="true">
-            {languagesTile.lines.map((l, i) => <span key={i} style={{ animationDelay: `${i * 0.25}s` }}>{l}</span>)}
-          </div>
-          <p className="sr-only">{languagesTile.lines.join(' ')}</p>
+        <div className="lang-tile">
+          <p className="lang-lines">
+            <span className="sr-only">{languagesTile.lines}</span>
+            <span aria-hidden="true">{words.map((w, i) => <span key={i} className="sweep-w" style={{ animationDelay: `${(-(4.5 - (i * 4.5) / words.length)).toFixed(2)}s` }}>{w} </span>)}</span>
+          </p>
         </div>
       </div>
     </section>

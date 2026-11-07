@@ -35,6 +35,7 @@ export function TryTheRules() {
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [prev, setPrev] = useState<Result | null>(null);
   const [lastLever, setLastLever] = useState<string>('');
+  const [resets, setResets] = useState(0); // the number fields are uncontrolled: a reset remounts them with the demo values
   const sectors = useMemo(() => Array.from(new Set([...PROFILE.cpv, ...tender.cpv.map((c) => c.slice(0, 2))])).sort(), [tender]);
   const overrides = useMemo(() => { const o: Record<string, 'pass' | 'fail'> = {}; Object.keys(answers).forEach((k) => { if (answers[k]) o[k] = answers[k]!; }); return o; }, [answers]);
   const result = useMemo(() => Engine.evaluate(tender, profile, TODAY, overrides), [tender, profile, overrides]);
@@ -45,7 +46,7 @@ export function TryTheRules() {
 
   const apply = (lever: string, next: Profile) => { setPrev(result); setLastLever(lever); setProfile(next); };
   const answer = (rid: string, a: Answer) => { setPrev(result); setLastLever('answer:' + rid); setAnswers((s) => ({ ...s, [rid]: s[rid] === a ? undefined : a })); };
-  const reset = () => { setPrev(null); setLastLever(''); setProfile(PROFILE); setAnswers({}); };
+  const reset = () => { setPrev(null); setLastLever(''); setProfile(PROFILE); setAnswers({}); setResets((n) => n + 1); };
 
   const flipped = new Set<string>();
   if (prev) result.checks.forEach((c) => { const p = prev.checks.find((x) => x.id === c.id); if (p && p.status !== c.status) flipped.add(c.id); });
@@ -119,15 +120,15 @@ export function TryTheRules() {
           </div>
           <div className={`try-row${dim('turnover')}`}>
             <label className="try-row-label" htmlFor="try-turnover">Turnover, last full year, € millions</label>
-            <span className="try-field"><input id="try-turnover" inputMode="decimal" defaultValue={profile.turnover / 1e6} onBlur={(e) => { const n = parseFloat(e.target.value.replace(',', '.')); if (isFinite(n) && n >= 0) apply('turnover', { ...profile, turnover: Math.round(n * 1e6) }); else e.target.value = String(profile.turnover / 1e6); }} /></span>
+            <span className="try-field"><input key={`turnover-${resets}`} id="try-turnover" inputMode="decimal" defaultValue={profile.turnover / 1e6} onBlur={(e) => { const n = parseFloat(e.target.value.replace(',', '.')); if (isFinite(n) && n >= 0) apply('turnover', { ...profile, turnover: Math.round(n * 1e6) }); else e.target.value = String(profile.turnover / 1e6); }} /></span>
           </div>
           <div className={`try-row${dim('minValue')}`}>
             <label className="try-row-label" htmlFor="try-min">Smallest contract you take, € thousands</label>
-            <span className="try-field"><input id="try-min" inputMode="numeric" defaultValue={profile.minValue / 1e3} onBlur={(e) => { const n = parseFloat(e.target.value); if (isFinite(n) && n >= 0) apply('minValue', { ...profile, minValue: Math.round(n * 1e3) }); else e.target.value = String(profile.minValue / 1e3); }} /></span>
+            <span className="try-field"><input key={`min-${resets}`} id="try-min" inputMode="numeric" defaultValue={profile.minValue / 1e3} onBlur={(e) => { const n = parseFloat(e.target.value); if (isFinite(n) && n >= 0) apply('minValue', { ...profile, minValue: Math.round(n * 1e3) }); else e.target.value = String(profile.minValue / 1e3); }} /></span>
           </div>
           <div className={`try-row${dim('maxValue')}`}>
             <label className="try-row-label" htmlFor="try-max">Largest contract you take, € thousands</label>
-            <span className="try-field"><input id="try-max" inputMode="numeric" defaultValue={profile.maxValue / 1e3} onBlur={(e) => { const n = parseFloat(e.target.value); if (isFinite(n) && n >= 0) apply('maxValue', { ...profile, maxValue: Math.round(n * 1e3) }); else e.target.value = String(profile.maxValue / 1e3); }} /></span>
+            <span className="try-field"><input key={`max-${resets}`} id="try-max" inputMode="numeric" defaultValue={profile.maxValue / 1e3} onBlur={(e) => { const n = parseFloat(e.target.value); if (isFinite(n) && n >= 0) apply('maxValue', { ...profile, maxValue: Math.round(n * 1e3) }); else e.target.value = String(profile.maxValue / 1e3); }} /></span>
           </div>
         </div>
 
