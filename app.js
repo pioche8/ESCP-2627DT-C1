@@ -660,7 +660,7 @@
         '<button class="switch" role="switch" aria-checked="' + has(p.certifications, cert) + '" aria-labelledby="cert-' + i + '" data-cert="' + esc(cert) + '"></button></div>';
     }).join('');
     var langRows = LANG_OPTIONS.map(function (l, i) {
-      return '<div class="row"><div class="txt"><p class="row-label" id="lang-' + i + '">' + esc(E.langName(l)) + '</p>' + (i === 0 ? '<p class="hint" data-hint="lang"></p>' : '') + '</div>' +
+      return '<div class="row"><div class="txt"><p class="row-label" id="lang-' + i + '">' + esc(E.langName(l)) + '</p><p class="hint" data-hint="lang:' + l + '"></p></div>' +
         '<button class="switch" role="switch" aria-checked="' + has(p.languages, l) + '" aria-labelledby="lang-' + i + '" data-lang="' + l + '"></button></div>';
     }).join('');
     var html = '<div class="screen ' + (S.onboarded ? 'has-tabs' : 'has-bar') + '">' +
@@ -670,7 +670,7 @@
         '<p class="sub">' + esc(p.name) + ' · ' + esc(p.city) + '</p>' +
         '<p class="label-text" style="margin-top:18px">Your feed right now</p>' + countsLine(c, true) +
       '</header>' +
-      '<div id="rescore">' + rescoreCard(false) + '</div>' +
+      '<div id="rescore" aria-live="polite">' + rescoreCard(false) + '</div>' +
       '<div class="sec-h"><h2>Size</h2></div><div class="group">' +
         '<div class="row"><div class="txt"><p class="row-label"><label for="turnover">Turnover</label></p><p class="row-sub">Last full year, in € millions</p></div>' +
           '<label class="money-field" for="turnover"><span class="unit" aria-hidden="true">€</span><input id="turnover" data-field="turnover" inputmode="decimal" autocomplete="off" value="' + (p.turnover / 1e6) + '"><span class="unit" aria-hidden="true">M</span></label></div>' +
@@ -697,15 +697,17 @@
     var ch = lastChange.changes;
     if (!ch.length) return neutral('Re-scored ' + plural(D.TENDERS.length, 'tender') + '.', 'No verdict changed.');
     var c = ch[0], t = tender(c.tenderId), more = ch.length > 1 ? ' · +' + (ch.length - 1) + ' more' : '';
+    // The score is the payoff (pass 5): "25 → 100" with the new score in the new verdict's colour, from Engine.diff.
     return '<div class="rescore' + (enter ? ' enter' : '') + '" data-rescore="' + c.tenderId + ':' + c.from + ':' + c.to + '">' +
-      '<p class="rescore-buyer" aria-hidden="true">' + esc(bare(t.buyer)) + '</p>' +
+      '<div class="rescore-top"><p class="rescore-buyer" aria-hidden="true">' + esc(bare(t.buyer)) + '</p>' +
+        '<p class="rescore-score" aria-hidden="true"><span class="from">' + c.fromScore + '</span><span class="arrow">→</span><b class="to v-' + c.to + '" data-from="' + c.fromScore + '">' + c.toScore + '</b></p></div>' +
       '<p class="change-row" aria-hidden="true">' + status(c.from, V[c.from]) + '<span class="arrow">→</span>' + status(c.to, V[c.to]) + '<span>just now' + esc(more) + '</span></p>' +
-      '<p class="sr-only">' + esc(bare(t.buyer)) + ': ' + V[c.from] + ' → ' + V[c.to] + esc(more) + '</p></div>';
+      '<p class="sr-only">' + esc(bare(t.buyer)) + ': ' + V[c.from] + ' → ' + V[c.to] + ', score ' + c.fromScore + ' → ' + c.toScore + esc(more) + '</p></div>';
   }
   // Unlock hints: "Turn on → Gemeente Vlietdam becomes Maybe". Computed by Engine.whatIf (no state change).
   function hintText(changes, lead, verb) {
     var c = changes[0];
-    return lead + ' → ' + bare(tender(c.tenderId).buyer) + ' ' + verb + ' ' + V[c.to] + (changes.length > 1 ? ' +' + (changes.length - 1) + ' more' : '');
+    return esc(lead + ' → ' + bare(tender(c.tenderId).buyer) + ' ' + verb + ' ') + status(c.to, V[c.to]) + (changes.length > 1 ? esc(' +' + (changes.length - 1) + ' more') : '');
   }
   function whatIf(patch) {
     return E.whatIf(D.TENDERS, S.profile, TODAY, S.overrides, patch).filter(function (c) { return !S.skipped[c.tenderId]; });
@@ -715,7 +717,7 @@
     if (!lastChange || lastChange.lever !== lever) return null;
     var u = ups(lastChange.changes); if (!u.length) return null;
     var c = u[0], name = bare(tender(c.tenderId).buyer);
-    return { ok: true, text: (c.to === 'go' ? 'Unlocked ' + name : name + ' moved up to ' + V[c.to]) + (u.length > 1 ? ' +' + (u.length - 1) + ' more' : '') };
+    return { ok: true, text: esc(c.to === 'go' ? 'Unlocked ' + name + ' · ' : name + ' moved up to ') + status(c.to, V[c.to]) + (u.length > 1 ? esc(' +' + (u.length - 1) + ' more') : '') };
   }
   function hints() {
     var p = S.profile, out = {};
@@ -729,15 +731,10 @@
     });
     var ref = whatIf({ references: p.references + 1 });
     out.ref = unlockedHint('ref') || (ups(ref).length ? { text: hintText(ups(ref), '+1 reference', 'becomes') } : null);
-    var langHint = null;
-    LANG_OPTIONS.some(function (l) {
-      if (has(p.languages, l)) return false;
-      var u = ups(whatIf({ languages: p.languages.concat([l]) }));
-      if (u.length) { langHint = { text: hintText(u, 'Add ' + E.langName(l), 'becomes') }; return true; }
-      return false;
+    LANG_OPTIONS.forEach(function (l) { // each language's hint sits on its own row (pass 5; it used to sit under German)
+      var key = 'lang:' + l, u = has(p.languages, l) ? [] : ups(whatIf({ languages: p.languages.concat([l]) }));
+      out[key] = unlockedHint(key) || (u.length ? { text: hintText(u, 'Turn on', 'becomes') } : null);
     });
-    var lastLang = lastChange && /^lang:/.test(lastChange.lever) ? unlockedHint(lastChange.lever) : null;
-    out.lang = lastLang || langHint;
     var xb = whatIf({ crossBorder: !p.crossBorder });
     out.xb = unlockedHint('xb') || (p.crossBorder ? (xb.length ? { down: true, text: hintText(xb, 'Turn off', 'drops to') } : null)
       : (ups(xb).length ? { text: hintText(ups(xb), 'Turn on', 'becomes') } : null));
@@ -748,7 +745,7 @@
     Array.prototype.forEach.call($screen.querySelectorAll('[data-hint]'), function (el) {
       var x = h[el.getAttribute('data-hint')];
       el.className = 'hint' + (x && x.ok ? ' ok' : x && x.down ? ' down' : '');
-      el.textContent = x ? x.text : '';
+      el.innerHTML = x ? x.text : ''; // escaped in hintText / unlockedHint; the verdict is shape + word
       el.hidden = !x;
     });
   }
@@ -788,11 +785,13 @@
     var rs = document.getElementById('rescore'); if (!rs) return;
     rs.innerHTML = rescoreCard(true);
     var card = rs.firstElementChild;
+    var to = card && card.querySelector('.rescore-score .to');
+    if (to) { var target = +to.textContent; to.textContent = to.getAttribute('data-from'); setTimeout(function () { countUp(to, +to.getAttribute('data-from'), target); }, reduceMotion ? 0 : 315); }
     if (!card || !fromEl) return;
     var a = fromEl.getBoundingClientRect(), b = card.getBoundingClientRect();
     // Short screens (iPhone 13 / SE): the card can sit just above the fold when the switch is tapped. Bring it back in
     // (an instant scroll, at most one screen) so the re-score is seen; further away, the hint next to the control tells.
-    if (b.bottom < 0 && b.top > -window.innerHeight * 0.6) {
+    if (b.bottom < 0 && b.top > -window.innerHeight) { // up to one screen (it was 0.6: on iPhone SE the card sat at −342 of −341 px, pass 5)
       window.scrollBy(0, b.top - 12);
       a = fromEl.getBoundingClientRect(); b = card.getBoundingClientRect();
     }

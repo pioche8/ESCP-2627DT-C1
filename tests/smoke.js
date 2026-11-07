@@ -246,6 +246,10 @@ async function run(scheme, browser, step) {
   const sr = await page.locator('#rescore .sr-only').innerText();
   check(sr.startsWith('Landkreis Hohenau: No-go → Go'), 're-score card: "' + sr + '"');
   check((await page.locator('#rescore .change-row').innerText()).replace(/\s+/g, ' ').includes('No-go → Go'), 'visible "No-go → Go" (shape + word, plain text)');
+  await page.waitForFunction(() => (document.querySelector('#rescore .rescore-score .to') || {}).textContent === '100', null, { timeout: 3000 }).catch(() => {});
+  const scores = [await page.locator('#rescore .rescore-score .from').innerText(), await page.locator('#rescore .rescore-score .to').innerText()];
+  check(scores.join(' → ') === '25 → 100' && sr.includes('score 25 → 100'), 're-score card shows the score "25 → 100" (' + scores.join(' → ') + '), and the screen reader hears it');
+  check(await css('#rescore .rescore-score .to', 'color') === rgb(await token('--c-go')) && await css('[data-hint="cert:ISO 27001"]', 'color') === rgb(await token('--c-muted')), 'colour means a verdict: the new score in the Go colour, the hint text muted (the verdict in it is shape + word)');
   check(await page.locator('button[data-cert="ISO 27001"][aria-checked="true"]').count() === 1, 'switch is on (role=switch, aria-checked)');
   check((await page.locator('#co-tiles b').allInnerTexts()).join(',') === '2,2,2', 'company counts move to 2 : 2 : 2');
   check((await page.locator('[data-hint="cert:ISO 27001"]').innerText()).includes('Unlocked Landkreis Hohenau'), 'hint becomes "Unlocked Landkreis Hohenau"');
