@@ -796,8 +796,12 @@
   var EASE_MORPH = 'cubic-bezier(.77,0,.18,1)';
   function mountRescore(fromEl) {
     var rs = document.getElementById('rescore'); if (!rs) return;
+    var pin = fromEl && document.body.contains(fromEl) ? fromEl.getBoundingClientRect().top : null;
     rs.innerHTML = rescoreCard(true);
     var card = rs.firstElementChild;
+    // The new card can be taller than the one it replaces (a long buyer name wraps on a small phone). Keep the control just
+    // tapped where the finger left it, as applyLever does for the hints; Safari has no scroll anchoring to do it (pass 5).
+    if (pin !== null) { var moved = fromEl.getBoundingClientRect().top - pin; if (Math.abs(moved) >= 1) window.scrollBy(0, moved); }
     // The new score counts up: from 315 ms inside the morph, at once when the card pops (no frozen "90 → 90" while it fades in).
     var to = card && card.querySelector('.rescore-score .to'), target = to ? +to.textContent : 0;
     if (to) to.textContent = to.getAttribute('data-from');
@@ -822,11 +826,13 @@
       window.scrollBy(0, b.top - 12);
       measure();
     } else if (unseen) {
-      // The card stays out of view (iPhone SE: it never fits on one screen with the switch). When the hint under the control
-      // carries the score (a change up), it must not sit under the tab bar: scroll by its overhang, keeping the control in view.
-      var hint = $screen.querySelector('[data-hint="' + lastChange.lever + '"]'), h = hint && !hint.hidden && hint.classList.contains('ok') && hint.getBoundingClientRect();
-      if (h && h.height && h.bottom > floor - 4 && a.top - (h.bottom - floor + 8) >= 0) {
-        window.scrollBy(0, h.bottom - floor + 8);
+      // The card stays out of view (iPhone SE: it never fits on one screen with the switch), so the control and the hint
+      // under it are the only feedback at the tap: the score on a rise, how to undo it on a drop. Neither may sit under the
+      // tab bar: scroll by the larger overhang, keeping the control in view.
+      var hint = $screen.querySelector('[data-hint="' + lastChange.lever + '"]'), h = hint && !hint.hidden && hint.getBoundingClientRect();
+      var over = Math.max(a.bottom - floor + 8, h && h.height ? h.bottom - floor + 8 : 0);
+      if (over > 4 && a.top - over >= 0) {
+        window.scrollBy(0, over);
         measure();
       }
     }

@@ -359,6 +359,24 @@ async function run(scheme, browser, step) {
   firstTap.y0 = Math.round(isoFirst.y);
   check(firstTap.on && firstTap.sw[0] >= 0 && firstTap.sw[1] <= floor1 && (firstTap.card ? Math.abs(firstTap.sw[0] - firstTap.y0) <= 1 : firstTap.score && firstTap.hint <= floor1), 'the first change of a visit, tapped just above the tab bar with scroll anchoring off: the switch stays where the finger left it while the card is in view, and the score is seen (' + JSON.stringify(firstTap) + ', tab bar at ' + Math.round(floor1) + ')');
   await visit.waitForTimeout(800);
+  // A drop, tapped just above the tab bar, still without scroll anchoring: Spanish on, then off. The new card names
+  // "Universidad de Valdemora", which wraps on a small phone, and the hint gains a line; the switch must stay in view, and
+  // its hint ("Turn on → … becomes Go", the only feedback at the tap when the card is out of view) must clear the tab bar.
+  const es = 'button[data-lang="es"]';
+  await visit.evaluate((q) => { const r = document.querySelector(q).getBoundingClientRect(); window.scrollBy(0, r.top - 300); }, es);
+  await visit.waitForTimeout(100);
+  const esOn = await visit.locator(es).boundingBox();
+  await visit.mouse.click(esOn.x + esOn.width / 2, esOn.y + esOn.height / 2);
+  await visit.waitForFunction((q) => document.querySelector(q).getAttribute('aria-checked') === 'true', es);
+  await visit.waitForTimeout(900);
+  await visit.evaluate(([q, f]) => { const r = document.querySelector(q).getBoundingClientRect(); window.scrollBy(0, r.bottom - (f - 2)); }, [es, floor1]);
+  await visit.waitForTimeout(100);
+  const esLow = await visit.locator(es).boundingBox();
+  await visit.mouse.click(esLow.x + esLow.width / 2, esLow.y + esLow.height / 2);
+  await visit.waitForTimeout(300);
+  const drop = await visit.evaluate(([q, f]) => { const s = document.querySelector(q).getBoundingClientRect(), h = document.querySelector('[data-hint="lang:es"]'), hr = h.getBoundingClientRect(); return { off: document.querySelector(q).getAttribute('aria-checked') === 'false', sw: [Math.round(s.top), Math.round(s.bottom)], hint: Math.round(hr.bottom), text: h.textContent.replace(/\s+/g, ' ').trim() }; }, [es, floor1]);
+  check(drop.off && drop.sw[0] >= 0 && drop.sw[1] <= floor1 && drop.hint <= floor1 && /^Turn on → Universidad de Valdemora becomes/.test(drop.text), 'a drop tapped just above the tab bar with scroll anchoring off: the switch stays in view and its hint clears the tab bar (' + JSON.stringify(drop) + ', tab bar at ' + Math.round(floor1) + ')');
+  await visit.waitForTimeout(800);
   await visit.close();
   await page.click('button[data-cert="ISO 27001"]'); // and on again here, so this page and the stored state agree
   await page.waitForFunction(() => Array.from(document.querySelectorAll('#co-tiles b')).map((b) => b.textContent).join(',') === '2,2,2', null, { timeout: 3000 }).catch(() => {});
