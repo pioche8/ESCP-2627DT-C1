@@ -1,6 +1,6 @@
 # TenderScout architecture
 
-How the prototype is built: what decides, what is simulated, what is real and what is fictional, how a URL becomes a screen, where state lives, how the website shares the same code, and how it is tested, deployed and rolled back. It describes `main` as of 5 Nov 2026 and adds no new facts: each statement is something a file states or a gate checks.
+How the prototype is built: what decides, what is simulated, what is real and what is fictional, how a URL becomes a screen, where state lives, how the website shares the same code, and how it is tested, deployed and rolled back. It describes `main` as of 8 Nov 2026 (pass 5) and adds no new facts: each statement is something a file states or a gate checks.
 
 | This file covers | Not in this file (look here instead) |
 |---|---|
@@ -56,7 +56,7 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 
 ## 2. Routing: from a hash to a screen
 
-`parse()` turns `location.hash` into `{ name, id, sub }`; `render()` guards onboarding, picks the screen function, writes it into `#screen` and shows the tab bar only on Feed, Bids, Company and Settings; `syncSheet()` opens or closes the one sheet layer. Routes, the screens they show and the flows between them are specified in [`docs/NAVIGATION.md`](docs/NAVIGATION.md); this table is where each lives in the code.
+`parse()` turns `location.hash` into `{ name, id, sub }`; `render()` guards onboarding, picks the screen function, writes it into `#screen` and shows the tab bar only on Feed, Bids (and its Win/loss page), Company, Profile and Settings; `syncSheet()` opens or closes the one sheet layer. Routes, the screens they show and the flows between them are specified in [`docs/NAVIGATION.md`](docs/NAVIGATION.md); this table is where each lives in the code.
 
 | Route | `parse()` → | Rendered by (`app.js`) | Calls |
 |---|---|---|---|
@@ -68,16 +68,17 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 | `#/bids` | `bids` | `bids()`, `bidCard()`, `insightsLink()` | `Engine.evaluate`, `Insights.summary` |
 | `#/insights` | `insights` | `insightsScreen()` | `Insights.summary` (no engine call) |
 | `#/company` | `company` | `company()`, `rescoreCard()`, `hints()`, `mountRescore()` | every lever → `applyLever()` → `Engine.verdicts` + `Engine.diff`; hints → `Engine.whatIf` |
+| `#/profile` | `profile` | `profile()` | `Engine.verdicts` for the counts; "Edit on Company" links to `#/company` |
 | `#/settings`, `#/about` | `settings` | `settings()` | Reset writes a fresh state |
 | anything else | `notfound` | `notFound()` | |
 
 - **Onboarding guard:** until `onboarded` is true, every route except Welcome, Company and Settings (or `#/about`) is replaced by `#/welcome/1`.
 - **Sheets are history entries.** In-app Back, closing a sheet and Skip go *back* through a small stack (`backTo()`) instead of stacking new entries; Escape and the scrim close a sheet to its parent tender; while a sheet is open the screen and the tab bar are `inert`.
-- **Re-renders are cheap and local:** a lever on Company re-scores all six tenders in the engine and updates the screen in place (the switches, the counts, the hints and the re-score card, which shows the score from `Engine.diff`), so they animate. The control just tapped stays where the finger left it, and the card is brought back into view only when that control stays in view. Other same-screen re-renders do not replay entrances. A toast belongs to the screen that raised it: `render()` removes it when the screen changes, and a sheet removes the one behind it. The card → tender morph uses the View Transitions API when the browser has it and a plain hash change otherwise.
+- **Re-renders are cheap and local:** a lever on Company re-scores all six tenders in the engine and updates the screen in place (the switches, the counts, the hints and the re-score card, which shows the score from `Engine.diff`), so they animate. When a hint gains a line or the card above changes height, the control just tapped is kept where it was; the card is brought back into view only when that control stays in view, and on a short phone the control and its hint are lifted clear of the tab bar. Other same-screen re-renders do not replay entrances. A toast belongs to the screen that raised it: `render()` removes it when the screen changes, and a sheet removes the one behind it. The card → tender morph uses the View Transitions API when the browser has it and a plain hash change otherwise.
 
 ## 3. State
 
-One `localStorage` key, **`tenderscout.v2`**: `{ onboarded, profile, website, overrides, saved, skipped, filter, theme, palette }`. `overrides[tenderId][reqId]` is the owner's answer on a line (`pass` | `fail`), `saved[id]` the bid stage, `skipped[id] = { reasons, at }`. `theme` is `dark` (default), `light` or `system`; `palette` is written for shape stability and no longer read. Every read and write is wrapped in try/catch with an in-memory fallback for private mode; the inline script in `index.html` reads the same key before the first paint so the scheme never flashes. If the shape ever changes, the key is bumped (v1 → v2 happened on 2 Nov), not migrated. Session-only state (which tenders were "read", open answers, the last re-score) lives in variables and is gone on reload.
+One `localStorage` key, **`tenderscout.v2`**: `{ onboarded, profile, website, overrides, saved, skipped, filter, theme, palette, notifiedOn, log }` (`notifiedOn` and `log` were added without a key bump, items 120 and 129). `overrides[tenderId][reqId]` is the owner's answer on a line (`pass` | `fail`), `saved[id]` the bid stage, `skipped[id] = { reasons, at }`. `theme` is `dark` (default), `light` or `system`; `palette` is written for shape stability and no longer read. Every read and write is wrapped in try/catch with an in-memory fallback for private mode; the inline script in `index.html` reads the same key before the first paint so the scheme never flashes. If the shape ever changes, the key is bumped (v1 → v2 happened on 2 Nov), not migrated. Session-only state (which tenders were "read", open answers, the last re-score) lives in variables and is gone on reload.
 
 ## 4. URL parameters (demo and test only)
 

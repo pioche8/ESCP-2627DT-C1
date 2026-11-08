@@ -1,6 +1,6 @@
 # TenderScout UI design
 
-The interface as it ships on `main` (6 Nov 2026: every frame re-made from the five-tab app, `CLAUDE.md` §11 item 137): a storyboard of the demo, every screen and state as a screenshot, and the visual system behind them. Every image is the real app at 390 × 844 (2×), dark by default, showing the fictional demo data ([`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)). [`DESIGN.md`](DESIGN.md) is the designer's original spec of 2 Nov; where the two differ, this file and [`shared/tokens.json`](shared/tokens.json) describe what ships (the 4 Nov declutter, `CLAUDE.md` §11 items 53–68).
+The interface as it ships on `main` (7 Nov 2026: every frame re-taken after pass 5's three app slices, `CLAUDE.md` §11 item 175; the five-tab frames first came on 6 Nov, item 137): a storyboard of the demo, every screen and state as a screenshot, and the visual system behind them. Every image is the real app at 390 × 844 (2×), dark by default, showing the fictional demo data ([`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)). [`DESIGN.md`](DESIGN.md) is the designer's original spec of 2 Nov; where the two differ, this file and [`shared/tokens.json`](shared/tokens.json) describe what ships (the 4 Nov declutter, `CLAUDE.md` §11 items 53–68).
 
 | This file covers | Not in this file (look here instead) |
 |---|---|
@@ -15,7 +15,7 @@ The path from [`BRIEF.md`](BRIEF.md), one frame per step (also a video: [`docs/d
 | <img src="docs/demo/step-1-welcome.png" width="180" alt="Welcome screen"> | 1 · Welcome | types the firm's website, taps "Draft my profile", then "Looks right" | the headline, "All 45 EU sectors · 6 new tenders tonight", one field and one button. The simulated AI drafts the profile (Reading and Check your profile are in §2) |
 | <img src="docs/demo/step-2-feed.png" width="180" alt="Feed with six ranked tenders"> | 2 · Feed | reads the morning feed | "6 new tenders", "read 777 pages in 4 languages · Simulated AI", the counts as filters (All 6 · ● Go 1 · ▲ Maybe 2 · ■ No-go 3) and the cards ranked by verdict and score |
 | <img src="docs/demo/step-3-go-tender-citation.png" width="180" alt="Requirement sheet with the German source sentence"> | 3 · The Go tender | opens Stadt Ellerbach (Go 100) and taps the turnover line | the sheet: ● Meets, 96% AI confidence, the original German sentence with the decisive phrase underlined, its translation, "Vergabeunterlagen, p. 23, §4.2", and the two answers |
-| <img src="docs/demo/step-4-hohenau-needs-your-check.png" width="180" alt="Needs your check sheet"> | 4 · The No-go tender | opens Landkreis Hohenau (No-go 25) and taps the unclear line | ■ Fails on ISO 27001 above ◆ Needs your check at 58%; the sheet says "Only you can answer" and offers We don't meet it / We meet it at equal weight, both in the ◆ check colour |
+| <img src="docs/demo/step-4-hohenau-needs-your-check.png" width="180" alt="Needs your check sheet"> | 4 · The No-go tender | opens Landkreis Hohenau (No-go 25) and taps the unclear line | the sheet over the tender (the score 25 and the knock-out headline behind it): ◆ Needs your check at 58%, the original German sentence and its translation; "Only you can answer", and We don't meet it / We meet it at equal weight, both in the ◆ check colour |
 | <img src="docs/demo/step-5-company-rescore.png" width="180" alt="Company screen with the re-score card"> | 5 · Company | answers "We meet it", then switches ISO 27001 on | the re-score card "Landkreis Hohenau · 25 → 100 · ■ No-go → ● Go · just now", the counts now 2 Go · 2 Maybe · 2 No-go, and a hint under each lever |
 | <img src="docs/demo/step-6-ask-this-tender.png" width="180" alt="Ask this tender with an answer"> | 6 · Ask the tender | opens Hohenau again and asks "Can we subcontract the audit?" | the answer with its page in plain text, labelled "Simulated AI", and the Competition section under it (likely bidders, similar past awards); the checklist above now reads 3 of 3 met |
 | <img src="docs/demo/step-7-bids.png" width="180" alt="Bids with a skipped tender"> | 7 · Skip and Bids | skips the Dutch libraries tender with "Missing a certificate" | Bids: the Win/loss row, Deciding / Bidding / Submitted, and under Skipped the tender, its reason and Restore |
@@ -112,7 +112,7 @@ Every pair in use passes WCAG AA in both schemes (`node shared/check-contrast.js
 
 **Motion:** entrances 600 ms; the card → tender morph and the switch → re-score card morph 700 ms; pops 480 ms; sheets 320 ms; toasts 240 ms; the re-score counts 650 ms; the "777 pages" count-up 2.8 s; the word-by-word reveal on the Feed title and "In short". All of it is off under reduced motion, with the same results.
 
-**Light and dark:** dark by default; ◐ in the header switches in one tap; About → Appearance adds "System".
+**Light and dark:** dark by default; ◐ in the header switches in one tap; Settings → Appearance adds "System".
 
 ## 4. Components, as they look
 
