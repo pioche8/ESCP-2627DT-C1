@@ -4,7 +4,7 @@
 
 **Mode:** `/agentic-council:council` in quick mode. There was no interview: the question and its constraints came from the pass-5 brief and the repository. Four members (Strategist, Advocate, Artisan, Skeptic) wrote one round of positions in parallel, and the conductor (Steward) synthesised them. Rounds 2–3 do not run in quick mode.
 
-**Input:** the visual audit of every app state, 198 frames: 47 states × dark and light × 390×844 and 320×568 (`/agentic-council:visual-audit`, summarised under [Evidence](#evidence)).
+**Input:** the visual audit of every app state, 198 frames: 41 states (49 views with the full-page and scrolled ones; one state in dark only) × dark and light × 390×844 and 320×568, plus 4 smoke-test frames; the count of 47 states first written here was wrong (corrected in pass 5's report) (`/agentic-council:visual-audit`, summarised under [Evidence](#evidence)).
 
 **Decision:** recorded in `CLAUDE.md` §11 item 170.
 

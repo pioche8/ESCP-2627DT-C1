@@ -52,7 +52,7 @@ const FRAMES = [
     }, state);
     await page.goto(BASE + '?demo=fast&theme=' + scheme + route);
     await page.waitForTimeout(1600); // entrances and the fast simulated read settle
-    if (o.tap) { await page.click(o.tap); await page.waitForTimeout(1600); } // the re-score morph settles
+    if (o.tap) { await page.click(o.tap); await page.waitForTimeout(1600); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300); } // the re-score morph settles; then the top of the screen, header included
     if (o.section) {
       await page.evaluate((title) => {
         const h = Array.prototype.find.call(document.querySelectorAll('.sec-h'), (x) => x.textContent.indexOf(title) === 0);
