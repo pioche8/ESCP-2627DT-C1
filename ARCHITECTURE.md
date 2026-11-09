@@ -139,14 +139,14 @@ Older rollback points are the `backup/*` branches. Changes reach `main` through 
 
 ## 9. What is real and what is fictional
 
-The code is real, the demo data it runs on is fictional, and the only real user data so far is two survey answers, one of them in the segment. Every number, name and example in this repository's documents is one of five kinds:
+The code is real, the demo data it runs on is fictional, and the only real user data so far is 2 stakeholder responses (survey), 1 in our segment. Every number, name and example in this repository's documents is one of five kinds:
 
 | Kind | What | Details in | Evidence about users? |
 |---|---|---|---|
-| **Real: user data** | Two survey answers (self-reported): survey response S1, in the 5–50 segment, and survey response S2, a 250+ person firm outside it; no interviews yet; no support yet for the cross-language claim (H3) | [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews) | Yes, as signals only, outside the gate |
+| **Real: user data** | 2 stakeholder responses (survey), 1 in our segment: survey response S1 (5–19 people) and survey response S2 (a 250+ person firm, outside it); no interviews yet; no support yet for the cross-language claim (H3) | [`evidence.md` §1](evidence.md#1-stakeholder-log) and [§1b](evidence.md#1b-survey-responses-screening-form-not-interviews); the drafts built on them: [`docs/design/PERSONA.md`](docs/design/PERSONA.md), [`docs/design/JOURNEY.md`](docs/design/JOURNEY.md) | Yes, labelled as survey. Since 9 Nov they count toward the gate, signed Provisional, n = 2 (`evidence.md` §0) |
 | **Real: desk research** | The European Court of Auditors' figures on EU procurement, the competitors, the 45 CPV divisions | [`evidence.md` §5](evidence.md#5-desk-research-separate-from-interview-evidence) (sources and access dates) | Context only. The smaller competitors and "eForms mandatory on TED since Oct 2023" in [`BRIEF.md`](BRIEF.md) have no source in §5 yet |
 | **Real: code and measurements** | The rules, score and verdicts, the screens, the test results | §1 and §7 above | It proves how the prototype behaves, not that anyone needs it. The weights and thresholds are design choices, not set by evidence |
 | **Fictional** | The company, the six tenders and their buyers, every quote, translation, page number, confidence value and AI answer, and so every demo number the engine computes from them (Hohenau 25 → 90 → 100, 777 pages); the website's weekly sector counts | `data.js`, `site/src/data/sectors.ts` | No. The app marks it "(fictional)", "All companies and tenders are fictional" and "Simulated AI"; the website says "illustrative" |
-| **ASSUMPTION** | The metric targets, prices, bid cost and screening time | [`BRIEF.md`](BRIEF.md) | No. These are what the interviews have to test |
+| **ASSUMPTION** | The metric targets, prices, bid cost and screening time | [`BRIEF.md`](BRIEF.md) | No. These are what the stakeholder evidence (interviews or surveys) has to test |
 
 **The rule:** fictional data may show how the product behaves, never that users need it.

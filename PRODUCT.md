@@ -21,7 +21,7 @@ Why it matters, in one line: competition for EU public contracts has collapsed (
 - **Not the user:** large firms with bid teams; they already buy bid-management tools ([`BRIEF.md`](BRIEF.md) → Competition).
 - **Context of use:** one hand, between jobs or in a van, sessions of 1–3 minutes, patchy signal, no procurement expertise ([`docs/NAVIGATION.md`](docs/NAVIGATION.md)). This is why every verdict is readable in three seconds, primary actions sit in the thumb zone and the core loop needs no typing.
 
-This user is a hypothesis until the interviews say otherwise (§7).
+This user is a hypothesis, supported so far by one stakeholder response in the segment (survey response S1, §7); the draft persona built on it is [`docs/design/PERSONA.md`](docs/design/PERSONA.md).
 
 ## 3. What the owner gets
 
@@ -86,7 +86,7 @@ The full list, with the accessibility and layout rules: [`CLAUDE.md`](CLAUDE.md)
 
 ## 7. What is known and what is assumed
 
-Not known yet: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell); no interview is logged and the gate result is blank. The two survey answers so far (one in the segment, none supporting the cross-language claim yet) are read as signals only ([`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
+Known only provisionally: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell). There are 2 stakeholder responses (survey), 1 in our segment, and no interview; since 9 Nov survey answers count, labelled as survey, and the gate is signed **Provisional, n = 2**: both meet H1 and H2, only one is in the segment, neither supports the cross-language claim (H3), and willingness to pay (H4) was not asked ([`evidence.md` §1](evidence.md#1-stakeholder-log) and [§3](evidence.md#3-key-insights-n--2-survey)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 ## 8. The demo
 
@@ -94,9 +94,9 @@ The 75-second path and the numbers the presenter says are in [`BRIEF.md`](BRIEF.
 
 ## 9. Open questions
 
-- **The gate verdict** (GO / RESHAPE / KILL / provisional n = X, [`evidence.md`](evidence.md) §0). RESHAPE points the pitch at cross-border reading (H3) or at the buyer side; KILL moves the focus to bid writing, said openly. Either would rewrite §2, §5 and §7 of this file.
+- **The gate verdict** (signed Provisional, n = 2 on 9 Nov; GO / RESHAPE / KILL once there are at least 3 responses, [`evidence.md`](evidence.md) §0). RESHAPE points the pitch at cross-border reading (H3) or at the buyer side; KILL moves the focus to bid writing, said openly. Either would rewrite §2, §5 and §7 of this file.
 - **The `v0-shell` tag** ([`CLAUDE.md`](CLAUDE.md) §11 item 14).
-- **Persona, "How might we", journey map and traceability** (T8–T10): pending until interviews exist; their status is kept in [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md).
+- **Persona, "How might we", journey map and traceability** (T8–T10): the persona with HMW and the journey are drafts from the two survey responses ([`docs/design/PERSONA.md`](docs/design/PERSONA.md), [`docs/design/JOURNEY.md`](docs/design/JOURNEY.md)); traceability is still pending. Their status is kept in [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md).
 
 ## 10. Words used in the product
 
