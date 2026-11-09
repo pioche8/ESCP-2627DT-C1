@@ -36,7 +36,7 @@ ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skip
 
 **North-star metric: qualification checks completed per firm per week.** A check counts as completed when the owner records a decision on a tender they opened: saved it to Bids, or skipped it (with or without a reason). This tracks the value TenderScout promises, a decision on "can we even bid on this?" backed by the page that proves it. It does not track attention. Opening the app, scrolling the Feed or reading a summary without deciding gives the firm nothing. More completed checks per week means screening got cheaper (H1) and the answer was good enough to act on (H2).
 
-Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The only survey answer so far (S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews), n = 1, not gate evidence), read 3–5 tenders in a whole year. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
+Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The one survey answer in the segment so far (survey response S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews); n = 2 survey answers, 1 in the segment, not gate evidence) read 3–5 tenders in a whole year. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
 
 **Supporting metrics**, each tied to something the prototype already does:
 

@@ -113,4 +113,4 @@ A method table, not findings: it says where an answer goes once an interview is 
 | 15 Optional demo: where they tap first | usability, not H1–H4 | the screen's row (what they tapped, what they said) | — | the TenderScout moment's open question |
 | Procurement officers (C) | H2 from the buyer side, the RESHAPE route in `evidence.md` §0 | a buyer-side row, kept apart from the owners' rows | not the primary persona (`BRIEF.md` → User) | not the owner's journey; a note on the buyer's side |
 
-**The follow-up call with survey respondent S1** ([`evidence.md`](../evidence.md) §1b) should start with the questions the screening form did not settle: 9 (H3 was unclear) and 6, 10, 12 and 13 (H4 was not asked). The call is an interview: log it in §1 and §2 like any other, and only then does it count toward the gate.
+**The follow-up call with the respondent of survey response S1** ([`evidence.md`](../evidence.md) §1b) should start with the questions the screening form did not settle: 9 (H3 was unclear) and 6, 10, 12 and 13 (H4 was not asked). The call is an interview: log it in §1 and §2 like any other, and only then does it count toward the gate.

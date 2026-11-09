@@ -86,7 +86,7 @@ The full list, with the accessibility and layout rules: [`CLAUDE.md`](CLAUDE.md)
 
 ## 7. What is known and what is assumed
 
-Not known yet: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell); no interview is logged and the gate result is blank. The one survey answer so far is read as signals only ([`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
+Not known yet: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell); no interview is logged and the gate result is blank. The two survey answers so far (one in the segment, none supporting the cross-language claim yet) are read as signals only ([`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 ## 8. The demo
 
