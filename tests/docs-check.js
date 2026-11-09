@@ -20,7 +20,9 @@
  *       followed by a straight-quoted name (smoke "…") is flagged, so the unchecked form cannot come back. The invariants
  *       and the data check build their messages at run time, so stories describe them in words; they are not checked here.
  *   (c) Interview citations. Every "Interview N", "interview #N" or "Interviews N and M" in docs/design/*.md must be a
- *       filled row of evidence.md §1 (a row whose Role cell is not empty). Today no row is filled and nothing cites one.
+ *       filled row of evidence.md §1 (a row whose Role cell is not empty). §1 is the stakeholder log since 9 Nov ("## 1.
+ *       Stakeholder log"; "## 1. Interview log" before): only numbered rows are interviews, survey rows are S1, S2, …
+ *       and are never counted as interviews. Today no interview row is filled and nothing cites one.
  *   (d) Participant quotes. Curly double quotes “…” in docs/design/*.md are reserved for a participant's own words: the
  *       text inside must appear verbatim in evidence.md (whitespace collapsed). On a line that attributes words to a
  *       participant (Interview N, interview #N, S1 said / wrote / answered / told us, respondent S1, (S1)), straight-quoted
@@ -230,7 +232,7 @@ function checkNamedChecks(docs, known) {
 
 /* ---------- (c) interview citations and (d) participant quotes ---------- */
 function interviewRows(evidence) {
-  const sec = section(evidence, /^## 1\. Interview log[^\n]*$/m);
+  const sec = section(evidence, /^## 1\. (?:Stakeholder|Interview) log[^\n]*$/m);
   if (sec === null) return null;
   const rows = sec.split('\n').filter((l) => /^\|/.test(l)).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
   if (!rows.length) return {};
@@ -253,7 +255,7 @@ function checkInterviewCitations(design, evidence) {
   const problems = [];
   const rows = interviewRows(evidence);
   let cited = 0;
-  if (rows === null) return { problems: ['evidence.md: no "## 1. Interview log" section, so interview citations cannot be checked'], cited: 0 };
+  if (rows === null) return { problems: ['evidence.md: no "## 1. Stakeholder log" section, so interview citations cannot be checked'], cited: 0 };
   Object.keys(design).forEach((file) => {
     const md = design[file];
     let m;

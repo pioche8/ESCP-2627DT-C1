@@ -29,8 +29,8 @@ Then open `http://localhost:8000/?demo=reset,fast`. In Chrome, press F12 → the
 | `site/` | The marketing website (Next.js). It runs the app's `engine.js` on the app's `data.js` through copies in `site/src/generated/` (refreshed by `npm run sync`). Not deployed yet. | You change the website, or you changed `data.js` / `engine.js` / tokens and want the site to follow. |
 | `tests/` | `engine.test.js` (24 node tests), `smoke.js` (Playwright click-through at 390 × 844, light + dark + reduced motion), `declutter-scan.js` (the 18 banned visual patterns), `demo-record.js` (the backup video), `ui-frames.js` (the eleven `docs/ui` frames that need a state of their own), `live-check.js` (is GitHub Pages serving this checkout?). | Every commit (see §4). |
 | `docs/` | `NAVIGATION.md` (routes, flows, states), `INTERVIEW_KIT.md`, `WEBSITE_BUILD_LOG.md`, `demo/` (the backup video and screenshots), `site/` (recordings of the website, made by `site/scripts/record.cjs` while it is not online), `DEPLOY.md` (Vercel from GitHub Actions: the two secrets to add), `adr/` (decision records), `reports/` (pass reports), `feedback/` (the pack for the 11 Nov session with the lecturer), this file; `README.md` is the folder's index. | You add a screen (update `NAVIGATION.md`) or a design document. |
-| `docs/design/` | [`UX_PLANES.md`](design/UX_PLANES.md): Garrett's five planes (strategy, scope, structure, skeleton, surface) mapped to the files that cover each, with a status; `USER_STORIES.md` (from the brief, not from interviews yet); `CONTENT_REQUIREMENTS.md` (every piece of content, its source of truth and who produces it). T9 and T10 add `PERSONA.md` and `JOURNEY.md` here. | You log interviews (add their links to the stories and update the planes' status), or you finish T9 or T10. |
-| `BRIEF.md`, `evidence.md` | The pitch and the 75-second demo script; the interview evidence and the gate. | After every interview. |
+| `docs/design/` | [`UX_PLANES.md`](design/UX_PLANES.md): Garrett's five planes (strategy, scope, structure, skeleton, surface) mapped to the files that cover each, with a status; `USER_STORIES.md` (from the brief, not from stakeholder evidence yet); `CONTENT_REQUIREMENTS.md` (every piece of content, its source of truth and who produces it); `PERSONA.md` and `JOURNEY.md` (T9 and T10, drafted on 9 Nov from the two survey responses). | You log stakeholder responses (add their links to the stories and update the planes' status), or you rewrite T9 or T10 from new responses. |
+| `BRIEF.md`, `evidence.md` | The pitch and the 75-second demo script; the stakeholder evidence (interviews and surveys, each labelled) and the gate. | After every interview or survey response. |
 | `README.md`, `CLAUDE.md`, `DESIGN.md`, `design/` | Project overview and AI-use disclosure; the build handoff with the rules and the decision log; the visual spec and the designer's handoffs (`design/README.md` lists them and says which one wins). | Read before you build. |
 | `PRODUCT.md` | What the product is and is not: the job, the user, what each screen gives the owner, the verdict words, scope (real / simulated / later / not the product), what is known and what is assumed. | You explain the product, or you wonder whether a feature belongs in it. |
 | `SKELETON.md` | Where things sit on each screen: the shared frame (header, tab bar, action bar, sheets), one text wireframe per screen, the navigation elements, the ordering rules and the controls. | You add or move something on a screen (update its wireframe in the same commit). |
@@ -99,8 +99,9 @@ Then open the result on a phone or at 390 px, in dark and light, and click the t
 
 Each task is self-contained. Claim it by opening the branch and saying so in the team chat. Sizes assume you have read §1–§5.
 
-### T1 · Log your interviews in `evidence.md` (1 h per interview)
-- **Files:** `evidence.md` §1 (one row per interview), §2 (one block per interview from the template in `docs/INTERVIEW_KIT.md` §6), §3 after four interviews, §4 for anything that changed the product.
+### T1 · Log your interviews or survey responses in `evidence.md` (1 h per interview)
+Since 9 Nov the course accepts either an interview or a survey as stakeholder evidence: a survey response gets a row S3, S4, … with Method "survey" and its answers in §1b; an interview gets a numbered row with Method "interview". Never relabel one as the other.
+- **Files:** `evidence.md` §1 (one row per response, its method stated), §2 (one block per interview from the template in `docs/INTERVIEW_KIT.md` §6), §3 after four interviews, §4 for anything that changed the product.
 - **Acceptance:** every row names the interviewer, date, role, sector, size, country and the four H1–H4 verdicts; quotes are the interviewee's words with consent noted; anything not from the interview is marked ASSUMPTION; the gate line in §0 is filled and signed.
 - **Verify:** none to run. A teammate reads it against your raw notes.
 
@@ -147,12 +148,14 @@ Each task is self-contained. Claim it by opening the branch and saying so in the
 - **Verify:** a teammate checks three rows against the code and the notes.
 
 ### T9 · Persona and "How might we" statements (1–2 h, no code)
+Drafted on 9 Nov (pass 7) from the two survey responses, built on survey response S1: [`design/PERSONA.md`](design/PERSONA.md). What is left: rewrite it from new responses, replacing each "assumption" line a response answers.
 - **Goal:** one primary persona (the owner or MD of a 5–50 person firm, `BRIEF.md` "User") built only from what interviewees said, and five to eight HMW statements that lead to the features we have or should build next.
 - **Files:** `docs/design/PERSONA.md` (name it clearly as a composite, goals, context of use from `docs/NAVIGATION.md`'s first paragraph, pains in the interviewees' words with the interview number, current tools, what they said about money or time, quotes); link it from `README.md` and `evidence.md` §3.
 - **Acceptance:** every pain and quote cites an interview; anything else is marked ASSUMPTION; each HMW names the evidence it comes from and the feature or task (T2–T7) it points to.
 - **Verify:** a teammate checks the citations against `evidence.md`.
 
 ### T10 · User-journey map (1–2 h, no code)
+Drafted on 9 Nov (pass 7) from the two survey responses: [`design/JOURNEY.md`](design/JOURNEY.md). What is left: rewrite it from new responses.
 - **Goal:** the owner's journey from "a tender exists" to "bid submitted or skipped", today and with TenderScout: stages, actions, the tool they use today, the pain and its cost (hours or euros, only if an interviewee gave them), the TenderScout moment (screen and route), and the open question.
 - **Files:** `docs/design/JOURNEY.md` (a table or a Mermaid diagram, as `docs/NAVIGATION.md` does); link it from `README.md`.
 - **Acceptance:** each stage's pain cites an interview or says ASSUMPTION; each TenderScout moment names a route that exists in `docs/NAVIGATION.md`; the "later" items match `BRIEF.md` and `CLAUDE.md` §10 (no real tender ingestion, no live AI, no accounts).

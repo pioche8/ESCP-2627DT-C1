@@ -2,6 +2,8 @@
 
 **Rule zero (ESCP AI policy):** every note in `evidence.md` comes from a real conversation with a real person. AI may help you *structure* notes you wrote, but never invent, "fill in" or paraphrase into quotes. Keep raw notes (paper, phone notes or voice memo, with consent) until the course ends.
 
+**Since 9 Nov 2026** the course accepts either an interview or a survey as stakeholder evidence (Luca's rule change, `evidence.md` top note). A survey response is logged as a survey row (S1, S2, …) in `evidence.md` §1 with its answers in §1b; an interview gets a numbered interview row and notes in §2. Never relabel one as the other. So far: 2 stakeholder responses (survey), 1 in our segment, 0 interviews.
+
 ## 1. Who to interview (at least 1 per team member, aim for 6+)
 | # | Role | Why | Count |
 |---|---|---|---|
@@ -113,4 +115,4 @@ A method table, not findings: it says where an answer goes once an interview is 
 | 15 Optional demo: where they tap first | usability, not H1–H4 | the screen's row (what they tapped, what they said) | — | the TenderScout moment's open question |
 | Procurement officers (C) | H2 from the buyer side, the RESHAPE route in `evidence.md` §0 | a buyer-side row, kept apart from the owners' rows | not the primary persona (`BRIEF.md` → User) | not the owner's journey; a note on the buyer's side |
 
-**The follow-up call with the respondent of survey response S1** ([`evidence.md`](../evidence.md) §1b) should start with the questions the screening form did not settle: 9 (H3 was unclear) and 6, 10, 12 and 13 (H4 was not asked). The call is an interview: log it in §1 and §2 like any other, and only then does it count toward the gate.
+**The follow-up call with the respondent of survey response S1** ([`evidence.md`](../evidence.md) §1b) should start with the questions the screening form did not settle: 9 (H3 was unclear) and 6, 10, 12 and 13 (H4 was not asked). The call is an interview: log it as a new interview row in §1, with notes in §2; survey response S1 stays a survey row. Since 9 Nov surveys and interviews both count toward the gate, each labelled for what it is (2 stakeholder responses (survey), 1 in our segment so far). The call adds what the form could not ask: willingness to pay (H4) above all, and whether foreign tenders matter (H3). The drafts in [`design/PERSONA.md`](design/PERSONA.md) and [`design/JOURNEY.md`](design/JOURNEY.md) are rewritten from its answers.
