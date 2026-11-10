@@ -2,7 +2,7 @@
  * tests/ui-frames.js — the docs/ui frames that the smoke path cannot give cleanly (6 Nov 2026).
  * Dev-only: needs Playwright + Chromium. The app itself has no dependencies.
  *
- *   node tests/ui-frames.js            → rewrites the eleven frames below in docs/ui/ (390×844 at 2×)
+ *   node tests/ui-frames.js            → rewrites the twelve frames below in docs/ui/ (390×844 at 2×)
  *   node tests/ui-frames.js <folder>   → writes them to <folder> instead
  *
  * The smoke test's own screenshots (node tests/smoke.js <folder>) cover every other frame in UI_DESIGN.md §6; these need
@@ -32,6 +32,7 @@ const FRAMES = [
   ['light-profile', 'light', '#/profile', {}],
   ['about', 'dark', '#/settings', {}],
   ['light-settings', 'light', '#/settings', {}],
+  ['settings-about', 'dark', '#/settings', {}, { section: 'About this prototype' }], // pass 8: the four statements, real and fictional
   ['light-company-rescore', 'light', '#/company', FLIP, { tap: '[data-cert="ISO 27001"]' }],
   ['tender-competition', 'dark', '#/t/hoh-security', {}, { section: 'Competition' }]
 ];

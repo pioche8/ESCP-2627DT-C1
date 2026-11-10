@@ -106,10 +106,9 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     }
   }
   // States the page-load run never opens (pass 5): each tab of the phone demo, the open menu, a map tooltip.
-  // The app inside the phone (pass 8) was never run through axe before. Its findings on main are known and fixed in pass 8's
-  // app pull request (PR 4, open until after the 11 Nov session): they print as "known (app)" here and fail only if another
-  // rule turns up. PR 4 empties this list, so the audit is strict on the app from then on (CLAUDE.md §11).
-  const APP_KNOWN = ['label-content-name-mismatch', 'landmark-one-main', 'region'];
+  // The app inside the phone (pass 8): its three axe findings of PR 2 (label-content-name-mismatch, landmark-one-main,
+  // region) are fixed in the app since PR 4, so the list of known findings is empty and the audit is strict on the app.
+  const APP_KNOWN = [];
   const axeOn = async (page, label, known = []) => {
     await page.addScriptTag({ content: axeSrc }).catch(() => {});
     const res = await page.evaluate(() => window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] } }));
