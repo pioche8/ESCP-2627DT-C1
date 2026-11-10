@@ -119,25 +119,25 @@ The two survey responses back the core of TenderScout. Deciding whether to bid t
 - Tendium "Qualify" bid/no-bid product. https://tendium.ai/en/tendium-qualify/ (accessed 2 Nov 2026)
 
 ## 6. AI use disclosure
-Who drafted each artefact in this file and in [`docs/design/`](docs/design/), and who approved it, from the record (git history, [`CLAUDE.md`](CLAUDE.md) §11 and [README → AI use](README.md#ai-use-escp-policy-disclosure)). Where the record does not show who did something, it says **team to confirm**. Every merge into `main` went through a pull request merged from Luca's GitHub account (`pioche8`); for the autonomous passes Claude Code merged them on Luca's instruction, so a merge alone does not show that a teammate reviewed the text.
+Who drafted each artefact in this file and in [`docs/design/`](docs/design/), and who approved it, from the record (git history, [`CLAUDE.md`](CLAUDE.md) §11 and [README → AI use](README.md#ai-use-escp-policy-disclosure)). Where the record did not show who reviewed or built something, Luca confirmed it for the team on 10 Nov 2026: the team reviewed the drafts below and built and sent the screening form together. Every merge into `main` went through a pull request merged from Luca's GitHub account (`pioche8`); for the autonomous passes Claude Code merged them on Luca's instruction, so a merge alone does not show that a teammate reviewed the text.
 
 **One account for six people** (statement by Luca, 10 Nov 2026): Everyone in the team had access to Luca's GitHub and Claude accounts and worked through them, so the history shows one account for the work of all six members. Account names in the git history and in this section show whose account was used, not which team member did the work.
 
 | Artefact | Drafted by | Approved by |
 |---|---|---|
-| §0 hypotheses H1–H4 and the kill gate | Claude (Anthropic), 2 Nov 2026 session (the hypotheses and gate are in the first commit, `99235a7`; README → AI use: "brief draft, interview kit and templates") | Luca restored the full file on 3 Nov (`1db90f9`); the rest of the team: team to confirm |
+| §0 hypotheses H1–H4 and the kill gate | Claude (Anthropic), 2 Nov 2026 session (the hypotheses and gate are in the first commit, `99235a7`; README → AI use: "brief draft, interview kit and templates") | Luca restored the full file on 3 Nov (`1db90f9`); reviewed by the team |
 | §0 gate verdict, "Provisional, n = 2", and its working | Written up by Claude Code (pass 7, 9 Nov 2026) from the gate's own criteria, on Luca's instruction (`CLAUDE.md` §11 item 178) | Luca's instruction and rule change; not signed by the rest of the team |
-| The screening form and its questions | team to confirm | team to confirm |
-| §1 stakeholder log, §1b survey rows and [`docs/evidence/survey-2026-11-05.csv`](docs/evidence/survey-2026-11-05.csv) | The answers are the respondents'; Claude Code copied them from the form's export (survey response S1 on 5 Nov, survey response S2 in pass 6, 9 Nov, with the contact column removed) and wrote the read against H1–H4 | Survey response S1 committed to `main` directly on 5 Nov (`2cbb841`); survey response S2 merged on Luca's instruction (pull request 34); team review: team to confirm |
-| §2 interview note template | Claude (Anthropic), 2 Nov 2026 session (interview kit and templates) | team to confirm |
-| §3 key insights | Claude Code (pass 7, 9 Nov 2026) | Merged on Luca's instruction (pull request 35); team review: team to confirm |
+| The screening form and its questions | The team, together | The team |
+| §1 stakeholder log, §1b survey rows and [`docs/evidence/survey-2026-11-05.csv`](docs/evidence/survey-2026-11-05.csv) | The answers are the respondents'; Claude Code copied them from the form's export (survey response S1 on 5 Nov, survey response S2 in pass 6, 9 Nov, with the contact column removed) and wrote the read against H1–H4 | Survey response S1 committed to `main` directly on 5 Nov (`2cbb841`); survey response S2 merged on Luca's instruction (pull request 34); reviewed by the team |
+| §2 interview note template | Claude (Anthropic), 2 Nov 2026 session (interview kit and templates) | Reviewed by the team |
+| §3 key insights | Claude Code (pass 7, 9 Nov 2026) | Merged on Luca's instruction (pull request 35); reviewed by the team |
 | §4 what changed because of the evidence | Luca's wording (10 Nov 2026), entered by Claude Code (pass 8) | Luca |
-| §5 desk research | Claude (Anthropic), 2 Nov 2026 session (desk research summary) | team to confirm |
-| [`docs/design/PERSONA.md`](docs/design/PERSONA.md) (persona and HMW statements) and [`docs/design/JOURNEY.md`](docs/design/JOURNEY.md) | Claude Code (pass 7, 9 Nov 2026), from survey responses S1 and S2 | Merged on Luca's instruction (pull request 35); team review: team to confirm |
-| [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md), [`USER_STORIES.md`](docs/design/USER_STORIES.md), [`CONTENT_REQUIREMENTS.md`](docs/design/CONTENT_REQUIREMENTS.md) | Claude Code, 5 Nov 2026 (UX planes); stories brought up to date in pass 2 (6 Nov) and the evidence lines in passes 6–8 | Merged from Luca's account; team review: team to confirm |
+| §5 desk research | Claude (Anthropic), 2 Nov 2026 session (desk research summary) | Reviewed by the team |
+| [`docs/design/PERSONA.md`](docs/design/PERSONA.md) (persona and HMW statements) and [`docs/design/JOURNEY.md`](docs/design/JOURNEY.md) | Claude Code (pass 7, 9 Nov 2026), from survey responses S1 and S2 | Merged on Luca's instruction (pull request 35); reviewed by the team |
+| [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md), [`USER_STORIES.md`](docs/design/USER_STORIES.md), [`CONTENT_REQUIREMENTS.md`](docs/design/CONTENT_REQUIREMENTS.md) | Claude Code, 5 Nov 2026 (UX planes); stories brought up to date in pass 2 (6 Nov) and the evidence lines in passes 6–8 | Merged from Luca's account; reviewed by the team |
 
 Tools:
 - **Claude (Anthropic), 2 Nov 2026:** idea shortlist, v0 prototype scaffold, interview kit and templates, desk-research summary.
 - **Claude Code (Anthropic), 3–10 Nov 2026:** the build passes listed in [README → AI use](README.md#ai-use-escp-policy-disclosure), including the evidence write-ups above.
-- **Claude Code and ChatGPT Edu in the workshop:** the whole team used Claude Code through Luca's GitHub account (`pioche8`), and ChatGPT Edu. What each was used for in the workshop: **team to fill in**.
-- **The team:** the decisions recorded in `CLAUDE.md` §11 as taken with the team. Who built and sent the screening form: team to confirm.
+- **Claude Code and ChatGPT Edu in the workshop (5 Nov 2026):** the whole team used Claude Code through Luca's GitHub account (`pioche8`) to build the workshop changes on the team's requests: the UX planes, `PRODUCT.md`, `SKELETON.md` and `UI_DESIGN.md` (pull requests 7–10), the Settings and Profile tabs, the morning notification, the Competition section and the Win/loss row. The team used ChatGPT Edu for brainstorming, research and wording.
+- **The team:** the decisions recorded in `CLAUDE.md` §11 as taken with the team. The team built and sent the screening form together.
