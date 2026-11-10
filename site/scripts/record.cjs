@@ -69,14 +69,20 @@ async function record(browser, base, { w, h, dsf, touch, name }) {
   await page.locator('.map-panel').scrollIntoViewIfNeeded(); await tap('.map-row'); await sleep(2000);
   await tap('.map-row'); await sleep(1600);
   if (!touch) await page.mouse.move(w / 2, 40);
-  // 3. the phone: tabs slide, ISO 27001 re-scores Hohenau No-go 25 → Maybe 90, "We meet it" → Go 100, Profile follows
+  // 3. the phone is the real app (pass 8): open Hohenau, "We meet it" on the unclear line, Company → ISO 27001 → 25 → 100, Profile
   await glide(page, touch ? '.phone' : '#app', 1200, touch ? 20 : -40); await sleep(900);
-  await tap('#dock-tab-0'); await sleep(1300);
-  await tap('#dock-tab-2'); await sleep(1100);
-  await tap('button.pswitch', 0); await sleep(1900);
-  await tap('.meet-btn'); await sleep(1900);
-  await tap('#dock-tab-3'); await sleep(1500);
-  await tap('#dock-tab-1'); await sleep(1500);
+  await page.waitForFunction(() => { const f = document.querySelector('.phone-app'); return !!(f && f.contentDocument && f.contentDocument.querySelector('.feed-list')); }, null, { timeout: 15000 });
+  const fr = await (await page.$('.phone-app')).contentFrame();
+  const ftap = async (sel) => { const el = fr.locator(sel).first(); if (touch) await el.tap(); else { await el.hover(); await sleep(250); await el.click(); } };
+  await sleep(1200);
+  await ftap('a.tcard[href="#/t/hoh-security"]'); await fr.waitForSelector('.vhead.v-nogo', { timeout: 10000 }); await sleep(1500);
+  await ftap('a.req[href="#/t/hoh-security/req/r3"]'); await fr.waitForSelector('#sheet-root.open .sheet'); await sleep(1600);
+  await ftap('.sheet button[data-confirm="pass"]'); await fr.waitForFunction(() => !document.querySelector('#sheet-root.open')); await sleep(1300);
+  await ftap('button[data-act="back"]'); await fr.waitForSelector('.feed-list'); await sleep(700);
+  await ftap('.tabbar a[href="#/company"]'); await fr.waitForSelector('.co-head'); await sleep(1100);
+  await ftap('button[data-cert="ISO 27001"]'); await sleep(2400);
+  await ftap('.tabbar a[href="#/profile"]'); await sleep(1500);
+  await ftap('.tabbar a[href="#/bids"]'); await sleep(1500);
   on = false; await sampler;
   await ctx.close();
   const FPS = 25, tick = 1000 / FPS, end = frames[frames.length - 1].t, list = []; let k = 0;
@@ -94,7 +100,7 @@ async function record(browser, base, { w, h, dsf, touch, name }) {
   return problems.length === 0 && mb < 10;
 }
 
-// Before/after: the hero, the map and the phone at 1440 × 900, the site as it was (left) and as it is (right).
+// Before/after: the hero, Built for and the phone at 1440 × 900 (pass 8; the map until pass 5), the site as it was (left) and as it is (right).
 async function strip(browser, before, after) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'site-ba-'));
   const shots = [];
@@ -102,17 +108,17 @@ async function strip(browser, before, after) {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
     const page = await ctx.newPage(); const errs = []; page.on('pageerror', (e) => errs.push(e.message)); page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
     await page.goto(url, { waitUntil: 'networkidle' }); await sleep(800);
-    for (const id of ['top', 'where', 'app']) {
+    for (const id of ['top', 'who', 'app']) {
       await page.evaluate((id) => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById(id).scrollIntoView(); }, id);
-      await sleep(id === 'where' ? 2600 : 900);
+      await sleep(id === 'app' ? 3000 : 900);
       const f = path.join(tmp, `${id}-${label}.png`); await page.screenshot({ path: f }); shots.push(f);
     }
     if (label === 'after' && errs.length) throw new Error('console errors on the site while making the strip: ' + errs.join(' | '));
     await ctx.close();
   }
   const png = path.join(DOCS, 'before-after.png'), jpg = path.join(DOCS, 'before-after.jpg');
-  const order = ['top', 'where', 'app'].flatMap((id) => [path.join(tmp, `${id}-before.png`), path.join(tmp, `${id}-after.png`)]);
-  execFileSync('montage', [...order.flatMap((f, i) => ['-label', (i % 2 ? 'After (pass 5): the decluttered look, the original motion and map' : 'Before (main, 6 Nov): the restored 3 Nov design'), f]),
+  const order = ['top', 'who', 'app'].flatMap((id) => [path.join(tmp, `${id}-before.png`), path.join(tmp, `${id}-after.png`)]);
+  execFileSync('montage', [...order.flatMap((f, i) => ['-label', (i % 2 ? 'After (pass 8): the real app in the phone, real and fictional named' : 'Before (main, 7 Nov): the hand-built phone of pass 5'), f]),
     '-font', 'DejaVu-Sans', '-pointsize', '22', '-fill', '#FFFFFF', '-background', '#02040A', '-tile', '2x3', '-geometry', '960x600+12+12', png], { stdio: 'inherit' });
   execFileSync('convert', [png, '-strip', '-quality', '86', jpg]); fs.rmSync(png);
   fs.rmSync(tmp, { recursive: true, force: true });

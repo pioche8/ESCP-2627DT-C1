@@ -106,10 +106,16 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     }
   }
   // States the page-load run never opens (pass 5): each tab of the phone demo, the open menu, a map tooltip.
-  const axeOn = async (page, label) => {
+  // The app inside the phone (pass 8) was never run through axe before. Its findings on main are known and fixed in pass 8's
+  // app pull request (PR 4, open until after the 11 Nov session): they print as "known (app)" here and fail only if another
+  // rule turns up. PR 4 empties this list, so the audit is strict on the app from then on (CLAUDE.md §11).
+  const APP_KNOWN = ['label-content-name-mismatch', 'landmark-one-main', 'region'];
+  const axeOn = async (page, label, known = []) => {
     await page.addScriptTag({ content: axeSrc }).catch(() => {});
     const res = await page.evaluate(() => window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] } }));
-    const v = res.violations;
+    const kn = res.violations.filter((x) => known.includes(x.id));
+    if (kn.length) console.log(`  known (app) / · ${label} · ` + kn.map((x) => x.id + ' (' + x.nodes.length + ')').join(', '));
+    const v = res.violations.filter((x) => !known.includes(x.id));
     ok(v.length === 0, `/ · ${label} · axe: ${v.length} violation(s)` + (v.length ? '\n       ' + v.map((x) => x.impact + ' ' + x.id + ' (' + x.nodes.length + '): ' + x.help + ' → ' + x.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(', ')).join('\n       ') : ''));
   };
   for (const [w, h] of [[1280, 900], [390, 844]]) {
@@ -117,7 +123,11 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     const page = await ctx.newPage();
     await page.goto(base + '/', { waitUntil: 'networkidle' });
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('app').scrollIntoView(); });
-    for (let i = 0; i < 5; i++) { await page.locator('#dock-tab-' + i).click(); await page.waitForTimeout(250); await axeOn(page, `${w}px · phone tab ${i + 1} of 5`); }
+    // The phone is the real app in an iframe since pass 8: axe runs inside the frame on each of the app's five tabs.
+    await page.waitForFunction(() => { const f = document.querySelector('.phone-app'); return !!(f && f.contentDocument && f.contentDocument.querySelector('.feed-list')); }, null, { timeout: 15000 });
+    const fr = await (await page.$('.phone-app')).contentFrame();
+    await page.evaluate(() => document.querySelector('.phone').scrollIntoView({ block: 'end' })); await page.waitForTimeout(300);
+    for (const tab of ['feed', 'bids', 'company', 'profile', 'settings']) { await fr.click('.tabbar a[href="#/' + tab + '"]'); await page.waitForTimeout(500); await axeOn(fr, `${w}px · the phone (the app) · ${tab}`, APP_KNOWN); }
     await page.evaluate(() => document.getElementById('where').scrollIntoView());
     await page.waitForSelector('.map-svg .pin', { timeout: 10000 }); await page.waitForTimeout(1500);
     await page.locator('.pin').nth(1).focus(); await page.waitForTimeout(200); await axeOn(page, `${w}px · a map tooltip open`);

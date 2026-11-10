@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // dev tooling (Playwright screenshots) and the verbatim app copies
     "scripts/**",
     "src/generated/*.cjs",
+    "public/prototype/**",
   ]),
 ]);
 

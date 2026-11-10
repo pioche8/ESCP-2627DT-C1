@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#02040A">
+  <meta name="color-scheme" content="light dark">
+  <!-- Home-screen install (5 Nov 2026): standalone, no address bar, so the icon itself opens the demo at ?demo=reset,fast. No service worker. -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TenderScout">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="TenderScout prototype: AI reads EU public tenders and tells small firms in one line whether they qualify.">
+  <title>TenderScout</title>
+  <script>
+  /* Scheme before the first paint (no flash). app.js keeps it in sync afterwards.
+     Dark first: "system" (follow the phone) and "light" are chosen on Settings or with ?theme=. */
+  (function () {
+    var t = 'dark';
+    try {
+      var s = JSON.parse(localStorage.getItem('tenderscout.v2') || '{}') || {}, m = new URLSearchParams(location.search).get('theme') || s.theme;
+      if (m === 'light' || m === 'dark') t = m;
+      else if (m === 'system') t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch (e) { /* private mode: defaults */ }
+    document.documentElement.setAttribute('data-scheme', t);
+  })();
+  </script>
+  <link rel="stylesheet" href="shared/tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app"></div>
+  <noscript><p style="padding:16px">TenderScout needs JavaScript.</p></noscript>
+  <script src="engine.js"></script>
+  <script src="data.js"></script>
+  <script src="ai.js"></script>
+  <script src="insights.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

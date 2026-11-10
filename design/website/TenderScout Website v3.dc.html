@@ -53,7 +53,7 @@ a:hover{color:#FFFFFF}
       <div style="font:500 14px/20px 'Hanken Grotesk';color:#A3ADBD">Next deadline: Universidad de Valdemora in 9 days.</div>
     </div>
   </div>
-  <div style="position:absolute;left:clamp(20px,3vw,40px);right:clamp(20px,3vw,40px);bottom:28px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font:500 13px/1 'IBM Plex Mono';color:#8A93A3"><span>Prototype · ESCP · fictional data</span><a href="TenderScout%20UI%20Controls.dc.html" style="color:#FFFFFF">UI library ↗</a></div>
+  <div style="position:absolute;left:clamp(20px,3vw,40px);right:clamp(20px,3vw,40px);bottom:28px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font:500 13px/1 'IBM Plex Mono';color:#8A93A3"><span>Prototype · ESCP · real rules and EU sector codes · fictional companies and tenders</span><a href="TenderScout%20UI%20Controls.dc.html" style="color:#FFFFFF">UI library ↗</a></div>
 </div>
 
 <section ref="{{ heroRef }}" onMouseMove="{{ heroMove }}" onMouseLeave="{{ heroLeave }}" data-screen-label="01 Hero" style="position:relative;height:max(640px,min(100vh,900px));overflow:hidden;background:#02040A;container-type:inline-size">
@@ -201,9 +201,8 @@ a:hover{color:#FFFFFF}
   <div style="position:absolute;inset:0;opacity:.18;mix-blend-mode:overlay;pointer-events:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%22.7%22/%3E%3C/svg%3E')"></div>
   <div style="position:relative;max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,48px);box-sizing:border-box;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap">
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
-      <div style="font:500 13px/1 'IBM Plex Mono';letter-spacing:.08em;color:#8A93A3">04 — BUILT FOR</div>
-      <div style="font:800 clamp(40px,5vw,72px)/1 'Hanken Grotesk';letter-spacing:-.05em;max-width:820px">Firms of 5 to 50, in all 45 sectors.</div>
-      <div style="max-width:540px;font:500 18px/28px 'Hanken Grotesk';color:#A3ADBD;text-wrap:pretty">Every EU tender is filed under one of 45 CPV divisions. Your sectors are marked; the rest are one tap away.</div>
+      <div style="font:800 clamp(40px,5vw,72px)/1 'Hanken Grotesk';letter-spacing:-.05em;max-width:820px">Firms of 5 to 50, in every sector.</div>
+      <div style="max-width:540px;font:500 18px/28px 'Hanken Grotesk';color:#A3ADBD;text-wrap:pretty">Every EU tender carries CPV codes, and every code falls into one of 45 divisions. Your sectors are marked; the rest are one tap away.</div>
     </div>
     <div style="display:flex;align-items:center;gap:14px">
       <span style="font:500 13px/1 'IBM Plex Mono';color:#8A93A3;font-variant-numeric:tabular-nums">{{ whoCount }}</span>
@@ -423,7 +422,7 @@ a:hover{color:#FFFFFF}
 <footer data-screen-label="13 Footer" style="background:#000000;padding:56px clamp(20px,4vw,48px) 40px;overflow:hidden">
   <div style="max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:40px">
     <div style="display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap">
-      <div style="display:flex;flex-direction:column;gap:10px;max-width:360px"><div style="display:flex;align-items:center;gap:9px;font:800 20px/1 'Hanken Grotesk';letter-spacing:-.03em"><span style="width:10px;height:10px;border-radius:50%;background:#5DB8F5"></span>TenderScout</div><div style="font:500 15px/23px 'Hanken Grotesk';color:#8A93A3">University prototype · ESCP · Digital Product Design. AI output is simulated and all companies and tenders are fictional.</div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:360px"><div style="display:flex;align-items:center;gap:9px;font:800 20px/1 'Hanken Grotesk';letter-spacing:-.03em"><span style="width:10px;height:10px;border-radius:50%;background:#5DB8F5"></span>TenderScout</div><div style="font:500 15px/23px 'Hanken Grotesk';color:#8A93A3">University prototype · ESCP · Digital Product Design. AI output is simulated. The rules and the EU sector codes are real; every company, buyer and tender is fictional.</div></div>
       <div style="display:flex;gap:56px;flex-wrap:wrap;font:500 15px/1 'Hanken Grotesk'">
         <div style="display:flex;flex-direction:column;gap:14px"><span style="font:500 12px/1 'IBM Plex Mono';color:#5C6370">PRODUCT</span><a href="#how" style="color:#E9EBEE">How it works</a><a href="#sectors" style="color:#E9EBEE">Sectors</a><a href="#where" style="color:#E9EBEE">Countries</a></div>
         <div style="display:flex;flex-direction:column;gap:14px"><span style="font:500 12px/1 'IBM Plex Mono';color:#5C6370">PROJECT</span><a href="#faq" style="color:#E9EBEE">Questions</a><a href="TenderScout%20Launch%20Film.dc.html" style="color:#E9EBEE">Launch film</a><a href="TenderScout%20UI%20Controls.dc.html" style="color:#E9EBEE">UI library</a></div>
@@ -517,7 +516,7 @@ class Component extends DCLogic {
       ['How do you read tenders in four languages?', 'Every document is translated, then each requirement is checked against your company profile. The original sentence stays one tap away, with its page number.'],
       ['What does “Needs your check” mean?', 'The tender’s wording is unclear and our confidence is below 70%. You decide whether you meet it, and the tender re-scores straight away.'],
       ['Which countries do you cover?', 'Germany and Austria by default. Turn on cross-border bidding to add Spain, the Netherlands and France.'],
-      ['Is the AI output real?', 'No. This is a university prototype: the AI output is simulated, the decision logic is real code, and every company and tender is fictional.']
+      ['Is the AI output real?', 'No, it is simulated: this is a university prototype. Real: the decision rules, the 45 EU sector divisions, the countries and languages. Fictional: every company, buyer and tender in the demo, and the weekly sector counts.']
     ];
     const ROLL = ['school Wi-Fi?', 'fibre?', 'this audit?', 'data centres?', 'cleaning?', 'a framework?'];
     const st = {}; [0, 1, 2, 3].forEach(i => { st['o' + i] = S.stick === i ? 1 : 0; st['k' + i] = S.stick === i ? 1 : 0.92; });
@@ -559,7 +558,7 @@ class Component extends DCLogic {
       whoScroll: e => { const i = Math.round(e.currentTarget.scrollLeft / 296); if (i !== this.state.who) this.setState({ who: Math.max(0, Math.min(44, i)) }); },
       whoPrev: () => this.whoRef.current && this.whoRef.current.scrollBy({ left: -592, behavior: 'smooth' }),
       whoNext: () => this.whoRef.current && this.whoRef.current.scrollBy({ left: 592, behavior: 'smooth' }),
-      whoCount: String(S.who + 1).padStart(2, '0') + ' / 45',
+      whoCount: (S.who + 1) + ' of 45 divisions',
       isFeed: S.dock === 0, isBids: S.dock === 1, isCompany: S.dock === 2,
       fGo: S.iso ? 2 : 1, fNo: S.iso ? 2 : 3,
       feedRows: [['go', 100, 'Structured cabling and Wi-Fi for 12 primary schools', 'Stadt Ellerbach · €480k · 29 d'], ['maybe', 90, 'Fibre-to-the-building rollout', 'Stadtwerke Kaltbrunn · €1.1M · 43 d'], S.iso ? ['go', 92, 'IT security audit', 'Landkreis Hohenau · €95k · 18 d'] : ['nogo', 25, 'IT security audit', 'Landkreis Hohenau · €95k · 18 d']].map(([k, sc, title, meta]) => ({ sc, title, meta, bg: V[k][0], on: V[k][1], label: V[k][2], ink: VD[k], rad: V[k][4], clip: V[k][5] })),

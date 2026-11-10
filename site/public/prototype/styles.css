@@ -1,0 +1,546 @@
+/* Vendored fonts (see fonts/LICENSES.md). No CDN: works on GitHub Pages and from file://. */
+@font-face{font-family:"Hanken Grotesk";font-style:normal;font-weight:400 800;font-display:swap;src:url("fonts/HankenGrotesk-normal-400to800-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+@font-face{font-family:"Hanken Grotesk";font-style:normal;font-weight:400 800;font-display:swap;src:url("fonts/HankenGrotesk-normal-400to800-latin.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:"Material Symbols Rounded";font-style:normal;font-weight:300 400;font-display:block;src:url("fonts/MaterialSymbolsRounded-subset.woff2") format("woff2");}
+
+/* =====================================================================
+   TenderScout · styles.css · components only. Every colour is one of the nine custom properties from shared/tokens.css
+   (generated from shared/tokens.json and loaded by index.html before this file): --c-bg, --c-surface, --c-ink, --c-muted,
+   --c-brand and --c-go / --c-maybe / --c-nogo / --c-check. Scheme: <html data-scheme="light|dark">, set before the first
+   paint by index.html and kept in sync by app.js (Settings → Appearance).
+   4 Nov 2026 (declutter): flat surfaces, no borders, dividers, shadows, gradients, grain, glass, pills, tags or badges;
+   one 8 px radius; one typeface with tabular figures; no uppercase, italics or negative tracking; a full-width bottom
+   tab bar; underlined text tabs for filters and stages. Verdicts are always shape + word. The only translucent element is
+   the sheet scrim (one solid colour at 60 %), listed as the sole exception in CLAUDE.md §11.
+   ===================================================================== */
+
+/* Verdict and requirement-status colour. Requirement status maps: met→go, fail→nogo, check→check, risk→maybe. */
+.v-go    { --v:var(--c-go); }
+.v-maybe { --v:var(--c-maybe); }
+.v-nogo  { --v:var(--c-nogo); }
+.v-check { --v:var(--c-check); }
+.v-closed{ --v:var(--c-muted); }
+
+/* ---------- base ---------- */
+*, *::before, *::after { box-sizing:border-box; }
+html { background:var(--c-bg); -webkit-text-size-adjust:100%; text-size-adjust:100%; scroll-padding-bottom:calc(128px + var(--safe-bottom)); scroll-padding-top:8px; } /* scrollIntoView and focus keep content clear of the fixed tab bar / action bar (small iPhones) */
+body {
+  margin:0; min-height:100vh; min-height:100dvh;
+  background:var(--c-bg); color:var(--c-ink);
+  font:500 15px/22px var(--font-ui);
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+}
+h1, h2, h3, p, figure, blockquote, ul, ol { margin:0; padding:0; }
+ul, ol { list-style:none; }
+button, input { font:inherit; color:inherit; }
+a, button, input, label, [role="switch"], [role="radio"], [role="tab"] { touch-action:manipulation; } /* iOS: no double-tap zoom or tap delay on tap targets */
+button { cursor:pointer; -webkit-appearance:none; appearance:none; border:0; background:none; padding:0; }
+a { color:inherit; text-decoration:none; }
+::selection { background:var(--c-brand); color:var(--c-bg); }
+:focus { outline:none; }
+:focus-visible { outline:var(--focus-w) solid var(--c-brand); outline-offset:var(--focus-o); }
+[tabindex="-1"]:focus { outline:none; } /* headings that only receive focus programmatically after navigation */
+.sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+#app { position:relative; max-width:var(--app-max-width); margin:0 auto; min-height:100vh; min-height:100dvh; }
+.screen { padding-top:var(--safe-top); min-height:100vh; min-height:100dvh; }
+.screen.has-tabs { padding-bottom:calc(var(--app-tab-bar-height) + 24px + var(--safe-bottom)); }
+.screen.has-bar  { padding-bottom:calc(112px + var(--safe-bottom)); }
+
+/* ---------- icons (Material Symbols Rounded, vendored subset) ---------- */
+.ms {
+  font-family:var(--font-icon); font-weight:normal; font-style:normal;
+  font-size:20px; line-height:1; letter-spacing:normal; text-transform:none;
+  display:inline-block; white-space:nowrap; direction:ltr; flex:none;
+  width:1em; height:1em; overflow:hidden;
+  font-feature-settings:'liga'; -webkit-font-feature-settings:'liga';
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+  -webkit-font-smoothing:antialiased; -webkit-user-select:none; user-select:none;
+}
+.ms.fill { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+.ms.s18 { font-size:18px; } .ms.s22 { font-size:22px; } .ms.s24 { font-size:24px; }
+
+/* ---------- shapes: ● Go · ▲ Maybe · ■ No-go · ◆ Needs your check (shared with the site) ---------- */
+.shape { --sz:8px; display:inline-block; flex:none; width:var(--sz); height:var(--sz); background:var(--v, currentColor); vertical-align:0; }
+.shape.circle { border-radius:50%; }
+.shape.tri { width:calc(var(--sz) * 1.1); clip-path:var(--shape-maybe-clip); }
+.shape.square { border-radius:1px; }
+.shape.diamond { width:calc(var(--sz) * .85); height:calc(var(--sz) * .85); transform:rotate(45deg); margin:0 1px; border-radius:1px; }
+.shape.md { --sz:10px; } .shape.lg { --sz:12px; }
+
+/* ---------- type ---------- */
+.wordmark { display:inline-flex; align-items:center; gap:8px; font:800 19px/1 var(--font-ui); white-space:nowrap; color:var(--c-ink); }
+.wordmark::before { content:''; width:10px; height:10px; border-radius:50%; background:var(--c-brand); flex:none; } /* the 10 px brand dot */
+.screen-title { font:800 30px/34px var(--font-ui); text-wrap:balance; }
+.sub { margin-top:6px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
+.sec-h { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:28px 20px 10px; }
+.sec-h h2 { font:700 20px/26px var(--font-ui); }
+.sec-h .aside { font:500 14px/20px var(--font-ui); color:var(--c-muted); white-space:nowrap; }
+.sec-h .ai { margin-left:auto; }
+.meta-text { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.label-text { font:600 13px/16px var(--font-ui); color:var(--c-muted); }
+.caption { font:500 13px/18px var(--font-ui); color:var(--c-muted); text-align:center; }
+.gutter { padding-left:20px; padding-right:20px; }
+.cards { display:flex; flex-direction:column; gap:8px; padding:0 16px; }
+.link { color:var(--c-brand); font-weight:700; text-decoration:underline; text-underline-offset:2px; display:inline-block; padding:13px 4px; margin:-13px -4px; } /* a 44 px hit area around an inline link without moving the text (monkey, seed 20261105: "see in Bids" was 17 px tall) */
+.fiction { margin:20px 20px 0; }
+/* "Simulated AI": plain text, on every screen that shows AI output */
+.ai { font:600 12px/16px var(--font-ui); color:var(--c-muted); white-space:nowrap; flex:none; }
+/* Word-by-word reveal (one-shot on screen load): words start muted and light up in sequence. */
+.reveal .w { color:var(--c-ink); }
+.reveal .w.accent { color:var(--c-brand); }
+.entering .reveal .w { animation:ts-lit .32s ease-out both; animation-delay:calc(.18s + var(--k, 0) * 55ms); }
+@keyframes ts-lit { from { color:var(--c-muted); } }
+
+/* ---------- nav row ---------- */
+.nav { height:56px; display:flex; align-items:center; gap:12px; padding:4px 12px 0 20px; }
+.nav .spacer { flex:1; }
+.nav.back-nav { padding-left:12px; }
+.icon-btn {
+  width:44px; height:44px; border-radius:var(--r); flex:none; background:var(--c-surface); color:var(--c-ink);
+  display:grid; place-items:center; transition:transform 120ms var(--ease-out);
+}
+.icon-btn:active { transform:scale(.94); }
+
+/* ---------- buttons: plain rectangles, one radius ---------- */
+.btn {
+  position:relative; height:var(--app-button-height); border-radius:var(--r); padding:0 20px;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font:700 16px/1 var(--font-ui); white-space:nowrap; text-align:center;
+  transition:transform 120ms var(--ease-out), background-color 180ms, color 180ms;
+}
+.btn:active:not([disabled]) { transform:scale(.98); }
+.btn-primary { background:var(--c-brand); color:var(--c-bg); }
+.btn-primary:active:not([disabled]) { background:var(--c-ink); }
+/* secondary: the muted colour as a solid fill with ground-coloured text, so it reads as a button on both grounds in both
+   schemes (surface on bg is too close in the dark scheme). Audited: bg on muted ≥ 4.5:1 in both schemes. */
+.btn-secondary { background:var(--c-muted); color:var(--c-bg); }
+.btn-secondary:active:not([disabled]) { background:var(--c-ink); }
+.btn-danger { background:transparent; color:var(--c-nogo); } /* Reset demo: plain red text in the button frame, no fill */
+.btn[disabled], .btn[aria-disabled="true"] { background:var(--c-surface); color:var(--c-muted); cursor:not-allowed; }
+.btn-sm { height:44px; padding:0 14px; font-size:14px; }
+.btn-block { width:100%; }
+.text-btn { position:relative; padding:0 4px; min-width:44px; min-height:44px; justify-content:center; font:700 14px/1 var(--font-ui); color:var(--c-brand); display:inline-flex; align-items:center; gap:6px; text-decoration:underline; text-underline-offset:3px; } /* min-width 44: the sheet's "Undo" was 41 px wide (monkey, seed 20261105) */
+
+/* bottom action bar (thumb zone) */
+.action-bar {
+  position:fixed; z-index:20; left:0; right:0; bottom:0; max-width:var(--app-max-width); margin:0 auto;
+  display:flex; gap:12px; padding:12px 16px calc(16px + var(--safe-bottom));
+  background:var(--c-bg);
+}
+.action-bar > * { flex:1 1 0; min-width:0; }
+.action-bar > .btn-primary, .action-bar > .grow-2 { flex-grow:2; }
+.action-bar .bar-note { flex:1 1 100%; text-align:center; font:600 13px/16px var(--font-ui); color:var(--c-muted); margin:0 0 4px; }
+.action-bar:has(.bar-note) { flex-wrap:wrap; }
+html.sheet-open { overflow:hidden; }
+
+/* ---------- bottom tab bar: full width, icon + label, active = brand + filled icon + bolder label ---------- */
+.tabbar {
+  position:fixed; z-index:20; left:0; right:0; bottom:0; max-width:var(--app-max-width); margin:0 auto;
+  height:calc(var(--app-tab-bar-height) + var(--safe-bottom)); padding:0 0 var(--safe-bottom);
+  display:flex; background:var(--c-surface);
+}
+.tabbar a {
+  flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  color:var(--c-muted); font:600 11px/14px var(--font-ui); transition:color .2s;
+}
+.tabbar a[aria-current="page"] { color:var(--c-brand); font-weight:700; }
+.tabbar a[aria-current="page"] .ms { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+/* ---------- toast ---------- */
+.toast-root { position:fixed; z-index:60; left:0; right:0; bottom:0; max-width:var(--app-max-width); margin:0 auto; pointer-events:none; }
+.toast {
+  position:absolute; left:16px; right:16px; bottom:calc(var(--toast-offset, 104px) + var(--safe-bottom));
+  min-height:52px; border-radius:var(--r); background:var(--c-ink); color:var(--c-bg);
+  display:flex; align-items:center; gap:10px; padding:4px 6px 4px 16px;
+  font:500 15px/20px var(--font-ui); pointer-events:auto;
+  opacity:0; transform:translateY(12px); transition:opacity var(--dur-toast) var(--ease-out), transform var(--dur-toast) var(--ease-out);
+}
+.toast.show { opacity:1; transform:none; }
+.toast .msg { flex:1; min-width:0; }
+.toast button { flex:none; height:44px; padding:0 12px; color:var(--c-bg); font:700 15px/1 var(--font-ui); text-decoration:underline; text-underline-offset:3px; }
+
+/* ---------- text tabs (filters, stages, appearance): plain text, the active one underlined in brand ---------- */
+.tabs { display:flex; gap:4px; }
+.tabs button, .tabs a {
+  position:relative; flex:1 1 0; min-width:0; min-height:44px; padding:0 4px;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  font:600 15px/1 var(--font-ui); color:var(--c-muted); white-space:nowrap; transition:color 180ms;
+}
+.tabs [aria-checked="true"], .tabs [aria-selected="true"] { color:var(--c-brand); font-weight:700; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:8px; }
+.tabs.filter { margin:0 16px; }
+@media (max-width: 359px) { .tabs.filter button { gap:4px; padding:0 2px; } } /* 320 px: "▲ Maybe 2" was 2 px wider than its quarter (pass 3) */
+.tabs.stage button { font-size:14px; }
+.tabs button[disabled] { cursor:not-allowed; color:var(--c-muted); }
+
+/* ---------- status line, score tile, counts ---------- */
+.status { display:inline-flex; align-items:center; gap:6px; font:700 13px/18px var(--font-ui); color:var(--v); min-width:0; }
+.status .shape { background:var(--v); }
+.status .why { font-weight:500; color:var(--c-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.score {
+  width:48px; height:48px; border-radius:var(--r); background:var(--v); color:var(--c-bg); flex:none;
+  display:grid; place-items:center; font:800 20px/1 var(--font-ui);
+}
+.v-closed .score { color:var(--c-bg); } /* bg on muted: 6.62:1 dark, 5.36:1 light (ink was 2.90:1 in light, pass 5) */
+.pulse { animation:pulse var(--dur-rescore-pulse) var(--ease-out) 1; }
+@keyframes pulse { 0% { transform:scale(1); } 35% { transform:scale(1.12); } 100% { transform:scale(1); } }
+/* "1 Go · 2 Maybe · 3 No-go": plain text, each count in its verdict colour */
+.counts { display:flex; flex-wrap:wrap; gap:4px 14px; font:600 15px/22px var(--font-ui); color:var(--c-muted); }
+.counts > * { display:inline-flex; align-items:center; gap:6px; color:var(--v); }
+.counts b { font-weight:800; }
+
+/* ---------- Welcome ---------- */
+.welcome { display:flex; flex-direction:column; }
+.photo { display:block; width:100%; height:200px; object-fit:cover; border-radius:var(--r); background:var(--c-surface); }
+.welcome .photo { width:auto; margin:4px 16px 0; }
+.welcome-copy { padding:24px 20px 0; }
+.welcome-sub { margin-top:10px; font:500 15px/22px var(--font-ui); color:var(--c-muted); text-wrap:pretty; }
+.welcome-form { margin-top:20px; padding:0 16px calc(24px + var(--safe-bottom)); display:flex; flex-direction:column; gap:8px; }
+.welcome-form .label-text { padding-left:4px; }
+.field { display:flex; align-items:center; height:52px; padding:0 16px; border-radius:var(--r); background:var(--c-surface); }
+.field input { flex:1; min-width:0; height:100%; border:0; background:transparent; outline:none; font:600 16px/1 var(--font-ui); color:var(--c-ink); }
+.field input::placeholder { color:var(--c-muted); }
+.field:focus-within { outline:var(--focus-w) solid var(--c-brand); outline-offset:var(--focus-o); }
+.welcome-form .caption { margin-top:8px; }
+
+/* ---------- Reading (welcome/2) ---------- */
+.reading { padding:12px 20px 40px; display:flex; flex-direction:column; gap:20px; }
+.progress { height:6px; background:var(--c-surface); overflow:hidden; }
+.card .progress, .on-surface .progress { background:var(--c-bg); }
+.progress > span { display:block; height:100%; width:var(--p, 0%); background:var(--c-brand); transition:width 400ms var(--ease-out); }
+.steps { display:flex; flex-direction:column; gap:10px; }
+.step { display:flex; align-items:baseline; gap:12px; min-height:28px; font:600 15px/22px var(--font-ui); color:var(--c-muted); }
+.step.done { color:var(--c-ink); }
+.step.active { color:var(--c-brand); }
+.step .lbl { flex:1; min-width:0; }
+.step .meta-text { white-space:nowrap; }
+.found { font:500 14px/20px var(--font-ui); color:var(--c-ink); }
+.found b { display:block; font:600 13px/18px var(--font-ui); color:var(--c-muted); margin-bottom:4px; }
+
+/* ---------- Check your profile (welcome/3) ---------- */
+.card { border-radius:var(--r); background:var(--c-surface); }
+.profile-card { margin:16px 16px 0; padding:18px 16px; display:flex; flex-direction:column; gap:16px; }
+.profile-card .co-name { font:700 20px/24px var(--font-ui); }
+.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.stat-row b { display:block; font:800 24px/28px var(--font-ui); }
+.stat-row span { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.kv .k { font:600 13px/18px var(--font-ui); color:var(--c-muted); margin-bottom:2px; }
+.kv .v { font:500 15px/22px var(--font-ui); }
+
+/* ---------- Feed ---------- */
+.feed-head { padding:6px 20px 16px; }
+.pages-line { margin-top:6px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
+.pages-line b { font-weight:700; color:var(--c-ink); }
+.pages-line .nowrap { white-space:nowrap; } /* the separator wraps together with the "Simulated AI" label */
+.feed-list { margin-top:12px; }
+.feed-foot { margin:20px 20px 0; text-align:center; }
+.tcard-wrap { display:grid; grid-template-rows:1fr; transition:grid-template-rows 240ms var(--ease-out), opacity 240ms var(--ease-out); }
+.tcard-wrap > * { min-height:0; overflow:hidden; }
+.tcard-wrap.collapsing { grid-template-rows:0fr; opacity:0; margin-top:-8px; }
+/* tender card: verdict (shape + word + score), title, buyer, value, days left. Nothing else. */
+.tcard {
+  position:relative; display:grid; grid-template-columns:48px 1fr; gap:14px; padding:16px; border-radius:var(--r);
+  background:var(--c-surface); transition:transform 120ms var(--ease-out);
+}
+.tcard:active { transform:scale(.985); }
+.tcard-body { min-width:0; }
+.tcard-title { display:block; margin-top:4px; font:700 16px/21px var(--font-ui); color:var(--c-ink); }
+.meta-row { display:flex; align-items:center; gap:6px; margin-top:6px; font:500 13px/18px var(--font-ui); color:var(--c-muted); min-width:0; }
+.meta-row .buyer { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.meta-row .nowrap { white-space:nowrap; flex:none; }
+.meta-row .soon { color:var(--c-maybe); font-weight:700; }
+.meta-row .saved { margin-left:auto; color:var(--c-brand); font-weight:700; }
+.tcard.is-closed .tcard-title { color:var(--c-muted); }
+.skipped-note { margin:18px 20px 0; }
+.orig { display:block; font:400 13px/18px var(--font-ui); color:var(--c-muted); }
+
+/* offline note */
+.banner { margin:0 20px 12px; font:600 14px/19px var(--font-ui); color:var(--c-muted); }
+
+/* ---------- empty states ---------- */
+.empty { display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:36px 28px 24px; }
+.empty h2 { font:800 24px/28px var(--font-ui); }
+.empty p { font:500 15px/22px var(--font-ui); color:var(--c-muted); max-width:32ch; }
+.empty .btn { margin-top:10px; }
+.empty.compact { padding:24px 28px; }
+
+/* ---------- Tender detail ---------- */
+.vhead { padding:6px 20px 8px; } /* the top inset is already on .screen: adding it here doubled the gap on a home-screen iPhone */
+.vhead-nav { height:48px; display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 -8px; }
+.vhead-verdict { display:flex; align-items:center; gap:8px; margin-top:18px; font:700 17px/22px var(--font-ui); color:var(--v); }
+.vhead-score { display:flex; align-items:baseline; gap:8px; margin-top:4px; color:var(--v); }
+.vhead-score .num { font:800 72px/1 var(--font-ui); }
+.vhead-score .of { font:700 20px/1 var(--font-ui); color:var(--c-muted); }
+.vhead-reason { margin-top:12px; font:600 18px/25px var(--font-ui); max-width:32ch; color:var(--c-ink); }
+.v-closed .vhead-reason { color:var(--c-muted); }
+.closed-word { margin-top:18px; font:800 48px/1 var(--font-ui); color:var(--c-muted); } /* the verdict line's top offset, so every tender header starts at the same height */
+.detail-photo { width:calc(100% - 32px); margin:28px 16px 0; height:160px; } /* width:100% plus the side margins overflowed the right edge; 28 px above = the section gap, so at the end of the page it reads as its own block */
+.detail-head { padding:20px 20px 0; }
+.detail-title { font:800 24px/30px var(--font-ui); }
+.detail-head .orig { margin-top:4px; font-size:14px; line-height:20px; }
+.detail-head .meta-row { margin-top:8px; font-size:14px; }
+/* facts: value and deadline, plain text */
+.facts { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 20px 0; }
+.fact .k { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.fact .v { margin-top:2px; font:700 17px/22px var(--font-ui); }
+.fact .v.soon { color:var(--c-maybe); }
+.in-short { margin:0 20px; font:500 17px/26px var(--font-ui); text-wrap:pretty; }
+.closed-note { margin:12px 20px 0; font:600 13px/18px var(--font-ui); color:var(--c-muted); }
+.skel-block { display:flex; flex-direction:column; gap:12px; padding:24px 20px 0; }
+
+/* requirement card */
+.req { position:relative; display:block; padding:16px; border-radius:var(--r); background:var(--c-surface); transition:transform 120ms var(--ease-out); }
+.req:active { transform:scale(.985); }
+.req-title { display:block; margin-top:4px; font:700 16px/21px var(--font-ui); color:var(--c-ink); }
+.req-check { display:block; margin-top:2px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.req-sure { display:block; margin-top:2px; font:600 14px/20px var(--font-ui); color:var(--c-check); }
+.cite { display:block; margin-top:8px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+/* On a requirement line the citation is the way into the proof (pass 5): brand text; the whole line stays the one link. */
+.req .cite { font-weight:600; color:var(--c-brand); }
+/* One brand element per card: on the ◆ line "Check →" is the call to action, and a Closed tender's checklist is a record. */
+.req.v-check .cite, .req.req-record .cite { font-weight:500; color:var(--c-muted); }
+.req-cta { display:inline-flex; align-items:center; gap:4px; min-height:44px; margin-top:2px; font:700 15px/1 var(--font-ui); color:var(--c-brand); }
+
+/* Ask this tender (accordion) */
+.asks { display:flex; flex-direction:column; gap:8px; padding:0 16px; }
+.ask { border-radius:var(--r); background:var(--c-surface); overflow:hidden; }
+.ask > button {
+  width:100%; min-height:52px; text-align:left;
+  display:flex; align-items:center; gap:10px; padding:14px 16px; font:700 15px/20px var(--font-ui); color:var(--c-ink);
+}
+.ask > button .ms { margin-left:auto; color:var(--c-muted); transition:transform 240ms var(--ease-out); }
+.ask.open > button .ms { transform:rotate(45deg); color:var(--c-brand); }
+.ask .answer { padding:0 16px 16px; font:500 15px/22px var(--font-ui); color:var(--c-ink); }
+.ask .answer .cite { margin-top:8px; }
+.ask .answer .typing { color:var(--c-muted); }
+
+/* ---------- bottom sheet ---------- */
+.sheet-root[hidden] { display:none; }
+.scrim { position:fixed; z-index:40; inset:0; background:var(--c-bg); opacity:0; transition:opacity var(--dur-sheet) var(--ease-sheet); touch-action:none; } /* iOS: no scroll through the scrim */
+.sheet {
+  position:fixed; z-index:41; left:0; right:0; bottom:0; max-width:var(--app-max-width); margin:0 auto;
+  max-height:calc(100vh - var(--safe-top) - 24px); max-height:calc(100dvh - var(--safe-top) - 24px);
+  display:flex; flex-direction:column;
+  background:var(--c-surface); border-radius:var(--r) var(--r) 0 0;
+  transform:translateY(105%); transition:transform var(--dur-sheet) var(--ease-sheet);
+}
+.sheet-root.open .scrim { opacity:.6; } /* the one translucent element: a solid colour at 60 % so the parent screen stays in view */
+.sheet-root.open .sheet { transform:none; }
+.sheet-body { overflow-y:auto; overscroll-behavior:contain; padding:24px 20px 8px; display:flex; flex-direction:column; gap:16px; }
+.sheet-foot { flex:none; padding:8px 20px calc(24px + var(--safe-bottom)); display:flex; flex-direction:column; gap:8px; }
+.sheet-foot .row-btns { display:flex; gap:12px; }
+.sheet-foot .row-btns > * { flex:1 1 0; min-width:0; }
+.sheet-foot .row-btns > .grow-2 { flex-grow:2; }
+/* answered: "We meet it" is the primary and takes the rest of the row, "We don't meet it" keeps its label's width (as a third
+   of the row it touched both edges at 390 px and spilled out of its button at 320 px; pass 3 WebKit visual audit) */
+.sheet-foot .row-btns.pair > .btn-secondary:not(.btn-check) { flex:0 0 auto; }
+/* The unresolved answer pair is the owner's decision: both buttons in the ◆ "Needs your check" colour, equal width, so neither
+   looks disabled or preselected (pass 5; bg on check: 9.51:1 dark, 7.47:1 light). */
+.btn-secondary.btn-check { background:var(--c-check); color:var(--c-bg); }
+
+/* ---------- morning notification (simulated lock screen, once a day; app.js morningHTML) ----------
+   The phone's lock screen in the app's own colours: the ground, the clock in ink, the notification as a flat surface
+   card with the app icon (brand fill, ground glyph) and the three counts as verdict shape + number + word. */
+.notify-root[hidden] { display:none; }
+.lockscreen {
+  position:fixed; z-index:70; inset:0; max-width:var(--app-max-width); margin:0 auto; background:var(--c-bg); color:var(--c-ink);
+  display:flex; flex-direction:column; align-items:stretch; gap:0;
+  padding:calc(12px + var(--safe-top)) 12px calc(24px + var(--safe-bottom)); overflow-y:auto; touch-action:pan-y;
+}
+.ls-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-left:8px; }
+.ls-sim { font:600 13px/18px var(--font-ui); color:var(--c-muted); }
+.ls-clock { text-align:center; margin:36px 0 40px; }
+.ls-date { font:600 19px/24px var(--font-ui); color:var(--c-muted); }
+.ls-time { font:400 92px/1 var(--font-ui); color:var(--c-ink); font-variant-numeric:tabular-nums; margin-top:8px; outline:none; }
+.notif {
+  display:flex; align-items:flex-start; gap:12px; width:100%; min-height:76px; padding:14px; text-align:left;
+  border-radius:var(--r); background:var(--c-surface); color:var(--c-ink); transition:transform 120ms var(--ease-out);
+}
+.notif:active { transform:scale(.98); }
+.notif-icon { width:40px; height:40px; flex:none; border-radius:var(--r); background:var(--c-brand); color:var(--c-bg); display:grid; place-items:center; }
+.notif-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.notif-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; font:700 16px/20px var(--font-ui); }
+.notif-when { font:500 14px/18px var(--font-ui); color:var(--c-muted); }
+.notif-counts { display:flex; flex-wrap:wrap; gap:6px 16px; }
+.n-count { display:inline-flex; align-items:center; gap:6px; font:700 15px/20px var(--font-ui); color:var(--v); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.ls-foot { margin-top:auto; padding-top:24px; }
+.notify-root.open .lockscreen { animation:ts-fade var(--dur-sheet) var(--ease-out) both; }
+.notify-root.open .notif { animation:ts-drop var(--dur-pop) var(--ease-back) .25s both; }
+@keyframes ts-fade { from { opacity:0; } }
+@keyframes ts-drop { from { opacity:0; transform:translateY(-16px); } }
+.sheet-foot .row-btns .btn { padding:0 12px; }
+.sheet-top { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.sheet-top .status { font-size:15px; }
+.sheet-title { font:800 24px/30px var(--font-ui); }
+.sheet-sub { margin-top:4px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.confidence { margin-left:auto; font:600 13px/18px var(--font-ui); color:var(--c-muted); white-space:nowrap; }
+.confidence b { font-weight:800; color:var(--c-ink); }
+.callout { font:600 15px/22px var(--font-ui); color:var(--c-ink); }
+.answered { display:flex; align-items:center; justify-content:center; gap:4px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+
+/* quote block: the original sentence and its translation */
+.quote { border-radius:var(--r); background:var(--c-bg); padding:16px; }
+.quote-head { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.quote blockquote { margin:6px 0 0; font:400 16px/24px var(--font-ui); color:var(--c-ink); }
+.quote mark { background:none; color:var(--v); font-weight:700; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:3px; }
+.translation-k { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.translation { margin-top:4px; font:500 15px/22px var(--font-ui); color:var(--c-ink); }
+
+/* option buttons (skip reasons): plain rectangles, brand when selected */
+.opt-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.opt {
+  min-height:44px; padding:10px 12px; border-radius:var(--r); background:var(--c-bg); color:var(--c-ink);
+  font:600 14px/18px var(--font-ui); text-align:left; transition:background-color 180ms, color 180ms;
+}
+.opt[aria-pressed="true"] { background:var(--c-brand); color:var(--c-bg); }
+.tune-note { font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+
+/* ---------- Bids ---------- */
+.bids-head { padding:6px 20px 4px; }
+.placeholder { margin:0 16px; padding:14px 16px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.bid-card { position:relative; border-radius:var(--r); background:var(--c-surface); padding:16px; display:flex; flex-direction:column; gap:10px; }
+.bid-card .top { display:grid; grid-template-columns:48px minmax(0,1fr); gap:14px; align-items:start; }
+.bid-card .tcard-title { margin-top:3px; font-size:15px; line-height:20px; }
+.bid-card .meta-row { margin-top:4px; }
+.bid-card.entering { animation:card-in 240ms var(--ease-out); }
+@keyframes card-in { from { opacity:0; transform:translateY(-6px) scale(.98); } }
+.skipped { margin:0 16px; display:flex; flex-direction:column; gap:8px; }
+.skip-row { display:flex; align-items:center; gap:12px; padding:12px 12px 12px 16px; border-radius:var(--r); background:var(--c-surface); }
+.skip-row .txt { flex:1; min-width:0; }
+.skip-row .t { font:700 15px/20px var(--font-ui); }
+.skip-row .r { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+
+/* ---------- Win/loss insights (#/insights, opened from Bids; 5 Nov 2026) ----------
+   Flat surfaces like every other block: KPI tiles, an area list with one solid brand bar per area, a reason list. */
+.insights-link { display:flex; align-items:center; gap:12px; min-height:60px; margin:14px 16px 0; padding:10px 16px; border-radius:var(--r); background:var(--c-surface); color:var(--c-ink); }
+.insights-link .txt { flex:1; min-width:0; display:flex; flex-direction:column; }
+.insights-link .ms { color:var(--c-brand); }
+.kpis { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 16px 0; }
+.kpi { min-width:0; padding:14px 16px; border-radius:var(--r); background:var(--c-surface); }
+.kpi .n { font:800 28px/32px var(--font-ui); }
+.kpi .k { margin-top:4px; font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+.area-row { padding:12px 0; }
+.area-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.area-name { font:700 16px/21px var(--font-ui); min-width:0; }
+.area-n { font:500 14px/20px var(--font-ui); color:var(--c-muted); white-space:nowrap; }
+.area-bar { margin-top:8px; height:6px; border-radius:3px; background:var(--c-bg); overflow:hidden; }
+.area-bar > span { display:block; height:100%; border-radius:3px; background:var(--c-brand); }
+.insight-note { margin:0 20px 12px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
+.insight-note b { color:var(--c-ink); font-weight:700; }
+.reason-n { flex:none; font:800 22px/26px var(--font-ui); }
+.insights-foot { margin:24px 20px 0; }
+
+/* ---------- Company ---------- */
+.co-head { padding:6px 20px 0; }
+.co-head .counts { margin-top:18px; }
+.rescore {
+  position:relative; z-index:2; margin:16px 16px 0; padding:16px; border-radius:var(--r);
+  background:var(--c-surface); display:flex; flex-direction:column; gap:4px;
+}
+/* Pop fallback for the re-score card (the FLIP morph in app.js removes .enter when it can grow the card out of the control) */
+.rescore.enter { animation:ts-pop var(--dur-pop) var(--ease-back) both; }
+.morph-ghost { position:fixed; z-index:70; pointer-events:none; outline:1.5px dashed var(--c-muted); outline-offset:2px; }
+.rescore-buyer { font:700 16px/21px var(--font-ui); }
+.rescore-text { font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.change-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.change-row .status { font-size:15px; }
+/* the payoff: "25 → 100" on the buyer's line, the new score in the new verdict's colour (counts up from the old one; instant
+   under reduced motion). On the same line, so the card stays about as tall as before and the morph still fits a short phone. */
+.rescore-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.rescore-top .rescore-buyer { min-width:0; }
+.rescore-top, .rescore.neutral .rescore-buyer { min-height:30px; } /* the neutral card and the score card are one height, so a change never pushes down the switch just tapped */
+.rescore-score { flex:none; display:flex; align-items:baseline; gap:6px; font:700 15px/1 var(--font-ui); color:var(--c-muted); font-variant-numeric:tabular-nums; }
+.rescore-score .to { font:800 28px/1 var(--font-ui); color:var(--v); text-align:right; }
+.rescore-score .to.down { text-align:left; } /* a score that drops (100 → 25): the spare width goes to the card's edge, not between the arrow and the score */ /* min-width (inline, in ch) holds the final width, so the old score and the arrow stay still while it counts */
+.group { margin:0 16px; padding:4px 16px; border-radius:var(--r); background:var(--c-surface); }
+.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:10px 0; }
+.row .txt { flex:1; min-width:0; }
+/* Competition on the tender detail: the chance line, its reasons, then two lists */
+.comp-chance { padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+.comp-level { font:700 18px/24px var(--font-ui); }
+.comp-odds { font-weight:600; color:var(--c-muted); }
+.comp-why { margin:0; padding:0; list-style:none; font:500 14px/20px var(--font-ui); display:flex; flex-direction:column; gap:4px; }
+.comp-h { margin:16px 20px 8px; }
+.row-label { font:700 16px/21px var(--font-ui); }
+.row-sub { font:500 13px/18px var(--font-ui); color:var(--c-muted); }
+/* Hints (pass 5): muted text; colour only on the target verdict, which is shape + word ("becomes ▲ Maybe"), so colour keeps
+   meaning a verdict and never a direction. */
+.hint { margin-top:2px; font:600 13px/18px var(--font-ui); color:var(--c-muted); }
+.hint .status { display:inline; font-size:13px; white-space:nowrap; } /* the shape and its word wrap as one */
+.hint .nowrap { white-space:nowrap; } /* "· ● Go", "· 25 → 100" and "· +1 more" each stay whole, so no line ends on a separator */
+.hint .status .shape { display:inline-block; margin-right:4px; vertical-align:0; }
+.row-sub + .hint { margin-top:6px; } /* a what-if line, not more of the row's description */
+.money-field { cursor:text; display:inline-flex; align-items:center; gap:2px; height:44px; padding:0 12px; border-radius:var(--r); background:var(--c-bg); font:800 18px/1 var(--font-ui); }
+.money-field input { width:3.2em; border:0; background:transparent; outline:none; text-align:right; font:800 18px/1 var(--font-ui); color:var(--c-ink); padding:0; height:44px; }
+.money-field:focus-within { outline:var(--focus-w) solid var(--c-brand); outline-offset:var(--focus-o); }
+.money-field .unit { color:var(--c-muted); }
+.stepper { display:inline-flex; align-items:center; gap:4px; flex:none; }
+.stepper button { width:44px; height:44px; border-radius:var(--r); background:var(--c-bg); color:var(--c-ink); display:grid; place-items:center; }
+.stepper button:active { background:var(--c-brand); color:var(--c-bg); }
+.stepper output { min-width:28px; text-align:center; font:800 18px/1 var(--font-ui); }
+/* the switch: 50 × 30, brand when on, bg-coloured knob; the one round control */
+.switch {
+  position:relative; flex:none; width:50px; height:30px; border-radius:15px; padding:0;
+  background:var(--c-muted); transition:background-color 200ms var(--ease-out);
+}
+.switch::before {
+  content:''; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%;
+  background:var(--c-surface); transition:transform var(--dur-rescore-knob) var(--ease-spring);
+}
+.switch::after { content:''; position:absolute; left:-4px; right:-4px; top:-7px; bottom:-7px; }
+.switch[aria-checked="true"] { background:var(--c-brand); }
+.switch[aria-checked="true"]::before { transform:translateX(20px); background:var(--c-bg); }
+
+/* ---------- Settings (About rows, appearance, demo reset) ---------- */
+.about-intro { padding:6px 20px 0; }
+.about-intro p { margin-top:10px; font:500 15px/22px var(--font-ui); color:var(--c-muted); }
+.about-row { padding:14px 0; }
+.about-row h3 { font:700 16px/21px var(--font-ui); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.about-row p { margin-top:4px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+.notify-row { padding:14px 16px 16px; }
+.notify-row p { font:500 14px/20px var(--font-ui); color:var(--c-muted); margin-bottom:12px; }
+.about-actions { padding:24px 16px 0; display:flex; flex-direction:column; gap:12px; }
+.settings-demo { padding-top:0; }
+/* the test-session log, shown as selectable text when the copy failed (6 Nov 2026) */
+.log-row { margin-top:24px; }
+.log-text { display:block; width:100%; min-height:240px; margin-top:12px; padding:12px; border:0; border-radius:8px; background:var(--c-bg); color:var(--c-ink); font:500 16px/22px var(--font-ui); resize:none; white-space:pre-wrap; -webkit-user-select:text; user-select:text; }
+.theme-row { padding:12px 16px 12px; }
+.theme-row .label-text { display:block; margin-bottom:4px; }
+
+/* ---------- loading skeletons ---------- */
+.skel { height:12px; border-radius:var(--r); background:var(--c-surface); }
+.skel.w90 { width:90%; } .skel.w70 { width:70%; } .skel.w50 { width:50%; } .skel.h22 { height:22px; }
+.load-steps { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+.load-step { font:600 14px/20px var(--font-ui); color:var(--c-muted); }
+.load-step.done { color:var(--c-ink); }
+.load-step.active { color:var(--c-brand); }
+.loading-title { margin-top:14px; font:800 22px/28px var(--font-ui); }
+.loading-page { margin-top:6px; font:500 14px/20px var(--font-ui); color:var(--c-muted); }
+
+/* ---------- motion ---------- */
+@keyframes ts-pop { from { opacity:0; transform:scale(.86); } to { opacity:1; transform:none; } }
+@keyframes ts-rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+/* Entrances: one-shot on screen load. #screen carries .entering only when a new screen renders. */
+.entering .feed-list .tcard-wrap { animation:ts-rise var(--dur-rise) var(--ease-out) both; animation-delay:calc(.15s + .1s * min(var(--i, 1), 3)); }
+.entering .vhead-score .num { display:inline-block; animation:ts-rise var(--dur-rise) var(--ease-out) .15s both; }
+.entering .rescore:not(.enter):not(.morph) { animation:ts-pop var(--dur-pop) var(--ease-back) .3s both; }
+.entering .bid-card { animation:ts-rise var(--dur-rise) var(--ease-out) both; animation-delay:calc(.1s + .1s * var(--i, 1)); }
+/* Card → detail morph (View Transitions API, feature-detected in app.js) */
+@supports (view-transition-name: x) {
+  .vhead { view-transition-name:card; }
+  ::view-transition-group(card) { animation-duration:var(--dur-morph); animation-timing-function:var(--ease-morph); }
+  ::view-transition-old(card), ::view-transition-new(card) { animation-duration:var(--dur-morph); height:100%; object-fit:cover; overflow:hidden; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration:.45s; }
+  ::view-transition-group(card-ghost) { animation:vt-ghost var(--dur-morph) var(--ease-morph) both; outline:1.5px dashed var(--c-muted); outline-offset:-1px; border-radius:var(--r); }
+  ::view-transition-old(card-ghost) { animation:none; opacity:0; }
+  @keyframes vt-ghost { from { opacity:.6; } to { opacity:0; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:0ms !important; animation-delay:0ms !important; animation-iteration-count:1 !important;
+    transition-duration:0ms !important; transition-delay:0ms !important; scroll-behavior:auto !important;
+  }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation:none !important; }
+}

@@ -62,7 +62,7 @@ export function TryTheRules() {
   return (
     <div className="try" data-verdict={v} data-score={result.score}>
       <div className="try-out" aria-live="polite">
-        <p className="try-tender">{tender.title}<span className="how-muted"> · {tender.buyer.replace(/\s*\(fictional\)/, '')} · {money(tender.value)} · {result.daysLeft} days left · all companies and tenders are fictional</span></p>
+        <p className="try-tender">{tender.title}<span className="how-muted"> · {tender.buyer.replace(/\s*\(fictional\)/, '')} · {money(tender.value)} · {result.daysLeft} days left · a fictional tender and company, real rules</span></p>
         <p className="try-verdict">
           {vk ? <VerdictShape verdict={vk} size={18} className={`try-shape v-${vk}`} color={`var(--c-${vk})`} /> : null}
           <b className={`try-word${vk ? ` v-${vk}` : ''}`}>{verdictLabel(v)}</b>

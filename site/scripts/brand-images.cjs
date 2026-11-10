@@ -15,7 +15,7 @@ const T = JSON.parse(fs.readFileSync(path.resolve(site, '..', 'shared', 'tokens.
 const scheme = T.color.themes[T.color.site];
 const font = fs.readFileSync(path.join(site, 'src/fonts/HankenGrotesk-normal-400to800-latin.woff2')).toString('base64');
 const PITCH = 'Public tenders you can actually win, read for you overnight.';
-const HONESTY = 'University prototype · all companies and tenders are fictional';
+const HONESTY = 'University prototype · real rules, fictional companies and tenders';
 
 const css = `@font-face{font-family:H;src:url(data:font/woff2;base64,${font}) format('woff2');font-weight:400 800}
 *{margin:0;padding:0;box-sizing:border-box}html,body{background:${scheme.bg};color:${scheme.ink};font-family:H,system-ui,sans-serif;font-variant-numeric:tabular-nums}`;
