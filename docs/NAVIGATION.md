@@ -70,7 +70,7 @@ flowchart TD
 | # | Route | Screen | Primary action | Notes |
 |---|---|---|---|---|
 | S0 | `#/signin` | Demo sign-in (pass 8, PR 5) | Sign in · Sign up | Shown first on every route while signed out, deep links included; the route asked for opens after Sign in. The email is the reserved `demo@example.com`, filled in and read only; no password, no account, nothing sent. Sign up on a phone without a profile starts at Welcome. `?demo=reset` and Reset demo sign in by themselves. Sign out is on Settings → Account and keeps the profile and saved tenders |
-| S1 | `#/welcome/1` | Welcome + website | Draft my profile | Photo in its own block, headline, the line "All 45 EU sectors · 6 new tenders tonight" (derived from the data), the website field and the button. Only typed input in the core flow is here |
+| S1 | `#/welcome/1` | Welcome + website | Draft my profile | Photo in its own block, headline, the line "All 45 EU sectors · 6 new tenders tonight" (derived from the data; 45 counts the CPV divisions, numbered 03 to 98 with gaps), the website field and the button. Only typed input in the core flow is here |
 | S2 | `#/welcome/2` | Reading (transient) | none | Step list and progress bar, "Simulated AI"; replaced in history, not a back target |
 | S3 | `#/welcome/3` | Check your profile | Looks right | The drafted profile card with its sources; "Edit" goes to S6 |
 | S4 | `#/feed` | Feed | Open a tender | The filter tabs All / Go / Maybe / No-go carry the counts; skipped tenders are hidden; a saved tender shows a plain "Saved". Cards show verdict (shape + word + score), title, buyer, value and days left, nothing else (4 Nov declutter). Tapping a card morphs it into the tender's header where the browser supports view transitions |

@@ -137,7 +137,7 @@ sets "Status", "Score tile" and "Button" to `VerdictShape` + label, `VerdictTile
   They are 200 px previews to be replaced by full-resolution files under the same names (CLAUDE.md §11 item 17).
   `data.js` names them in `tender.photo`, and `app.js` → `photoSrc(t)` builds `assets/img/<photo>.png`. They are
   rendered as `<img class="photo">` with `object-fit: cover` and the 8 px radius. The website keeps 3× JPEG upscales in
-  `site/public/assets/` and serves them through `next/image`. The 45 sector previews are in `design/assets/sectors/`.
+  `site/public/assets/` and serves them through `next/image`. The 45 sector previews (numbered 03 to 98, with gaps) are in `design/assets/sectors/`.
 - **Fonts:** vendored in `fonts/` (`@font-face` at the top of `styles.css`, `font-display: swap` for text and `block`
   for icons), with licences in `fonts/LICENSES.md`. The website loads the same files through `next/font/local`.
 - **No CDN, no runtime fetches.** Photos imported from Figma go into `assets/img/` under an existing name, or under a
