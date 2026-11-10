@@ -45,7 +45,14 @@ if (process.argv.includes('--check')) {
     .concat(fs.readdirSync(app('fonts')).filter((f) => /\.woff2$/.test(f) && (!fs.existsSync(out('src/fonts/' + f)) || !fs.readFileSync(out('src/fonts/' + f)).equals(fs.readFileSync(app('fonts/' + f))))).map((f) => 'site/src/fonts/' + f))
     .concat(staleProto());
   console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs, insights.cjs, src/fonts and public/prototype/ equal the app\'s engine.js, data.js, insights.js, fonts/ and runtime files');
-  process.exit(stale.length ? 1 : 0);
+  // The GitHub Pages export in ../website/ (since 10 Nov 2026, pass 9, ADR-0005): behind site/ or behind the app copy its
+  // phone uses → fail. It runs here so CI's check job covers it without a workflow change (scripts/pages-export.mjs).
+  let pages = [];
+  if (!process.env.SKIP_PAGES_CHECK && fs.existsSync(path.join(root, 'website'))) {
+    pages = (await import('./pages-export.mjs')).check();
+    console.log(pages.length ? 'pages-export --check: the GitHub Pages export is out of date:\n  ' + pages.slice(0, 20).join('\n  ') + '\n  Rebuild it: cd site && node scripts/pages-export.mjs, then commit website/.' : 'pages-export --check: website/ matches site/ and the app');
+  }
+  process.exit(stale.length || pages.length ? 1 : 0);
 }
 
 if (!fs.existsSync(app('shared/tokens.json')) || !fs.existsSync(app('engine.js'))) {

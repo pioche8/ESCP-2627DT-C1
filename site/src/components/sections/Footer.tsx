@@ -1,11 +1,12 @@
 import { footer } from '@/data/copy';
 import { Wordmark } from '@/components/ui/Primitives';
+import { withBase } from '@/lib/site';
 
 export function Footer() {
   const col = (title: string, links: readonly (readonly [string, string])[]) => (
     <div className="foot-col">
       <span className="foot-col-title">{title}</span>
-      {links.map(([label, href]) => <a key={label} href={href} {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{label}</a>)}
+      {links.map(([label, href]) => <a key={label} href={withBase(href)} {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{label}</a>)}
     </div>
   );
   return (

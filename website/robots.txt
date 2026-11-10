@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pioche8.github.io/ESCP-2627DT-C1/website/sitemap.xml

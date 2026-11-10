@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/ESCP-2627DT-C1/website/_next/static/chunks/1ua2kfq9s-me6.js"
+3:I[39756,["$2"],"default"]
+4:I[37457,["$2"],"default"]
+8:"/ESCP-2627DT-C1/website/_next/static/chunks/1he_nkr2-_sfb.js"
+9:"/ESCP-2627DT-C1/website/_next/static/chunks/31nx_ntmruoy0.js"
+a:"/ESCP-2627DT-C1/website/_next/static/chunks/2o795vri6qar-.js"
+b:I[28264,["$8","$9","$a"],"Landing"]
+c:I[97367,["$2"],"OutletBoundary"]
+d:"$Sreact.suspense"
+10:"ViewportBoundary"
+11:I[97367,["$2"],"$10"]
+12:"MetadataBoundary"
+13:I[97367,["$2"],"$12"]
+:HL["/ESCP-2627DT-C1/website/_next/static/chunks/10oh624r8f94d.css","style"]
+6:X
+7:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","$Lb",null,{}],[["$","script","script-0",{"src":"/ESCP-2627DT-C1/website/_next/static/chunks/1he_nkr2-_sfb.js","async":true}],["$","script","script-1",{"src":"/ESCP-2627DT-C1/website/_next/static/chunks/31nx_ntmruoy0.js","async":true}],["$","script","script-2",{"src":"/ESCP-2627DT-C1/website/_next/static/chunks/2o795vri6qar-.js","async":true}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":"$@f","v":null,"s":"$6"}}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/ESCP-2627DT-C1/website/_next/static/chunks/10oh624r8f94d.css","precedence":"next"}]],["$","html",null,{"lang":"en","className":"q6IJTG_variable WGcNna_variable","children":["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}]}]}]]}],"p":"$@5","v":null,"s":"$6"},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$L11",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#02040A"}],["$","meta","3",{"name":"color-scheme","content":"dark"}]]}],["$","$L13",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"TenderScout · Public tenders you can actually win"}],["$","meta","1",{"name":"description","content":"TenderScout reads every new EU public tender overnight, in any language, and tells a small firm whether it can bid: Go, Maybe or No-go, with the page that proves it. University prototype (ESCP): real decision rules and EU sector codes, fictional companies and tenders."}],["$","meta","2",{"name":"application-name","content":"TenderScout"}],["$","meta","3",{"name":"robots","content":"index, follow"}],["$","link","4",{"rel":"canonical","href":"https://pioche8.github.io/ESCP-2627DT-C1/website/"}],["$","meta","5",{"property":"og:title","content":"TenderScout · Public tenders you can actually win, read for you overnight"}],["$","meta","6",{"property":"og:description","content":"Go / Maybe / No-go for every new EU tender, with the sentence that proves it. University prototype: real rules, fictional companies and tenders."}],["$","meta","7",{"property":"og:url","content":"https://pioche8.github.io/ESCP-2627DT-C1/website/"}],["$","meta","8",{"property":"og:site_name","content":"TenderScout"}],["$","meta","9",{"property":"og:locale","content":"en_GB"}],["$","meta","10",{"property":"og:image","content":"https://pioche8.github.io/ESCP-2627DT-C1/website/opengraph-image.png?opengraph-image.2ld3oadczz169.png"}],["$","meta","11",{"property":"og:image:type","content":"image/png"}],["$","meta","12",{"property":"og:image:width","content":"1200"}],["$","meta","13",{"property":"og:image:height","content":"630"}],["$","meta","14",{"property":"og:image:alt","content":"TenderScout: Public tenders you can actually win, read for you overnight. Go, Maybe, No-go. University prototype · real rules, fictional companies and tenders.\n"}],["$","meta","15",{"property":"og:type","content":"website"}],["$","meta","16",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","17",{"name":"twitter:title","content":"TenderScout · Public tenders you can actually win"}],["$","meta","18",{"name":"twitter:description","content":"Go / Maybe / No-go for every new EU tender, with the page that proves it. University prototype: real rules, fictional companies and tenders."}],["$","meta","19",{"name":"twitter:image","content":"https://pioche8.github.io/ESCP-2627DT-C1/website/opengraph-image.png?opengraph-image.2ld3oadczz169.png"}],"$L14","$L15","$L16","$L17","$L18","$L19","$L1a"]}]}],null]}],"$L1b"]}],"p":"$@1c","v":null,"s":"$6"}},"a":"$@1d","u":"$@1e","b":"NhyZbYRhJUl1IeKlw8EM2"}
+1f:I[27201,["$2"],"IconMark"]
+e:null
+14:["$","meta","20",{"name":"twitter:image:alt","content":"TenderScout: Public tenders you can actually win, read for you overnight. Go, Maybe, No-go. University prototype · real rules, fictional companies and tenders.\n"}]
+15:["$","meta","21",{"name":"twitter:image:type","content":"image/png"}]
+16:["$","meta","22",{"name":"twitter:image:width","content":"1200"}]
+17:["$","meta","23",{"name":"twitter:image:height","content":"630"}]
+18:["$","link","24",{"rel":"icon","href":"/ESCP-2627DT-C1/website/icon.png?icon.3b2z6320smoj6.png","sizes":"192x192","type":"image/png"}]
+19:["$","link","25",{"rel":"apple-touch-icon","href":"/ESCP-2627DT-C1/website/apple-icon.png?apple-icon.16oosoyk_-ims.png","sizes":"180x180","type":"image/png"}]
+1a:["$","$L1f","26",{}]
+1b:["$","meta",null,{"name":"next-size-adjust","content":""}]
+6:300
+1e:true
+6:C
+1d:0
+5:"$undefined"
+1c:"$undefined"
+f:"$undefined"

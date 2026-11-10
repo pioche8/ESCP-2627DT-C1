@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/Buttons';
 import { StatusLine } from '@/components/ui/VerdictTile';
 import { type VerdictKey } from '@/components/ui/VerdictShape';
 import { TryTheRules } from '@/components/how/TryTheRules';
+import { withBase } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'How it decides · TenderScout',
   description: 'The rules behind every Go, Maybe or No-go: requirement statuses, the four parts of the fit score, the thresholds, and what "cites the page that proves it" means. Derived from the prototype’s decision code at build time; try the rules live.',
-  alternates: { canonical: '/how' },
-  openGraph: { title: 'How TenderScout decides', description: 'Knock-outs, the fit score, the thresholds, and the rules you can try live. Generated from the decision code itself.', url: '/how', type: 'article', siteName: 'TenderScout', images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'TenderScout: Public tenders you can actually win, read for you overnight. Go, Maybe, No-go.' }] },
-  twitter: { card: 'summary_large_image', title: 'How TenderScout decides', description: 'Knock-outs, the fit score, the thresholds, and the rules you can try live.', images: ['/opengraph-image.png'] },
+  alternates: { canonical: withBase('/how') },
+  openGraph: { title: 'How TenderScout decides', description: 'Knock-outs, the fit score, the thresholds, and the rules you can try live. Generated from the decision code itself.', url: withBase('/how'), type: 'article', siteName: 'TenderScout', images: [{ url: withBase('/opengraph-image.png'), width: 1200, height: 630, alt: 'TenderScout: Public tenders you can actually win, read for you overnight. Go, Maybe, No-go.' }] },
+  twitter: { card: 'summary_large_image', title: 'How TenderScout decides', description: 'Knock-outs, the fit score, the thresholds, and the rules you can try live.', images: [withBase('/opengraph-image.png')] },
 };
 
 type Status = 'pass' | 'risk' | 'review' | 'fail';

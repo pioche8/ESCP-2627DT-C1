@@ -5,6 +5,7 @@ import { EASE } from '@/lib/motion';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { APP_URL, HONESTY, menuItems } from '@/data/copy';
 import { Icon } from '@/components/ui/Icon';
+import { withBase } from '@/lib/site';
 import { Wordmark } from '@/components/ui/Primitives';
 import { CountsLine } from '@/components/ui/VerdictTile';
 
@@ -48,7 +49,7 @@ export function Menu({ open, onClose, counts, nextDeadline, dateLabel, returnTo 
       <div className="menu-body">
         <nav className="menu-nav" aria-label="Sections">
           {menuItems.map((m) => (
-            <a key={m.href} href={m.href} onClick={onClose} className="menu-link">{m.label}<Icon name="arrow_forward" size={36} className="menu-arrow" /></a>
+            <a key={m.href} href={withBase(m.href)} onClick={onClose} className="menu-link">{m.label}<Icon name="arrow_forward" size={36} className="menu-arrow" /></a>
           ))}
         </nav>
         <aside className="menu-card" aria-label="Tonight’s read">
