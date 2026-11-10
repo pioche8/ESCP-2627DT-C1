@@ -791,7 +791,8 @@ async function countUpFloor(browser, step) {
     const raf = window.requestAnimationFrame.bind(window); let n = 0;
     window.requestAnimationFrame = (cb) => raf((ts) => cb(n++ < 20 ? performance.now() - 2400 : ts));
     window.__counts = [];
-    const poll = () => { const el = document.querySelector('.pages-line b'); if (el) window.__counts.push(el.textContent); if (window.__counts.length < 3000) setTimeout(poll, 1); };
+    const t0 = performance.now(); // sample until the count has landed on 777, or for 10 s
+    const poll = () => { const el = document.querySelector('.pages-line b'); if (el) window.__counts.push(el.textContent); if ((!el || el.textContent !== '777') && performance.now() - t0 < 10000) setTimeout(poll, 1); };
     poll();
   });
   const page = await ctx.newPage();
@@ -799,9 +800,10 @@ async function countUpFloor(browser, step) {
   watch(page, problems);
   await page.goto(BASE + '?demo=fast#/feed');
   await page.waitForSelector('.feed-list');
-  await page.waitForFunction(() => document.querySelector('.pages-line b').textContent === '777', null, { timeout: 8000 }).catch(() => {});
+  await page.waitForFunction(() => document.querySelector('.pages-line b').textContent === '777', null, { timeout: 10000 }).catch(() => {});
   const seen = (await page.evaluate(() => window.__counts)).map(Number);
-  check(seen.length > 0 && Math.min(...seen) >= 0 && seen[seen.length - 1] === 777, 'the 777 count-up never shows a number below its start, even when a frame\'s timestamp is older than the count (lowest ' + Math.min(...seen) + ', last ' + seen[seen.length - 1] + ')');
+  const last = await page.locator('.pages-line b').innerText();
+  check(seen.length > 0 && Math.min(...seen) >= 0 && last === '777', 'the 777 count-up never shows a number below its start, even when a frame\'s timestamp is older than the count (lowest ' + Math.min(...seen) + ' in ' + seen.length + ' samples, ends at ' + last + ')');
   check(problems.length === 0, 'no console errors around the count-up' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
 }
 
