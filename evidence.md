@@ -1,6 +1,6 @@
 # evidence.md: TenderScout
 
-Team: ESCP-2627DT-C1 · Members: <!-- TEAM NAMES -->[names] · Market: EU (2 survey responses from firm owners, one firm of 5–19 people and one of 250+; the form did not ask the country)
+Team: ESCP-2627DT-C1 · Members: William DE MICHELE, Astrid Heyerdahl DELAUNAY, Ilane IDIR, Diego LU HIGA, Luca ZORZI, Benedict KRUSE · Market: EU (2 survey responses from firm owners, one firm of 5–19 people and one of 250+; the form did not ask the country)
 
 Kit and script: [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md)
 

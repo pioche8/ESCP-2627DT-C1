@@ -709,6 +709,75 @@ async function demoSignIn(browser, step) {
   check(problems.length === 0, 'no console errors around sign-in' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
 }
 
+// The rehearsed demo path, as BRIEF.md tells it (10 Nov 2026, pass 9): ?demo=reset,fast and the seven steps, with the numbers
+// Luca says out loud: 1 Go · 2 Maybe · 3 No-go, Landkreis Hohenau No-go 25 → Go 100 (and → Maybe 90 with ISO 27001 alone),
+// then 2 · 2 · 2. A fresh browser each time, so it is what a fresh phone sees. post-deploy.yml runs this file against the live
+// Pages URL after every deploy (SMOKE_URL), so this section is also the live check of the demo path.
+async function briefDemoPath(browser, step) {
+  console.log('\n== demo path (BRIEF.md, ?demo=reset,fast) · ' + BROWSER + (DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '') + ' · ' + BASE);
+  const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
+  const page = await ctx.newPage();
+  const problems = [];
+  watch(page, problems);
+  page.on('dialog', (d) => d.accept());
+  const text = async (sel) => (await page.locator(sel).first().innerText()).replace(/\s+/g, ' ').trim();
+  const sheet = async (open) => { await page.waitForFunction((o) => !!document.querySelector('#sheet-root.open') === o, open); await page.waitForTimeout(360); };
+  const onboard = async () => {
+    await page.goto('about:blank'); await page.goto(BASE + '?demo=reset,fast');
+    await page.waitForSelector('.welcome:not(.signin)');
+    await page.click('button[data-act="draft"]'); await page.waitForSelector('text=Check your profile', { timeout: 10000 });
+    await page.click('button[data-act="finish"]'); await page.waitForSelector('.feed-list');
+  };
+  step('1 Welcome → profile');
+  await onboard();
+  check(!page.url().includes('reset') && page.url().endsWith('#/feed'), 'step 1: ?demo=reset,fast → Welcome → "Draft my profile" → "Looks right" → the Feed, signed in by itself');
+  step('2 Feed');
+  await page.waitForFunction(() => document.querySelector('.pages-line').innerText.includes('777'), null, { timeout: 6000 });
+  check((await text('.tabs.filter')).includes('All 6 Go 1 Maybe 2 No-go 3') && (await text('.pages-line')).includes('777 pages in 4 languages'), 'step 2: the Feed says 1 Go · 2 Maybe · 3 No-go, read 777 pages in 4 languages');
+  step('3 the Go tender');
+  await page.click('a.tcard[href="#/t/ell-schools"]'); await page.waitForSelector('.vhead.v-go', { timeout: 8000 });
+  await page.click('a.req[href="#/t/ell-schools/req/r1"]'); await sheet(true);
+  check(await page.locator('#sheet-root.open [lang="de"]').count() > 0 && /p\.\s?\d+/.test(await text('#sheet-root.open')), 'step 3: the Go tender, a line → the original German sentence, its translation and the page');
+  await page.evaluate(() => history.back()); await sheet(false);
+  step('4 Hohenau, We meet it');
+  await page.click('button[data-act="back"]'); await page.waitForSelector('.feed-list');
+  await page.click('a.tcard[href="#/t/hoh-security"]'); await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  check((await text('.vhead-score .num')) === '25', 'step 4: Landkreis Hohenau opens No-go 25');
+  await page.click('a.req[href="#/t/hoh-security/req/r3"]'); await sheet(true);
+  await page.click('.sheet button[data-confirm="pass"]'); await sheet(false);
+  check((await text('.vhead-score .num')) === '25' && await page.locator('.vhead.v-nogo').count() === 1, 'step 4: "We meet it" on the unclear line; still No-go 25 until ISO 27001');
+  step('5 Company, ISO 27001');
+  await page.click('button[data-act="back"]'); await page.waitForSelector('.feed-list');
+  await page.click('.tabbar a[href="#/company"]'); await page.waitForSelector('.co-head');
+  await page.click('button[data-cert="ISO 27001"]');
+  await page.waitForSelector('#rescore .rescore[data-rescore="hoh-security:nogo:go"]', { timeout: 4000 }); await page.waitForTimeout(1500);
+  const card = await text('#rescore .sr-only');
+  check(card.startsWith('Landkreis Hohenau: No-go → Go') && card.includes('score 25 → 100'), 'step 5: ISO 27001 → the re-score card "Landkreis Hohenau · 25 → 100 · No-go → Go" (' + card + ')');
+  await page.click('.tabbar a[href="#/feed"]'); await page.waitForSelector('.feed-list');
+  check((await text('.tabs.filter')).includes('All 6 Go 2 Maybe 2 No-go 2'), 'step 5: the Feed now says 2 · 2 · 2');
+  step('6 Ask this tender');
+  await page.click('a.tcard[href="#/t/hoh-security"]'); await page.waitForSelector('.vhead.v-go', { timeout: 8000 });
+  check((await text('.vhead-score .num')) === '100', 'step 6: Landkreis Hohenau is Go 100');
+  await page.evaluate(() => document.getElementById('asks').scrollIntoView({ block: 'center' }));
+  await page.click('button[data-ask="0"]'); await page.waitForSelector('#ans-0 .cite', { timeout: 5000 });
+  check(/subcontract/i.test(await text('button[data-ask="0"]')) && /p\.\s?\d+/.test(await text('#ans-0')), 'step 6: "Can we subcontract?" → an answer with its page');
+  step('7 skip, Bids');
+  await page.click('button[data-act="back"]'); await page.waitForSelector('.feed-list');
+  await page.click('a.tcard[href="#/t/vli-libraries"]'); await page.waitForSelector('.vhead.v-nogo', { timeout: 8000 });
+  await page.click('button[data-go="#/t/vli-libraries/skip"]'); await sheet(true);
+  await page.click('.opt[data-skip="Missing a certificate"]'); await page.click('button[data-act="skip-confirm"]'); await page.waitForSelector('.feed-list');
+  await page.click('.tabbar a[href="#/bids"]'); await page.waitForSelector('.bids-head');
+  check((await text('.skipped')).includes('Missing a certificate'), 'step 7: the Dutch libraries tender skipped with "Missing a certificate", shown on Bids');
+  step('ISO 27001 alone → Maybe 90');
+  await onboard();
+  await page.click('.tabbar a[href="#/company"]'); await page.waitForSelector('.co-head');
+  await page.click('button[data-cert="ISO 27001"]');
+  await page.waitForSelector('#rescore .rescore[data-rescore="hoh-security:nogo:maybe"]', { timeout: 4000 }); await page.waitForTimeout(1500);
+  const alone = await text('#rescore .sr-only');
+  check(alone.startsWith('Landkreis Hohenau: No-go → Maybe') && alone.includes('score 25 → 90'), 'ISO 27001 alone, from a fresh ?demo=reset,fast: Landkreis Hohenau No-go 25 → Maybe 90 (' + alone + ')');
+  check(problems.length === 0, 'no console errors on the demo path' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
+}
+
 // Test-session log (6 Nov 2026, pass 2, S4): export-only; cleared by ?demo=reset and Reset demo; each tender counted once;
 // no seconds under ?demo=fast; the toast reports what happened (copied, or the log shown as text); no count elsewhere.
 async function testSessionLog(browser, step) {
@@ -821,7 +890,7 @@ function serveRoot() {
   // still runs. The device is part of the name so a CI log line says where it happened.
   const dev = DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '';
   const sections = schemes.map((s) => [s + dev, (b, step) => run(s, b, step)])
-    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog], ['demo sign-in' + dev, demoSignIn]]);
+    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog], ['demo sign-in' + dev, demoSignIn], ['demo path' + dev, briefDemoPath]]);
   for (const [name, fn] of sections) if (!(await section(name, fn, { playwright, engine: BROWSER }))) failures++;
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }

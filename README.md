@@ -4,7 +4,7 @@
 
 ESCP Digital Transformation (MG34) · Digital Product Design · Group C · Workshop Thu 5 Nov 2026, 09:00
 
-Team: <!-- TEAM NAMES -->[names] · GitHub collaborators: `pioche8`, `Astridheyerdahldel`, `WilliamDMJ`, `diegoluh1508`, `iidir`, `benediktkruse-cpu` · Lecturer: `@drdml`
+Team: William DE MICHELE, Astrid Heyerdahl DELAUNAY, Ilane IDIR, Diego LU HIGA, Luca ZORZI, Benedict KRUSE · GitHub collaborators: `pioche8`, `Astridheyerdahldel`, `WilliamDMJ`, `diegoluh1508`, `iidir`, `benediktkruse-cpu` · Lecturer: `@drdml`
 
 ## Live now
 **Status, Tue 10 Nov 2026 (pass 8, after PR 2):** `main` = `2a36183`; its Pages deploy is run [42784365325](https://github.com/pioche8/ESCP-2627DT-C1/actions/runs/42784365325) and its post-deploy check runs after it (Actions → post-deploy). The run IDs of the pass's last merge are in [`docs/reports/2026-11-10-pass-8.md`](docs/reports/2026-11-10-pass-8.md)'s pull request.
@@ -58,7 +58,7 @@ What the course asks of the repository, where each piece is, and its status on 7
 **Rollback** to the frozen workshop version (app and site) in one command: `git push --force-with-lease origin release/v1-workshop:main`. Do not move `release/v1-workshop`.
 
 **Still to do by hand:**
-- [ ] Team names at the two `<!-- TEAM NAMES -->` markers (this file and `evidence.md`).
+- [x] Team names in this file and `evidence.md` (10 Nov, pass 9).
 - [ ] More stakeholder responses (survey or interview, each labelled) → `evidence.md` §1–§3 → re-count the gate in §0 (now Provisional, n = 2: 2 responses, collected by survey, 1 in our segment) → §4 "What changed". The respondent of survey response S1 agreed to a call: book it and log it as an interview (`evidence.md` §1b → "Next"); it asks willingness to pay, which the form never did.
 - [ ] The tag, from a laptop: `git tag v1-workshop 4f4df54 && git push origin v1-workshop`. (No `v0-shell` tag is needed: `evidence.md` §0 cites the commit that proves the hypotheses came first, `CLAUDE.md` §11 item 181.)
 - [ ] Rehearse the 75-second demo on the real iPhone, in Safari, with `?demo=reset,fast`, after the Pages deploy (the app changed on 7–8 Nov: pass 5's three slices and a follow-up), and add the home-screen icon once (`BRIEF.md`). If the phone or the Wi-Fi fails, see [`BRIEF.md` → "If the phone or the Wi-Fi fails"](BRIEF.md#if-the-phone-or-the-wi-fi-fails).
