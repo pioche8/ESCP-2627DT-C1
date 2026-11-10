@@ -2,6 +2,7 @@
 // the map with the cross-border switch, and the phone demo, about 30 s each at desktop (1440 × 900) and phone (390 × 844),
 // plus a before/after strip. Dev-only: Playwright (pre-installed) and ffmpeg + ImageMagick.
 //   npm run export && node scripts/record.cjs                       → ../docs/site/site-1440.mp4, site-390.mp4
+//   SITE_URL=http://127.0.0.1:4600/ESCP-2627DT-C1/website/ node scripts/record.cjs   (the Pages export, via pages-serve.cjs)
 //   BEFORE_URL=http://localhost:4104/ node scripts/record.cjs        → also ../docs/site/before-after.jpg (BEFORE_URL: the site
 //                                                                      as it was, e.g. main's static export served locally)
 // Frames are device-pixel JPEGs sampled over the DevTools protocol and assembled by ffmpeg at a constant 25 fps, as
@@ -126,9 +127,11 @@ async function strip(browser, before, after) {
 }
 
 (async () => {
-  if (!fs.existsSync(path.join(OUT, 'index.html'))) { console.error('record: no static export in out/. Run: npm run export'); process.exit(2); }
+  // SITE_URL (pass 9): record a site that is already served, e.g. the GitHub Pages export through scripts/pages-serve.cjs
+  // (SITE_URL=http://127.0.0.1:4600/ESCP-2627DT-C1/website/), instead of serving out/.
+  if (!process.env.SITE_URL && !fs.existsSync(path.join(OUT, 'index.html'))) { console.error('record: no static export in out/. Run: npm run export (or set SITE_URL)'); process.exit(2); }
   fs.mkdirSync(DOCS, { recursive: true });
-  const srv = await serve(), base = 'http://127.0.0.1:' + srv.address().port + '/';
+  const srv = process.env.SITE_URL ? null : await serve(), base = process.env.SITE_URL ? process.env.SITE_URL.replace(/\/?$/, '/') : 'http://127.0.0.1:' + srv.address().port + '/';
   const browser = await chromium.launch();
   let good = true;
   if (!process.env.ONLY_STRIP) {
@@ -136,6 +139,6 @@ async function strip(browser, before, after) {
     good = (await record(browser, base, { w: 390, h: 844, dsf: 2, touch: true, name: 'site-390.mp4' })) && good;
   }
   if (process.env.BEFORE_URL) await strip(browser, process.env.BEFORE_URL, base);
-  await browser.close(); srv.close();
+  await browser.close(); if (srv) srv.close();
   process.exitCode = good ? 0 : 1;
 })().catch((e) => { console.error(e); process.exit(1); });

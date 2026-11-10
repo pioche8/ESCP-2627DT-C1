@@ -23,7 +23,10 @@ const { execSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const BASE = (process.argv[2] || 'https://pioche8.github.io/ESCP-2627DT-C1/').replace(/\/?$/, '/');
 const FILES = ['index.html', 'engine.js', 'app.js', 'data.js', 'ai.js', 'insights.js', 'styles.css', 'shared/tokens.css']
-  .concat(['manifest.webmanifest'].filter((f) => fs.existsSync(path.join(ROOT, f)))); // the home-screen manifest, once merged
+  .concat(['manifest.webmanifest'].filter((f) => fs.existsSync(path.join(ROOT, f)))) // the home-screen manifest, once merged
+  // The website's GitHub Pages export (pass 9, ADR-0005): its two pages, the fingerprint of the whole export, and the app
+  // copy its phone runs. Pages only: the Vercel app serves the app's allowlist, so a domain root skips these.
+  .concat(['website/index.html', 'website/how/index.html', 'website/export.json', 'website/prototype/app.js'].filter((f) => fs.existsSync(path.join(ROOT, f)) && new URL(BASE).pathname !== '/'));
 const AT_ROOT = new URL(BASE).pathname === '/'; // e.g. a Vercel production domain
 
 function get(url, follow) {

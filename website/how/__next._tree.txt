@@ -1,0 +1,6 @@
+:HL["/ESCP-2627DT-C1/website/_next/static/chunks/10oh624r8f94d.css","style"]
+:HL["/ESCP-2627DT-C1/website/_next/static/media/HankenGrotesk_normal_400to800_latin-s.p.3241148m1u9do.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/ESCP-2627DT-C1/website/_next/static/media/MaterialSymbolsRounded_subset-s.p.33bwdyts8s-c4.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+2:[["children",{"s":"__PAGE__","h":160}]]
+1:[["children",{"s":"how","h":96,"c":"$Q2"}]]
+0:{"b":"NhyZbYRhJUl1IeKlw8EM2","t":{"t":{"s":"","h":80,"c":"$Q1"}}}

@@ -14,13 +14,16 @@ node scripts/shots.cjs            # screenshots at 1440 / 1024 / 768 / 390 with 
 node scripts/a11y-motion.cjs      # every item of the motion inventory, reduced motion, keyboard and touch
 node scripts/record.cjs           # ../docs/site/ recordings at 1440 and 390 (BEFORE_URL=… adds the before/after strip)
 node scripts/contact-sheet.cjs    # ../docs/site/contact-sheet.png: the site's phone (the app itself) next to the app, every demo-path state
+node scripts/pages-export.mjs     # the GitHub Pages export: a static build for /ESCP-2627DT-C1/website into ../website/ (commit it; ADR-0005)
+node scripts/pages-check.cjs      # that export from the Pages paths: sections, /how, film, map, fonts, images, the phone, 0 console errors, no 404
+node scripts/pages-serve.cjs      # serve the repository as Pages does: http://127.0.0.1:4600/ESCP-2627DT-C1/website/ (SITE_URL= for the scripts above)
 ```
 
 **Pages:** `/` (the one-page site) and `/how` ("How it decides": the requirement statuses, the four parts of the score, the thresholds, "Try the rules" on the real decision code, what "cites the page that proves it" means, the demo data through the rules, and what is real in the prototype). Everything on `/how` is generated at build time by `../shared/how-it-decides.js`, which probes the engine; nothing is typed by hand, and CI fails if the generated files fall behind the code.
 
 **Metadata:** title and description per page, Open Graph and Twitter cards, `opengraph-image.png`, `icon.png` and `apple-icon.png` rendered from the tokens (`scripts/brand-images.cjs`), `robots.txt` and `sitemap.xml` written by `scripts/seo-files.cjs` in `prebuild`. Absolute URLs use `SITE_URL` if set, else Vercel's production URL, else `http://localhost:3000`.
 
-Not deployed yet: Vercel deploys it from GitHub Actions (`.github/workflows/vercel.yml`, ADR-0003) once two repository secrets exist (`../docs/DEPLOY.md` §0); do not import it in the Vercel dashboard (`vercel.json` keeps Git deploys off); `STATIC_EXPORT=1 npm run build` produces a static preview in `out/` meanwhile. Design tokens come from `../shared/tokens.json`: run `npm run tokens` after editing it. Map data: Natural Earth via the `world-atlas` npm package, drawn with `d3-geo` (nothing fetched at runtime). Full notes: the root `README.md` ("Website") and `../docs/WEBSITE_BUILD_LOG.md`.
+Online since 10 Nov 2026 on GitHub Pages at https://pioche8.github.io/ESCP-2627DT-C1/website/: a static export with the base path `/ESCP-2627DT-C1/website`, committed in `../website/` (`node scripts/pages-export.mjs`; CI's `sync-shared --check` fails when it is behind this folder or the app; `../docs/adr/0005-site-on-pages.md`). Not on Vercel yet: Vercel deploys it from GitHub Actions (`.github/workflows/vercel.yml`, ADR-0003) once two repository secrets exist (`../docs/DEPLOY.md` §0); do not import it in the Vercel dashboard (`vercel.json` keeps Git deploys off); `STATIC_EXPORT=1 npm run build` produces a static preview in `out/` meanwhile. Design tokens come from `../shared/tokens.json`: run `npm run tokens` after editing it. Map data: Natural Earth via the `world-atlas` npm package, drawn with `d3-geo` (nothing fetched at runtime). Full notes: the root `README.md` ("Website") and `../docs/WEBSITE_BUILD_LOG.md`.
 
 Prototype · AI output is simulated · real decision rules and EU sector codes · fictional companies, buyers and tenders.
 

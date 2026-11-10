@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Icon } from './Icon';
+import { withBase } from '@/lib/site';
 
 /** A photo in its own block (8 px corners, no tint, no text over it). Without a source it shows the app's document placeholder. */
 export function Photo({ src, alt = '', sizes, className = '', priority = false, placeholder }: {
@@ -8,7 +9,7 @@ export function Photo({ src, alt = '', sizes, className = '', priority = false, 
   return (
     <div className={`photo ${className}`}>
       {src ? (
-        <Image src={src} alt={alt} fill sizes={sizes} priority={priority} style={{ objectFit: 'cover' }} />
+        <Image src={withBase(src)} alt={alt} fill sizes={sizes} priority={priority} style={{ objectFit: 'cover' }} />
       ) : (
         <div className="photo-ph" aria-hidden="true">
           <Icon name="description" size={24} />

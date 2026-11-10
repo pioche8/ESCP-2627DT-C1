@@ -51,6 +51,11 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
 (async () => {
   const srv = REMOTE ? null : await serve();
   const base = REMOTE || 'http://127.0.0.1:' + srv.address().port;
+  // A page that redirects is audited at its final address (pass 9): on GitHub Pages the export uses trailing slashes, so
+  // /how answers 301 → /how/, and Lighthouse would otherwise count the redirect against the page (ADR-0005).
+  for (let i = 0; i < PAGES.length; i++) {
+    try { const r = await fetch(base + PAGES[i], { method: 'HEAD', redirect: 'follow' }); const final = new URL(r.url).pathname.slice(new URL(base + '/').pathname.length - 1); if (final !== PAGES[i]) { console.log('  note ' + PAGES[i] + ' redirects to ' + final + '; auditing ' + final); PAGES[i] = final; } } catch { /* audited as given */ }
+  }
 
   // ---- Lighthouse (node API, Chrome launched through chrome-launcher, colour scheme set on a puppeteer page) ----
   const { default: lighthouse } = await import('lighthouse');

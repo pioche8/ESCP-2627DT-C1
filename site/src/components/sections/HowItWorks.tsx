@@ -11,6 +11,7 @@ import { EASE, SM, easeOutCubic } from '@/lib/motion';
 import { SpotGrid } from '@/components/ui/SpotGrid';
 import { useRaf } from '@/lib/useRaf';
 import { useReducedMotion } from '@/lib/useReducedMotion';
+import { withBase } from '@/lib/site';
 
 /** One step's visual: crossfades and scales .92 → 1 when its step is active. */
 function StepVisual({ i, active, children }: { i: number; active: number; children: React.ReactNode }) {
@@ -78,7 +79,7 @@ export function HowItWorks({ counts, quote }: { counts: { go: number; maybe: num
       <SpotGrid active={active} />
       <div className="wrap how-head">
         <h2 id="how-h" className="h2 how-title">From {PAGES_TOTAL} pages to one answer.</h2>
-        <p className="body"><a className="how-link" href="/how">Every rule, weight and threshold, derived from the decision code, and a live block to try them</a>.</p>
+        <p className="body"><a className="how-link" href={withBase('/how')}>Every rule, weight and threshold, derived from the decision code, and a live block to try them</a>.</p>
       </div>
       <div className="wrap how-grid">
         <div className="how-sticky-col">

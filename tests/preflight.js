@@ -42,7 +42,8 @@ const GATES = [
   { name: 'Smoke iPhone 13', cmd: 'SMOKE_DEVICE="iPhone 13" node tests/smoke.js', browser: true },
   { name: 'Smoke iPhone SE', cmd: 'SMOKE_DEVICE="iPhone SE" node tests/smoke.js', browser: true },
   { name: 'Website: lint, typecheck, build', cmd: 'cd site && rm -rf .next && npm run check', site: true }, // a .next left by a build of another branch would fail the typecheck
-  { name: 'Website: static export, the "How it decides" page check, the motion inventory (a11y-motion), Lighthouse ≥ 95 (median of 3) and axe', cmd: 'cd site && npm run audit', site: true, browser: true }
+  { name: 'Website: static export, the "How it decides" page check, the motion inventory (a11y-motion), Lighthouse ≥ 95 (median of 3) and axe', cmd: 'cd site && npm run audit', site: true, browser: true },
+  { name: 'Website on GitHub Pages: the committed export from the Pages paths (sections, /how, film, map, fonts, images, phone, no 404)', cmd: 'cd site && node scripts/pages-check.cjs', site: true, browser: true }
 ];
 
 let failed = 0;

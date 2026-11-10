@@ -1,5 +1,6 @@
 'use client';
 import { useRef } from 'react';
+import { withBase } from '@/lib/site';
 
 /**
  * Plain rectangular button or link: brand (primary) or surface (secondary), one 8 px radius. Since pass 5 each carries
@@ -22,7 +23,7 @@ export function Button({ href, children, tone = 'primary', size = 'md', classNam
   };
   const inner = kind === 'none' ? children : <><span className="fx-fill" aria-hidden="true" /><span className="fx-label">{children}</span></>;
   if (href) {
-    return <a ref={ref as React.RefObject<HTMLAnchorElement>} href={href} className={cls} aria-label={ariaLabel} onPointerMove={move} onPointerEnter={move} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{inner}</a>;
+    return <a ref={ref as React.RefObject<HTMLAnchorElement>} href={withBase(href)} className={cls} aria-label={ariaLabel} onPointerMove={move} onPointerEnter={move} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{inner}</a>;
   }
   return <button ref={ref as React.RefObject<HTMLButtonElement>} type="button" onClick={onClick} className={cls} aria-label={ariaLabel} onPointerMove={move} onPointerEnter={move} onPointerDown={move}>{inner}</button>;
 }

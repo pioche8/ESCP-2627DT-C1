@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { withBase } from '@/lib/site';
 
 // The app's storage key and the state the phone opens in: signed in with the demo address (the app's demo sign-in, pass 8
 // PR 5), onboarded, on the Feed, dark, everything else the app's own
@@ -23,7 +24,7 @@ export function PhoneDemo() {
   useEffect(() => {
     // Seed the app's state first, then point the frame at it (the frame has no src in the server markup).
     try { localStorage.setItem(KEY, JSON.stringify(SEED)); } catch { /* private mode: the app falls back to memory and opens on Welcome */ }
-    if (frameRef.current) frameRef.current.src = SRC;
+    if (frameRef.current) frameRef.current.src = withBase(SRC);
   }, []);
   return (
     <div className="phone">
