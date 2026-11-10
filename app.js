@@ -110,7 +110,7 @@
 
   // ---------- DOM ----------
   var $app = document.getElementById('app');
-  $app.innerHTML = '<div id="screen"></div><div id="tabbar-root"></div><div id="sheet-root" class="sheet-root" hidden></div>' +
+  $app.innerHTML = '<main id="screen" aria-label="TenderScout"></main><div id="tabbar-root"></div><div id="sheet-root" class="sheet-root" hidden></div>' +
     '<div id="toast-root" class="toast-root" role="status" aria-live="polite"></div><div id="notify-root" class="notify-root" hidden></div>';
   var $screen = document.getElementById('screen'), $tabs = document.getElementById('tabbar-root'),
       $sheet = document.getElementById('sheet-root'), $toast = document.getElementById('toast-root'), $notify = document.getElementById('notify-root');
@@ -333,16 +333,17 @@
   function card(r, i) {
     var t = tender(r.tenderId), v = r.verdict, closed = v === 'closed', saved = S.saved[t.id];
     var soon = !closed && r.daysLeft <= 10;
-    var label = (closed ? 'Closed' : V[v] + ', score ' + r.score + ' of 100') + '. ' + t.title + ', ' + bare(t.buyer) + ', ' + money(t.value) + ', ' + (closed ? 'closed' : plural(r.daysLeft, 'day') + ' left') + '.' + (saved ? ' Saved.' : '');
     var wasPulse = pulse[t.id];
+    // The link is named by its own text (pass 8, WCAG 2.5.3): the visible words, with the score and the days spelled out
+    // for screen readers in sr-only text, instead of an aria-label that did not contain the visible text.
     return '<div class="tcard-wrap" data-id="' + t.id + '" style="--i:' + ((i || 0) + 1) + '"><div>' +
-      '<a class="tcard v-' + v + (closed ? ' is-closed' : '') + '" href="#/t/' + t.id + '" aria-label="' + esc(label) + '">' +
-        '<span class="score' + (wasPulse ? ' pulse' : '') + '" aria-hidden="true">' + r.score + '</span>' +
+      '<a class="tcard v-' + v + (closed ? ' is-closed' : '') + '" href="#/t/' + t.id + '">' +
+        '<span class="score' + (wasPulse ? ' pulse' : '') + '"><span class="sr-only">Score </span>' + r.score + '<span class="sr-only"> of 100. </span></span>' +
         '<span class="tcard-body">' +
           status(v, V[v]) +
           '<span class="tcard-title">' + esc(t.title) + '</span>' +
           '<span class="meta-row"><span class="buyer">' + esc(bare(t.buyer)) + '</span>' +
-            '<span class="nowrap">· ' + money(t.value) + ' · <span class="' + (soon ? 'soon' : '') + '">' + (closed ? 'closed' : r.daysLeft + ' d') + '</span></span>' +
+            '<span class="nowrap">· ' + money(t.value) + ' · <span class="' + (soon ? 'soon' : '') + '">' + (closed ? 'closed' : '<span aria-hidden="true">' + r.daysLeft + ' d</span><span class="sr-only">' + plural(r.daysLeft, 'day') + ' left</span>') + '</span></span>' +
             (saved ? '<span class="saved">Saved</span>' : '') + '</span>' +
         '</span></a></div></div>';
   }
@@ -356,7 +357,7 @@
     var head = closed
       ? '<p class="closed-word">Closed</p>'
       : '<p class="vhead-verdict">' + shape(SHAPE[v], 'lg') + V[v] + '</p>' +
-        '<p class="vhead-score" aria-label="Score ' + r.score + ' of 100"><span class="num" aria-hidden="true">' + r.score + '</span><span class="of" aria-hidden="true">/100</span></p>';
+        '<p class="vhead-score"><span class="sr-only">Score ' + r.score + ' of 100</span><span class="num" aria-hidden="true">' + r.score + '</span><span class="of" aria-hidden="true">/100</span></p>';
     var qa = t.ai.qa || [];
     var actions;
     if (skipped) actions = '<button class="btn btn-secondary" data-unskip="' + id + '">Restore</button>';
@@ -436,8 +437,8 @@
     var kind = c.confirmed ? 'Your answer' : c.status === 'fail' ? 'Knock-out' : (KIND[q.type] || 'Requirement');
     var line = c.confirmed ? (c.status === 'pass' ? 'You said you meet it' : 'You said you don’t meet it')
       : unresolved ? Math.round(q.confidence * 100) + '% sure. Only you can answer.' : c.note;
-    var label = st.label + ', ' + kind.toLowerCase() + '. ' + q.label + '. ' + line + '. Source: ' + cp.doc + ' page ' + cp.page + '.';
-    return '<a class="req v-' + st.v + (closed ? ' req-record' : '') + '" href="#/t/' + t.id + '/req/' + c.id + '" aria-label="' + esc(label) + '">' +
+    // Named by its own text since pass 8 (WCAG 2.5.3): status, kind, the requirement, the line and the citation, in reading order.
+    return '<a class="req v-' + st.v + (closed ? ' req-record' : '') + '" href="#/t/' + t.id + '/req/' + c.id + '">' +
       status(st.v, st.label, kind) +
       '<span class="req-title">' + esc(q.label) + '</span>' +
       '<span class="' + (unresolved ? 'req-sure' : 'req-check') + '">' + esc(line) + '</span>' +
@@ -904,8 +905,8 @@
       '<div class="group" style="margin-top:12px">' +
         row('AI output is simulated', 'Reading tenders, translating, answering questions and drafting your profile are played back from pre-written output. No model is called, there are no keys, and no data leaves your phone.', ai()) +
         row('The decision logic is real code', 'The qualification check, score and Go / Maybe / No-go verdict run live in tested rules, not in the AI.') +
-        row('All data is fictional', 'Every company, buyer, tender, page number and quote is invented. None of it is interview evidence.') +
-        row('Built with AI assistance', 'Claude (Anthropic) helped build the prototype. The team ran the interviews and made the product decisions.') +
+        row('Real and fictional data', 'Real: the decision rules, the 45 EU sector divisions, the countries and languages. Fictional: every company, buyer, tender, page number and quote, so none of it is evidence from our survey.') +
+        row('Built with AI assistance', 'Claude (Anthropic) helped build the prototype. The team ran the surveys and made the product decisions.') +
       '</div>' +
       '</div>';
   }

@@ -132,7 +132,9 @@ async function run(scheme, browser, step) {
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === otherScheme && (await page.locator('.nav [data-act="theme-toggle"]').getAttribute('aria-label')) === 'Switch to ' + scheme + ' mode', 'toggle switches to ' + otherScheme + ' and relabels itself');
   await page.locator('.nav [data-act="theme-toggle"]').click(); await page.waitForTimeout(50);
   check(await page.evaluate(() => document.documentElement.getAttribute('data-scheme')) === scheme, 'second tap returns to ' + scheme);
-  const card0 = (await text('.tcard')).replace(/\s+/g, ' ');
+  // The visible card, without its screen-reader words (since pass 8 the card is named by its own text plus sr-only spans).
+  const card0 = (await page.evaluate(() => { const c = document.querySelector('.tcard').cloneNode(true); c.querySelectorAll('.sr-only').forEach((x) => x.remove()); document.body.appendChild(c); const t = c.innerText; c.remove(); return t; })).replace(/\s+/g, ' ').trim();
+  check((await page.evaluate(() => document.querySelector('.tcard').textContent.replace(/\s+/g, ' '))).includes('Score 100 of 100.') && (await page.evaluate(() => document.querySelector('.tcard').textContent)).includes('29 days left') && !(await page.locator('.tcard').first().getAttribute('aria-label')), 'a tender card is named by its own text: the score and the days spelled out for screen readers, no aria-label (WCAG 2.5.3)');
   check(/^100 Go Structured cabling and Wi-Fi for 12 primary schools Stadt Ellerbach · €480k · 29 d$/.test(card0), 'card = verdict (shape + word + score), title, buyer, value, days left: "' + card0 + '"');
   const tileBox = await page.locator('.tcard .score').first().boundingBox();
   check(tileBox && Math.round(tileBox.width) === 48 && Math.round(tileBox.height) === 48 && await css('.tcard .score', 'borderRadius') === '8px', 'score tile is 48 × 48 with the 8 px radius');
@@ -457,7 +459,7 @@ async function run(scheme, browser, step) {
   check(await page.locator('.tabbar a[aria-current="page"] span:not(.ms)').innerText() === 'Settings' && !(await page.locator('.screen [data-act="back"]').count()), 'Settings is a tab: active in the tab bar, no Back button');
   const about = await text('.screen');
   check(about.includes('Appearance') && about.includes('Reset demo') && about.includes('About this prototype'), 'Settings has Appearance, Demo and About this prototype');
-  check(about.includes('AI output is simulated') && about.includes('real code') && about.includes('All data is fictional') && about.includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
+  check(about.includes('AI output is simulated') && about.includes('real code') && about.includes('Real and fictional data') && about.includes('The team ran the surveys') && about.includes('Built with AI assistance'), 'About explains simulated / real / fictional / AI-assisted');
   check(!/engine\.js|ai\.js|data\.js|README|\?demo=/.test(about), 'About names no files or dev notes');
   check(!(await page.locator('[data-act="palette"]').count()), 'no palette switch (Brand only)');
   await scan('settings'); await shot('settings');

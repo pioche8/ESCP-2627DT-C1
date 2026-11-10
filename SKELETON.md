@@ -258,7 +258,7 @@ Read only: Profile shows the firm, Company changes it. The card is the one on Ch
 [intro]     A university prototype (ESCP Digital Product Design, 2026).
 [rows]      AI output is simulated (Simulated AI)
             The decision logic is real code
-            All data is fictional
+            Real and fictional data
             Built with AI assistance
 [tab bar]   Feed | Bids | Company | Profile | Settings*            (before onboarding: none)
 ```

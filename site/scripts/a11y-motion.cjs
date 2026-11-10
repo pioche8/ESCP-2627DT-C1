@@ -45,6 +45,8 @@ const hohenauPath = async (f, keyboard) => {
   if (keyboard) { await f.focus('.sheet button[data-confirm="pass"]'); await f.page().keyboard.press('Enter'); } else await f.click('.sheet button[data-confirm="pass"]');
   await sheetIs(f, false);
   await f.click('button[data-act="back"]'); await f.waitForSelector('.feed-list');
+  // focusing a control inside the frame can scroll the page; bring the whole phone back into view before its tab bar
+  await f.page().evaluate(() => document.querySelector('.phone').scrollIntoView({ block: 'nearest' })); await f.page().waitForTimeout(200);
   await f.click('.tabbar a[href="#/company"]'); await f.waitForSelector('.co-head');
 };
 const scan = require('../../tests/declutter-scan.js');
@@ -245,6 +247,7 @@ const into = async (page, sel, wait = 400) => { await page.evaluate((sel) => { d
   await hohenauPath(pf2, true);
   await pf2.focus('button[data-cert="ISO 27001"]'); await p2.keyboard.press('Space'); await pf2.waitForSelector('.rescore[data-rescore]'); await p2.waitForTimeout(1500);
   ok((await pf2.locator('#rescore').innerText()).replace(/\s+/g, ' ').includes('25 → 100'), 'phone, by keyboard: "We meet it", then ISO 27001 → Landkreis Hohenau 25 → 100');
+  await p2.evaluate(() => document.querySelector('.phone').scrollIntoView({ block: 'nearest' }));
   await pf2.focus('.tabbar a[href="#/profile"]'); await p2.keyboard.press('Enter'); await p2.waitForTimeout(400);
   ok((await pf2.locator('.screen').innerText()).includes('ISO 27001'), 'phone Profile: shows ISO 27001 after the Company switch');
   await go(p2, 'where', 300); await p2.waitForSelector('.map-svg .pin', { timeout: 10000 }); await p2.waitForTimeout(1500);

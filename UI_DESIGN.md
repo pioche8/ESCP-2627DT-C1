@@ -65,9 +65,9 @@ The path from [`BRIEF.md`](BRIEF.md), one frame per step (also a video: [`docs/d
 |---|---|---|---|---|
 | Feed | No-go tender | Needs your check | Company after the flip | Bids |
 
-| <img src="docs/ui/light-profile.png" width="160" alt="Profile, light"> | <img src="docs/ui/light-settings.png" width="160" alt="Settings, light"> |
-|---|---|
-| Profile | Settings |
+| <img src="docs/ui/light-profile.png" width="160" alt="Profile, light"> | <img src="docs/ui/light-settings.png" width="160" alt="Settings, light"> | <img src="docs/ui/settings-about.png" width="160" alt="Settings, About this prototype"> |
+|---|---|---|
+| Profile | Settings | Settings → "About this prototype" (dark, since pass 8): the four statements, with "Real and fictional data" |
 
 ## 3. Visual system
 
@@ -143,5 +143,5 @@ Sizes and where each control is used: [`SKELETON.md`](SKELETON.md) §5.
 
 - The storyboard frames come from `node tests/demo-record.js` (it rewrites `docs/demo/`).
 - Most other frames are copies of what `node tests/smoke.js <folder>` writes (`<scheme>-NN-<name>.png`): `docs/ui/reading.png` ← `dark-02-reading`, `check-profile` ← `dark-03-check-profile`, `tender-loading` ← `dark-05-detail-loading`, `tender-go` ← `dark-06-detail-go`, `tender-nogo` ← `dark-08-detail-nogo`, `skip-sheet` ← `dark-15-skip-sheet`, `tender-saved` ← `dark-17-saved`, `tender-maybe` ← `dark-24-detail-maybe`, `tender-closed` ← `dark-25-detail-closed`, `feed-closed` ← `dark-26-feed-closed`, `feed-offline` ← `dark-27-feed-offline`, `not-found` ← `dark-28-not-found`, `bids-empty` ← `dark-29-bids-empty`, `company-iso-alone` ← `dark-30-company-iso-alone`, `morning-notification` ← `dark-31-morning-notification`; `light-feed` ← `light-04-feed`, `light-tender-nogo` ← `light-08-detail-nogo`, `light-sheet-check` ← `light-10-sheet-check`.
-- Eleven frames need a state of their own (Bids stages and a skipped tender, the Company flip after the answer, Competition in view; until 7 Nov the smoke path also left a toast on them), so they come from `node tests/ui-frames.js` (6 Nov; it rewrites them in `docs/ui/`): a fresh page per frame at 390 × 844 (2×) with `?demo=fast&theme=<scheme>`, `tenderscout.v2` seeded before load (onboarded, plus the state the frame needs: Stadt Ellerbach in Bidding and the Dutch libraries skipped with "Missing a certificate" for Bids; the answer on Hohenau's unclear line for the Company flip, then a tap on ISO 27001), and the shot taken once any toast is gone (after a tap, back at the top of the screen): `bids-stages`, `light-bids`, `insights`, `insights-full` (full page), `light-insights`, `profile`, `light-profile`, `about` (the Settings tab), `light-settings`, `light-company-rescore`, `tender-competition` (Hohenau, scrolled to Competition).
+- Twelve frames need a state of their own (since pass 8 also `settings-about`, the About statements scrolled into view) (Bids stages and a skipped tender, the Company flip after the answer, Competition in view; until 7 Nov the smoke path also left a toast on them), so they come from `node tests/ui-frames.js` (6 Nov; it rewrites them in `docs/ui/`): a fresh page per frame at 390 × 844 (2×) with `?demo=fast&theme=<scheme>`, `tenderscout.v2` seeded before load (onboarded, plus the state the frame needs: Stadt Ellerbach in Bidding and the Dutch libraries skipped with "Missing a certificate" for Bids; the answer on Hohenau's unclear line for the Company flip, then a tap on ISO 27001), and the shot taken once any toast is gone (after a tap, back at the top of the screen): `bids-stages`, `light-bids`, `insights`, `insights-full` (full page), `light-insights`, `profile`, `light-profile`, `about` (the Settings tab), `light-settings`, `light-company-rescore`, `tender-competition` (Hohenau, scrolled to Competition).
 - A change that alters how a screen looks updates its screenshot and its wireframe in [`SKELETON.md`](SKELETON.md) in the same commit.

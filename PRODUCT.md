@@ -41,7 +41,7 @@ This user is a hypothesis, supported so far by one stakeholder response in the s
 | changes the profile (turnover, references, four certificates, five bid languages, bidding abroad) | every tender re-scored at once, the one that flipped named with its score ("Landkreis Hohenau · 25 → 100 · No-go → Go"), and hints saying what a lever would unlock | Company (`#/company`) | the rules |
 | wants to see the firm as TenderScout sees it | the company profile, read only, with one way to change it ("Edit on Company") | Profile tab (`#/profile`) | the confirmed profile, stored on the phone |
 | starts the day | once a day after the overnight read, a simulated lock-screen notification with today's Go / Maybe / No-go counts; tapping it opens the Feed | morning notification (over the Feed; replay on Settings) | the rules count; the notification itself is simulated |
-| wants to know what is real | what is simulated, what is real code, that all data is fictional, that the build was AI-assisted; light or dark; reset | Settings tab (`#/settings`, also `#/about`) | — |
+| wants to know what is real | what is simulated, what is real code, which data is real and which is fictional, that the build was AI-assisted; light or dark; reset | Settings tab (`#/settings`, also `#/about`) | — |
 
 The same product appears on two more surfaces: the marketing website in `site/` (not deployed; its phone demo, map and "How it decides" page run the app's own rules on the app's own data) and the launch film in `marketing/`.
 
