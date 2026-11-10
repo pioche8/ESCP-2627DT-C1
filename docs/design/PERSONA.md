@@ -1,6 +1,6 @@
 # Persona and "How might we" statements (draft)
 
-> **Draft, provisional, n = 1 in the segment (survey).** Written on 9 Nov 2026 (pass 7, `CLAUDE.md` §11 item 179) from the two stakeholder responses in [`evidence.md`](../../evidence.md) §1 and §1b. Both are **survey responses**, not interviews. The persona is built on **survey response S1**, the only response in our 5–50 segment. Survey response S2 (a 250+ person firm) is used only as a contrast, never as part of the persona.
+> **Draft, provisional, n = 1 in the segment (survey).** Written on 9 Nov 2026 (pass 7, `CLAUDE.md` §11 item 179) from the two stakeholder responses in [`evidence.md`](../../evidence.md) §1 and §1b. Both are **survey responses** (the course counts a survey as an interview; each keeps its survey label). The persona is built on **survey response S1**, the only response in our 5–50 segment. Survey response S2 (a 250+ person firm) is used only as a contrast, never as part of the persona.
 >
 > Every line cites **survey response S1** or **survey response S2**, or is marked **assumption**. The quoted phrases are the form's answer options the respondent picked, copied word for word from `evidence.md` §1b; they are not the respondent's own words, so there are no participant quotes (curly quotes are kept for those, per the conventions in [`USER_STORIES.md`](USER_STORIES.md)). This is a composite label, not a real person, and it has no name.
 >
@@ -33,7 +33,7 @@ On a phone, between jobs, one hand, sessions of 1–3 minutes, patchy signal ([`
 - **Time:** 1–2 days deciding on the last tender, far above the gate's 1 h ([`evidence.md`](../../evidence.md) §0). Source: survey response S1.
 - **What takes longest:** "Checking requirements (turnover, references, certifications)". Source: survey response S1.
 - **Tools do not answer the question:** the free alerts find tenders but did not say whether the firm qualifies. Source: survey response S1.
-- **Foreign or other-language tenders:** "Not sure" whether one was skipped. **Not a pain we can claim**: the cross-language claim (H3) has no support. Source: survey response S1.
+- **Foreign or other-language tenders:** "Not sure" whether one was skipped. **Not a pain we can claim**: cross-language (H3) is still to be tested, not proven. Source: survey response S1.
 
 ### Money and willingness to pay
 Not asked by the form, so unknown. The prices in [`BRIEF.md`](../../BRIEF.md) → "Business model" are an **assumption**. The call with the respondent of survey response S1 asks it ([`docs/INTERVIEW_KIT.md`](../INTERVIEW_KIT.md) §8: questions 6, 10, 12 and 13).
