@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import os from 'node:os';
+import { createRequire } from 'node:module';
 
 const site = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const root = path.resolve(site, '..');
@@ -17,12 +19,32 @@ const COPIES = [['engine.js', 'src/generated/engine.cjs'], ['data.js', 'src/gene
 const copyOf = (src) => '/* Copied verbatim from ../' + src + ' by scripts/sync-shared.mjs. Do not edit: change the app file and run `npm run sync`. */\n' +
   fs.readFileSync(app(src), 'utf8').replace(/\}\)\(this\);\s*$/, '})({});'); // CommonJS: `this` may be undefined under a bundler
 
+// The real app, byte for byte, for the phone on the landing page (since 10 Nov 2026, pass 8): the same allowlist that
+// scripts/vercel-app-dist.js publishes for the app on Vercel, copied to public/prototype/. The phone is an iframe of it,
+// so the site shows the app's own screens and cannot drift from them; --check fails the moment the app changes and the
+// copy does not (CLAUDE.md §11, pass 8).
+const PROTO = 'public/prototype';
+const appDist = () => createRequire(import.meta.url)(app('scripts/vercel-app-dist.js'));
+const listFiles = (dir, base = dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? listFiles(path.join(dir, e.name), base) : [path.relative(base, path.join(dir, e.name))]).sort();
+function staleProto() {
+  if (!fs.existsSync(app('scripts/vercel-app-dist.js'))) return [];
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-proto-'));
+  const { missing } = appDist().build(tmp);
+  if (missing.length) return ['app references missing: ' + missing.join(', ')];
+  const want = listFiles(tmp), have = fs.existsSync(out(PROTO)) ? listFiles(out(PROTO)) : [];
+  const bad = want.filter((f) => !have.includes(f) || !fs.readFileSync(path.join(tmp, f)).equals(fs.readFileSync(out(path.join(PROTO, f)))))
+    .concat(have.filter((f) => !want.includes(f))).map((f) => 'site/' + PROTO + '/' + f);
+  fs.rmSync(tmp, { recursive: true, force: true });
+  return bad;
+}
+
 // `node site/scripts/sync-shared.mjs --check` (CI): writes nothing, exits 1 if a committed copy differs from what this
 // script would write, so a Vercel build that uses the committed copies cannot disagree with the app (ADR-0001).
 if (process.argv.includes('--check')) {
   const stale = COPIES.filter(([src, dst]) => !fs.existsSync(out(dst)) || fs.readFileSync(out(dst), 'utf8') !== copyOf(src)).map(([, dst]) => 'site/' + dst)
-    .concat(fs.readdirSync(app('fonts')).filter((f) => /\.woff2$/.test(f) && (!fs.existsSync(out('src/fonts/' + f)) || !fs.readFileSync(out('src/fonts/' + f)).equals(fs.readFileSync(app('fonts/' + f))))).map((f) => 'site/src/fonts/' + f));
-  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs, insights.cjs and src/fonts equal the app\'s engine.js, data.js, insights.js and fonts/');
+    .concat(fs.readdirSync(app('fonts')).filter((f) => /\.woff2$/.test(f) && (!fs.existsSync(out('src/fonts/' + f)) || !fs.readFileSync(out('src/fonts/' + f)).equals(fs.readFileSync(app('fonts/' + f))))).map((f) => 'site/src/fonts/' + f))
+    .concat(staleProto());
+  console.log(stale.length ? 'sync-shared --check: out of date: ' + stale.join(', ') + ' (run `cd site && npm run sync` and commit)' : 'sync-shared --check: site/src/generated/engine.cjs, data.cjs, insights.cjs, src/fonts and public/prototype/ equal the app\'s engine.js, data.js, insights.js, fonts/ and runtime files');
   process.exit(stale.length ? 1 : 0);
 }
 
@@ -41,6 +63,9 @@ execFileSync(process.execPath, [path.join(site, 'scripts/brand-images.cjs')], { 
 // 2. the real decision engine, the fictional demo data and the win/loss arithmetic, verbatim, as CommonJS modules
 fs.mkdirSync(out('src/generated'), { recursive: true });
 for (const [src, dst] of COPIES) fs.writeFileSync(out(dst), copyOf(src));
+
+// 2b. the real app for the phone demo (public/prototype/, the Vercel app allowlist, byte for byte)
+{ const { files, missing } = appDist().build(out(PROTO)); if (missing.length) throw new Error('sync-shared: the app references missing files: ' + missing.join(', ')); console.log('sync-shared: ' + files.length + ' app files → site/' + PROTO + '/'); }
 
 // 3. fonts (the same vendored files as the app, so both render identically)
 fs.mkdirSync(out('src/fonts'), { recursive: true });

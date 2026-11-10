@@ -31,7 +31,7 @@ export function Start() {
           </Button>
         </div>
         <p id="site-msg" className={`site-msg${valid ? ' ok' : ''}`} aria-live="polite">{valid ? `Ready to read ${host}` : 'Enter your company website'}</p>
-        <p className="start-note">Opens the prototype. AI output there is simulated and the data is fictional.</p>
+        <p className="start-note">Opens the prototype. AI output there is simulated; the rules are real, the companies and tenders fictional.</p>
       </div>
     </section>
   );

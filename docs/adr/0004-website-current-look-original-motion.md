@@ -126,10 +126,10 @@ Every motion and interaction of the original 3 Nov site (`backup/pre-declutter`,
 | 17 | Inactive steps dimmed (opacity + blur) | active step · .5 s | part (colour) | muted → ink, as on f6a77af | "inactive steps are muted" |
 | 18 | Folder card lift | hover / focus · .45 s | yes | unchanged; the track no longer clips it | "the card lifts and its panel slides down" |
 | 19 | Folder panel fold | hover / focus · .5 s | no | panel slides 47 % → 58 % | (same check) |
-| 20 | Phone dock pill | tab change · 450 ms spring | no | brand block slides under the active tab | "the brand block slides to the active tab" |
-| 21 | Phone re-score (block colour, count-up, knob) | ISO / "We meet it" · 450 / 650 / 250 ms | yes | unchanged: 25 → 90 → 100 | "ISO 27001 → Hohenau No-go 25 → Maybe 90, counting up" |
-| 22 | Radial fill (Save to Bids) | hover / focus · .55 s | no | ink circle clipped from the pointer | "Save to Bids fills from the pointer" |
-| 23 | Wipe (Skip) | hover / focus · .45 s | no | brand fill wipes in from the left | "Skip wipes in on hover" |
+| 20 | Phone dock pill (**since pass 8: the app's own tab bar**, the phone is the real app, `CLAUDE.md` §11 item 189) | tab change · 450 ms spring | no | brand block slides under the active tab | "the brand block slides to the active tab" |
+| 21 | Phone re-score (**since pass 8: the app's own re-score card**, 25 → 100 with its count-up and morph) | ISO / "We meet it" · 450 / 650 / 250 ms | yes | unchanged: 25 → 90 → 100 | "ISO 27001 → Hohenau No-go 25 → Maybe 90, counting up" |
+| 22 | Radial fill (Save to Bids; **no longer on the page since pass 8**: it lived only on the drawn phone) | hover / focus · .55 s | no | ink circle clipped from the pointer | "Save to Bids fills from the pointer" |
+| 23 | Wipe (Skip; **no longer on the page since pass 8**: it lived only on the drawn phone) | hover / focus · .45 s | no | brand fill wipes in from the left | "Skip wipes in on hover" |
 | 24 | Sector strips accordion | hover / focus · .7 s | no | flex 1 → 2.2 (row) or photo height (phone) | "the hovered strip widens" |
 | 25 | Sector marquee | always, paused on hover / off-screen · 110 s / 92 s | no | two rows of plain text | "two rows … drift", "the hovered row pauses", "pauses off-screen" |
 | 26 | Map arcs flowing | always · 1.6 s | no | dashed arcs with a casing | "six dashed arcs flow" |

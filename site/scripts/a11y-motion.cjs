@@ -32,6 +32,21 @@ const running = (page, sel, name) => page.evaluate(([sel, name]) => document.que
 // style() and changes() throw when the selector matches nothing, so a renamed element fails its check instead of passing on null
 const changes = (page, sel, prop, ms = 700) => page.evaluate(([sel, prop, ms]) => new Promise((r, no) => { const el = document.querySelector(sel); if (!el) return no(new Error('no element for ' + sel)); const get = () => (prop === 'class' ? el.className.baseVal ?? el.className : prop === 'text' ? el.textContent : getComputedStyle(el)[prop]); const a = get(); setTimeout(() => r(a !== get()), ms); }), [sel, prop, ms]);
 const style = (page, sel, prop) => page.evaluate(([sel, prop]) => { const el = document.querySelector(sel); if (!el) throw new Error('no element for ' + sel); return getComputedStyle(el)[prop]; }, [sel, prop]);
+// The phone is the real app in an iframe since pass 8 (PhoneDemo): drive it through its Frame, as tests/smoke.js drives the app.
+const phoneFrame = async (page) => {
+  await page.waitForFunction(() => { const f = document.querySelector('.phone-app'); return !!(f && f.contentDocument && f.contentDocument.querySelector('.feed-list')); }, null, { timeout: 15000 });
+  return (await page.$('.phone-app')).contentFrame();
+};
+const sheetIs = (f, open) => f.waitForFunction((o) => !!document.querySelector('#sheet-root.open') === o, open).then(() => f.waitForTimeout(400));
+// The demo path inside the phone (BRIEF.md steps 4–5): Hohenau's unclear line answered "We meet it", then ISO 27001 on Company.
+const hohenauPath = async (f, keyboard) => {
+  await f.click('a.tcard[href="#/t/hoh-security"]'); await f.waitForSelector('.vhead.v-nogo', { timeout: 10000 });
+  await f.click('a.req[href="#/t/hoh-security/req/r3"]'); await sheetIs(f, true);
+  if (keyboard) { await f.focus('.sheet button[data-confirm="pass"]'); await f.page().keyboard.press('Enter'); } else await f.click('.sheet button[data-confirm="pass"]');
+  await sheetIs(f, false);
+  await f.click('button[data-act="back"]'); await f.waitForSelector('.feed-list');
+  await f.click('.tabbar a[href="#/company"]'); await f.waitForSelector('.co-head');
+};
 const scan = require('../../tests/declutter-scan.js');
 const declutter = async (page, label) => { const found = await scan.scanDom(page); ok(found.length === 0, label + ': none of the 18 declutter patterns in the rendered page' + (found.length ? '\n       ' + found.map((x) => x.pattern + ' · ' + x.el + (x.extra ? ' · ' + x.extra : '') + (x.text ? ' · "' + x.text + '"' : '')).join('\n       ') : '')); };
 // The page scrolls smoothly (html { scroll-behavior: smooth }); the checks jump instead, so a hover lands where it was aimed.
@@ -95,18 +110,15 @@ const into = async (page, sel, wait = 400) => { await page.evaluate((sel) => { d
   const fp = p.locator('.folder').first(); const top0 = await fp.locator('.folder-panel').evaluate((e) => getComputedStyle(e).top); await fp.hover(); await p.waitForTimeout(650);
   ok(top0 !== await fp.locator('.folder-panel').evaluate((e) => getComputedStyle(e).top), 'built for: the card lifts and its panel slides down (the fold)');
   await p.mouse.move(5, 5);
-  await go(p, 'app');
-  const th0 = await style(p, '.ptab-thumb', 'left'); await p.locator('#dock-tab-2').click(); await p.waitForTimeout(600);
-  ok(th0 !== await style(p, '.ptab-thumb', 'left'), 'phone: the brand block slides to the active tab (the dock pill)');
-  const wipe0 = await style(p, '.pbtn-skip .fx-fill', 'transform'); await p.locator('.pbtn-skip').hover(); await p.waitForTimeout(550);
-  ok(wipe0 !== await style(p, '.pbtn-skip .fx-fill', 'transform'), 'phone: Skip wipes in on hover (the wipe)');
-  const rad0 = await style(p, '.pbtn-save .fx-fill', 'clipPath'); await p.locator('.pbtn-save').hover(); await p.waitForTimeout(650);
-  ok(rad0 !== await style(p, '.pbtn-save .fx-fill', 'clipPath'), 'phone: Save to Bids fills from the pointer (the radial fill)');
-  await p.locator('button.pswitch').first().click(); await p.waitForTimeout(160);
-  const mid = +(await p.locator('.pblock .counter-val').innerText()); await p.waitForTimeout(800);
-  ok(mid > 25 && mid < 90 && (await p.locator('.pblock').getAttribute('aria-label')).includes('Maybe, score 90'), `phone: ISO 27001 → Hohenau No-go 25 → Maybe 90, counting up (mid ${mid})`);
-  await p.locator('.meet-btn').click(); await p.waitForTimeout(800);
-  ok((await p.locator('.pblock').getAttribute('aria-label')).includes('Go, score 100'), 'phone: "We meet it" → Go 100');
+  await go(p, 'app', 800);
+  const pf1 = await phoneFrame(p);
+  ok((await pf1.locator('.screen').innerText()).replace(/\s+/g, ' ').includes('6 new tenders'), 'phone: the real app opens on its Feed, onboarded ("6 new tenders")');
+  await hohenauPath(pf1, false);
+  await pf1.click('button[data-cert="ISO 27001"]'); await pf1.waitForSelector('.rescore[data-rescore]'); await p.waitForTimeout(520);
+  const mid = +(await pf1.locator('#rescore .rescore-score .to').innerText()); await p.waitForTimeout(1400);
+  const rescoreCard = (await pf1.locator('#rescore').innerText()).replace(/\s+/g, ' ');
+  ok(mid >= 25 && mid < 100 && rescoreCard.includes('25 → 100') && rescoreCard.includes('No-go → Go'), `phone: "We meet it", then ISO 27001 → Landkreis Hohenau No-go 25 → Go 100 on the app's re-score card, counting up (mid ${mid})`);
+  await p.evaluate(() => { if (document.activeElement) document.activeElement.blur(); }); // keys go to the page again, not the app in the frame
   await go(p, 'sectors');
   const g0 = await style(p, '.strip:nth-child(4)', 'flexGrow'); await p.locator('.strip').nth(3).hover(); await p.waitForTimeout(900);
   ok(g0 !== await style(p, '.strip:nth-child(4)', 'flexGrow'), 'sectors: the hovered strip widens and shows its line (the accordion)');
@@ -121,8 +133,8 @@ const into = async (page, sel, wait = 400) => { await page.evaluate((sel) => { d
   await go(p, 'where', 0);
   await p.waitForSelector('.map-svg .map-land', { timeout: 10000 });
   const fillAt = () => p.evaluate(() => [...document.querySelectorAll('.map-land')].map((e) => getComputedStyle(e).fill));
-  const f1 = await fillAt(); await p.waitForTimeout(350); const f2 = await fillAt(); await p.waitForTimeout(1600); const f3 = await fillAt();
-  ok(new Set(f2).size > 1 && new Set(f3).size === 1, 'map: the countries fill in one after another on arrival (mixed at 350 ms, all lit by 2 s)');
+  const mf1 = await fillAt(); await p.waitForTimeout(350); const mf2 = await fillAt(); await p.waitForTimeout(1600); const f3 = await fillAt();
+  ok(new Set(mf2).size > 1 && new Set(f3).size === 1, 'map: the countries fill in one after another on arrival (mixed at 350 ms, all lit by 2 s)');
   await p.waitForSelector('.map-svg .pin', { timeout: 10000 });
   const mh = await p.evaluate(() => [document.querySelector('.map-svg').getBoundingClientRect().height, document.querySelectorAll('.map-svg .pin').length]);
   ok(mh[0] > 300 && mh[1] === 6, `map: loads near the viewport, fills its frame (${Math.round(mh[0])} px tall) and shows the six buyer pins`);
@@ -222,25 +234,19 @@ const into = async (page, sel, wait = 400) => { await page.evaluate((sel) => { d
   ok(await p2.evaluate(() => !!document.activeElement?.closest('#site-menu')), 'menu: Tab stays inside the dialog');
   await p2.keyboard.press('Escape'); await p2.waitForTimeout(850);
   ok(await p2.evaluate(() => document.activeElement?.classList.contains('menu-btn')), 'menu: Escape returns focus to the Menu button');
-  await go(p2, 'app', 300);
-  await p2.focus('[role="tab"][aria-selected="true"]'); await p2.keyboard.press('ArrowRight'); await p2.waitForTimeout(100);
-  ok((await p2.locator('[role="tab"][aria-selected="true"]').innerText()).includes('Company'), 'phone tabs: ArrowRight moves to Company');
-  const tabs = await p2.locator('.ptabs [role="tab"]').evaluateAll((ts) => ts.map((t) => { const r = t.getBoundingClientRect(); return [t.innerText.replace(/^\S+\s*/, '').trim(), Math.round(r.width), Math.round(r.height)]; }));
+  await go(p2, 'app', 800);
+  const pf2 = await phoneFrame(p2);
+  const tabs = await pf2.locator('.tabbar a').evaluateAll((ts) => ts.map((t) => { const r = t.getBoundingClientRect(); return [t.innerText.replace(/^\S+\s*/, '').trim(), Math.round(r.width), Math.round(r.height)]; }));
   ok(tabs.length === 5 && tabs.map((t) => t[0]).join(' ') === 'Feed Bids Company Profile Settings', 'phone tabs: the app\'s five tabs (' + tabs.map((t) => t[0]).join(' · ') + ')');
-  ok(tabs.every((t) => t[1] >= 44 && t[2] >= 44), 'phone tabs: every tab at least 44 × 44 px (' + tabs.map((t) => t[1] + '×' + t[2]).join(' ') + ')');
-  await p2.locator('#dock-tab-0').click(); await p2.locator('#dock-tab-0').focus(); await p2.keyboard.press('ArrowLeft'); await p2.waitForTimeout(100);
-  ok((await p2.evaluate(() => document.activeElement && document.activeElement.id)) === 'dock-tab-4', 'phone tabs: ArrowLeft from Feed wraps to Settings');
-  await p2.locator('#dock-tab-1').click(); await p2.waitForTimeout(200);
-  ok((await p2.locator('.pwl').innerText()).replace(/\s+/g, ' ').includes('8 of 21 won · 38% in the last 12 months'), 'phone Bids: the app\'s Win/loss row');
-  await p2.locator('#dock-tab-2').click(); await p2.waitForTimeout(200);
-  await p2.locator('button.pswitch').first().focus(); await p2.keyboard.press('Space'); await p2.waitForTimeout(800);
-  ok((await p2.locator('.pblock').getAttribute('aria-label') || '').includes('Maybe, score 90'), 'phone: ISO 27001 by keyboard → Landkreis Hohenau: Maybe 90');
-  await p2.locator('.meet-btn').focus(); await p2.keyboard.press('Enter'); await p2.waitForTimeout(800);
-  ok((await p2.locator('.pblock').getAttribute('aria-label') || '').includes('Go, score 100'), 'phone: "We meet it" → Go 100');
-  await p2.locator('#dock-tab-3').click(); await p2.waitForTimeout(200);
-  ok((await p2.locator('.pkv').innerText()).includes('ISO 9001, ISO 27001'), 'phone Profile: shows ISO 27001 after the Company switch');
-  await p2.locator('.pfull').focus(); await p2.keyboard.press('Enter'); await p2.waitForTimeout(200);
-  ok((await p2.evaluate(() => document.activeElement && document.activeElement.id)) === 'dock-tab-2', 'phone Profile: "Edit on Company" opens Company and focus moves with it');
+  ok(tabs.every((t) => t[1] >= 44 && t[2] >= 44), 'phone tabs: every tab at least 44 × 44 px, at the app\'s own size (' + tabs.map((t) => t[1] + '×' + t[2]).join(' ') + ')');
+  await pf2.focus('.tabbar a[href="#/bids"]'); await p2.keyboard.press('Enter'); await pf2.waitForSelector('.bids-head');
+  ok((await pf2.locator('.screen').innerText()).replace(/\s+/g, ' ').includes('8 of 21 won · 38% in the last 12 months'), 'phone Bids, by keyboard: the app\'s Win/loss row');
+  await pf2.focus('.tabbar a[href="#/feed"]'); await p2.keyboard.press('Enter'); await pf2.waitForSelector('.feed-list');
+  await hohenauPath(pf2, true);
+  await pf2.focus('button[data-cert="ISO 27001"]'); await p2.keyboard.press('Space'); await pf2.waitForSelector('.rescore[data-rescore]'); await p2.waitForTimeout(1500);
+  ok((await pf2.locator('#rescore').innerText()).replace(/\s+/g, ' ').includes('25 → 100'), 'phone, by keyboard: "We meet it", then ISO 27001 → Landkreis Hohenau 25 → 100');
+  await pf2.focus('.tabbar a[href="#/profile"]'); await p2.keyboard.press('Enter'); await p2.waitForTimeout(400);
+  ok((await pf2.locator('.screen').innerText()).includes('ISO 27001'), 'phone Profile: shows ISO 27001 after the Company switch');
   await go(p2, 'where', 300); await p2.waitForSelector('.map-svg .pin', { timeout: 10000 }); await p2.waitForTimeout(1500);
   await p2.locator('.pin').first().focus(); await p2.waitForTimeout(150);
   ok((await p2.locator('.map-tip').count()) === 1, 'map: a focused pin shows its tooltip');
@@ -270,8 +276,8 @@ const into = async (page, sel, wait = 400) => { await page.evaluate((sel) => { d
   ok(await t.evaluate(() => [...document.querySelectorAll('.map-count')].every((e) => e.scrollWidth <= e.clientWidth + 1)), 'map: every count tile fits its word');
   await go(t, 'sectors', 300); await t.locator('.strip').nth(2).tap(); await t.waitForTimeout(900);
   ok((await t.locator('.strip').nth(2).getAttribute('class')).includes('active'), 'sectors: a tap opens a strip');
-  await go(t, 'app', 300); await t.locator('#dock-tab-4').tap(); await t.waitForTimeout(500);
-  ok((await t.locator('#dock-tab-4').getAttribute('aria-selected')) === 'true', 'phone tabs: a tap switches the tab');
+  await go(t, 'app', 800); const pft = await phoneFrame(t); await t.evaluate(() => document.querySelector('.phone').scrollIntoView({ block: 'end' })); await t.waitForTimeout(300); await pft.locator('.tabbar a[href="#/settings"]').tap(); await pft.waitForSelector('.tabbar a[href="#/settings"][aria-current="page"]', { timeout: 5000 }).catch(() => {});
+  ok((await pft.evaluate(() => location.hash)) === '#/settings' && (await pft.locator('.screen').innerText()).includes('About this prototype'), 'phone tabs: a tap opens Settings, with "About this prototype"');
   const sw4 = await t.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
   ok(sw4[0] === sw4[1], `no horizontal scroll at 390 px (${sw4[0]} / ${sw4[1]})`);
   const tipInside = await t.evaluate(() => [...document.querySelectorAll('.pin')].map((_, i) => i));

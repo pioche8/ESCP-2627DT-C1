@@ -4,18 +4,19 @@ import { SquareButton } from '@/components/ui/Primitives';
 import { SectorFolderCard } from '@/components/ui/SectorFolderCard';
 import { useCarousel } from '@/components/ui/useCarousel';
 
-/** All 45 CPV sector cards in a scroll-snap carousel with an "n of 45" counter and a progress bar. */
+/** All 45 CPV division cards in a scroll-snap carousel with an "n of 45 divisions" counter and a progress bar. The heading
+ * claims every sector, not "45 sectors": CPV 2008 has 45 divisions, each split into groups, classes and categories. */
 export function BuiltFor() {
   const { ref: trackRef, index, onScroll, prev, next } = useCarousel(276, sectors.length, 552);
   return (
     <section id="who" className="section" aria-labelledby="who-h">
       <div className="wrap who-head">
         <div className="who-copy">
-          <h2 id="who-h" className="h2">Firms of 5 to 50, in all {sectors.length} sectors.</h2>
-          <p className="body">Every EU tender is filed under one of {sectors.length} <abbr title="Common Procurement Vocabulary">CPV</abbr> divisions. Yours are marked, the rest are one tap away.</p>
+          <h2 id="who-h" className="h2">Firms of 5 to 50, in every sector.</h2>
+          <p className="body">Every EU tender carries <abbr title="Common Procurement Vocabulary">CPV</abbr> codes, and every code falls into one of {sectors.length} divisions. Yours are marked; the rest are one tap away.</p>
         </div>
         <div className="car-btns">
-          <span className="counter-label" aria-live="polite">{index + 1} of {sectors.length}</span>
+          <span className="counter-label" aria-live="polite">{index + 1} of {sectors.length} divisions</span>
           <SquareButton icon="arrow_back" label="Previous sectors" onClick={prev} />
           <SquareButton icon="arrow_forward" label="Next sectors" onClick={next} />
         </div>

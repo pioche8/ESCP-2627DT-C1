@@ -13,7 +13,7 @@ npm run images       # re-render the Open Graph image and the icons from ../shar
 node scripts/shots.cjs            # screenshots at 1440 / 1024 / 768 / 390 with console, horizontal-scroll and declutter-scan checks
 node scripts/a11y-motion.cjs      # every item of the motion inventory, reduced motion, keyboard and touch
 node scripts/record.cjs           # ../docs/site/ recordings at 1440 and 390 (BEFORE_URL=… adds the before/after strip)
-node scripts/contact-sheet.cjs    # the PhoneDemo next to the real app in the same states
+node scripts/contact-sheet.cjs    # ../docs/site/contact-sheet.png: the site's phone (the app itself) next to the app, every demo-path state
 ```
 
 **Pages:** `/` (the one-page site) and `/how` ("How it decides": the requirement statuses, the four parts of the score, the thresholds, "Try the rules" on the real decision code, what "cites the page that proves it" means, the demo data through the rules, and what is real in the prototype). Everything on `/how` is generated at build time by `../shared/how-it-decides.js`, which probes the engine; nothing is typed by hand, and CI fails if the generated files fall behind the code.
@@ -22,4 +22,6 @@ node scripts/contact-sheet.cjs    # the PhoneDemo next to the real app in the sa
 
 Not deployed yet: Vercel deploys it from GitHub Actions (`.github/workflows/vercel.yml`, ADR-0003) once two repository secrets exist (`../docs/DEPLOY.md` §0); do not import it in the Vercel dashboard (`vercel.json` keeps Git deploys off); `STATIC_EXPORT=1 npm run build` produces a static preview in `out/` meanwhile. Design tokens come from `../shared/tokens.json`: run `npm run tokens` after editing it. Map data: Natural Earth via the `world-atlas` npm package, drawn with `d3-geo` (nothing fetched at runtime). Full notes: the root `README.md` ("Website") and `../docs/WEBSITE_BUILD_LOG.md`.
 
-Prototype · AI output is simulated · all companies and tenders are fictional.
+Prototype · AI output is simulated · real decision rules and EU sector codes · fictional companies, buyers and tenders.
+
+**The phone** in "In the app" is the real app since pass 8: an iframe of `public/prototype/`, a byte-for-byte copy of the app's runtime files written by `scripts/sync-shared.mjs` (the same allowlist as the Vercel app build), so the site never shows an older app. `node scripts/sync-shared.mjs --check` (CI) fails when the app changes and the copy does not: run `npm run sync` and commit.

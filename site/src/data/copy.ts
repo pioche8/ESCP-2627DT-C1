@@ -2,7 +2,7 @@
 export const APP_URL = 'https://pioche8.github.io/ESCP-2627DT-C1/';
 export const REPO_URL = 'https://github.com/pioche8/ESCP-2627DT-C1';
 export const FILM_URL = APP_URL + 'marketing/TenderScout-launch-film-1920x1080.mp4';
-export const HONESTY = 'Prototype · all companies and tenders are fictional';
+export const HONESTY = 'Prototype · real rules and EU sector codes · fictional companies and tenders';
 export const SIMULATED = 'Simulated AI';
 
 export const menuItems = [
@@ -38,13 +38,13 @@ export const faqs = [
   { q: 'How do you read tenders in four languages?', a: 'Every document is translated, then each requirement is checked against your company profile. The original sentence stays one tap away, with its page.' },
   { q: 'What does “Needs your check” mean?', a: 'The wording is unclear and our confidence is below 70%. You decide whether you meet it, and the tender re-scores at once.' },
   { q: 'Which countries do you cover?', a: 'Germany and Austria by default. Turn on cross-border bidding to add Spain, the Netherlands and France.' },
-  { q: 'Is the AI output real?', a: 'No. This is a university prototype: the AI output is simulated, the decision rules are real code, and every company and tender is fictional.' },
+  { q: 'Is the AI output real?', a: 'No, it is simulated: this is a university prototype. Real: the decision rules, the 45 EU sector divisions, the countries and languages. Fictional: every company, buyer and tender in the demo, and the weekly sector counts.' },
 ];
 
 export const languagesTile = { bid: 'Bid.', lines: 'We read every tender in German, Spanish, Dutch and French, overnight.', codes: 'German, Spanish, Dutch and French, translated to English' };
 
 export const footer = {
-  blurb: 'University prototype, ESCP Digital Product Design. AI output is simulated and all companies and tenders are fictional.',
+  blurb: 'University prototype, ESCP Digital Product Design. AI output is simulated. The rules and the EU sector codes are real; every company, buyer and tender is fictional.',
   product: [['How it works', '#how'], ['How it decides', '/how'], ['Sectors', '#sectors'], ['Countries', '#where']] as const,
   project: [['Questions', '#faq'], ['Launch film', FILM_URL], ['Source on GitHub', REPO_URL], ['Try the prototype', APP_URL]] as const,
 };
