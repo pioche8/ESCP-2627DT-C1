@@ -14,6 +14,8 @@ The promise: **"Can we even bid on this?" answered in under 60 seconds, with pro
 
 Why it matters, in one line: competition for EU public contracts has collapsed (the figures and their sources: [`BRIEF.md`](BRIEF.md) → Problem, [`evidence.md`](evidence.md) §5), and for a firm of 5–50 people the cost sits before the bid: someone has to read a 50–200 page pack, often in another language, to find the one line that rules them out.
 
+Reading tenders in other languages is part of the product, but it is a hypothesis still to be tested (H3), not a proven need: neither stakeholder response supports it yet ([`evidence.md` §4](evidence.md#4-what-changed-because-of-the-evidence)). The proven core, for now, is the qualification check (H1, H2).
+
 ## 2. Who it is for
 
 - **Primary:** the owner or managing director of a 5–50 person firm that sells to the public sector (IT services, network installation, building trades, facility services, engineering, consulting, translation), with no bid manager on staff.
@@ -67,7 +69,7 @@ The score adds sector fit (40), size fit (20), requirements (30) and time to the
 
 **Simulated, and labelled "Simulated AI" wherever it shows:** reading tender packs, extracting requirements with page and confidence, translating, summarising, answering questions, drafting the profile. Pre-written output is played back after a short delay; no model is called and there are no keys.
 
-**Which data is real and which is fictional:** [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional). The demo date is fixed at Thu 5 Nov 2026 so verdicts and days left never drift.
+**Real and fictional data:** the decision rules, the 45 CPV divisions, the EU procurement figures (European Court of Auditors, Special Report 28/2023), the EU countries and languages, and the two survey responses are real; every company, buyer and tender in the demo, and the website's weekly sector counts, are fictional ([`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)). The demo date is fixed at Thu 5 Nov 2026 so verdicts and days left never drift.
 
 **Later, not built:** real tender ingestion (TED API), live AI, accounts and login, push notifications (a morning deep link to a tender), payments, a consortium-partner finder, calendar export, sharing a verdict, opening the source PDF at the cited page ([`CLAUDE.md`](CLAUDE.md) §10, [`docs/NAVIGATION.md`](docs/NAVIGATION.md) → Later). Teammate tasks T2–T7 in [`docs/START_HERE.md`](docs/START_HERE.md) §6 are the next candidates.
 
@@ -86,7 +88,7 @@ The full list, with the accessibility and layout rules: [`CLAUDE.md`](CLAUDE.md)
 
 ## 7. What is known and what is assumed
 
-Known only provisionally: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-interview-1-tagged-v0-shell). There are 2 stakeholder responses (survey), 1 in our segment, and no interview; since 9 Nov survey answers count, labelled as survey, and the gate is signed **Provisional, n = 2**: both meet H1 and H2, only one is in the segment, neither supports the cross-language claim (H3), and willingness to pay (H4) was not asked ([`evidence.md` §1](evidence.md#1-stakeholder-log) and [§3](evidence.md#3-key-insights-n--2-survey)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
+Known only provisionally: whether the pain is real for this user. The four hypotheses (H1–H4) and the gate are in [`evidence.md` §0](evidence.md#0-hypotheses-and-kill-gate-written-before-the-evidence). Stakeholder evidence: 2 responses, collected by survey (the course counts a survey as an interview). 1 is in our 5–50 segment. The gate is signed **Provisional, n = 2**: both meet H1 and H2, only one is in the segment, neither supports the cross-language claim (H3, still to be tested, not proven), and willingness to pay (H4) was not asked ([`evidence.md` §1](evidence.md#1-stakeholder-log) and [§3](evidence.md#3-key-insights-n--2-survey)). Which statements are known, which are fictional and which are assumed: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 ## 8. The demo
 
@@ -95,7 +97,7 @@ The 75-second path and the numbers the presenter says are in [`BRIEF.md`](BRIEF.
 ## 9. Open questions
 
 - **The gate verdict** (signed Provisional, n = 2 on 9 Nov; GO / RESHAPE / KILL once there are at least 3 responses, [`evidence.md`](evidence.md) §0). RESHAPE points the pitch at cross-border reading (H3) or at the buyer side; KILL moves the focus to bid writing, said openly. Either would rewrite §2, §5 and §7 of this file.
-- **The `v0-shell` tag** ([`CLAUDE.md`](CLAUDE.md) §11 item 14).
+- **Cross-language (H3):** whether owners skip tenders in other languages. Still to be tested, not proven; question 9 of [`docs/INTERVIEW_KIT.md`](docs/INTERVIEW_KIT.md) asks it.
 - **Persona, "How might we", journey map and traceability** (T8–T10): the persona with HMW and the journey are drafts from the two survey responses ([`docs/design/PERSONA.md`](docs/design/PERSONA.md), [`docs/design/JOURNEY.md`](docs/design/JOURNEY.md)); traceability is still pending. Their status is kept in [`docs/design/UX_PLANES.md`](docs/design/UX_PLANES.md).
 
 ## 10. Words used in the product

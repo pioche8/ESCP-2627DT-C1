@@ -1,6 +1,6 @@
 # TenderScout: idea brief and pitch
 
-> Working name, not trademark-checked. Status: **hypothesis**, written before any interview (v0-shell). Facts carry a source; everything else is labelled ASSUMPTION and gets tested in `evidence.md`.
+> Working name, not trademark-checked. Status: **hypothesis**, written before the stakeholder evidence (on `main` since `99235a7`, 3 Nov 2026; the first response came in on 5 Nov). Facts carry a source; everything else is labelled ASSUMPTION and gets tested in `evidence.md`.
 
 ## One line
 Every morning TenderScout reads new EU public tenders in any language and tells the owner of a small firm, on their phone, whether they can actually win each one, citing the page that proves it.
@@ -17,6 +17,8 @@ For a firm with 5–50 staff, the cost sits **before** the bid. Someone has to o
 
 ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skips most foreign-language tenders unread, and has lost at least one bid on a knock-out it missed.
 
+What the stakeholder evidence says so far (2 responses, collected by survey; the course counts a survey as an interview; 1 in our 5–50 segment, [`evidence.md` §4](evidence.md#4-what-changed-because-of-the-evidence)): deciding whether to bid took 1–2 days (survey response S1) and 1–3 hours (survey response S2), and free alerts did not tell them whether they qualify (H1, H2). Neither supports the foreign-language part: cross-language (H3) is still to be tested, not proven.
+
 ## User
 **Primary: owner or managing director of a 5–50 person firm that sells to the public sector.** Sectors: IT services, network installation, building trades, facility services, engineering, consulting, translation. No bid manager on staff. Decides on the phone, between jobs.
 
@@ -32,11 +34,11 @@ ASSUMPTION (to test): a typical small firm screens a tender in 1–3 hours, skip
 5. **Profile as a lever:** add ISO 27001 or a consortium partner, and every verdict updates instantly. This shows which certificate is worth getting.
 
 ## Product objectives and success metric
-> Every target in this section is an **ASSUMPTION (untested)**. They are the numbers we would test against, not results. The evidence in [`evidence.md`](evidence.md) sets the real thresholds once interviews are logged. Real or fictional, figure by figure: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
+> Every target in this section is an **ASSUMPTION (untested)**. They are the numbers we would test against, not results. The evidence in [`evidence.md`](evidence.md) sets the real thresholds as more responses come in. Real or fictional, figure by figure: [`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional).
 
 **North-star metric: qualification checks completed per firm per week.** A check counts as completed when the owner records a decision on a tender they opened: saved it to Bids, or skipped it (with or without a reason). This tracks the value TenderScout promises, a decision on "can we even bid on this?" backed by the page that proves it. It does not track attention. Opening the app, scrolling the Feed or reading a summary without deciding gives the firm nothing. More completed checks per week means screening got cheaper (H1) and the answer was good enough to act on (H2).
 
-Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The one stakeholder response in the segment so far (survey response S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form-not-interviews); 2 stakeholder responses (survey), 1 in our segment, gate Provisional, n = 2) read 3–5 tenders in a whole year, and survey response S2 read 1–2. So the weekly rhythm is itself something the interviews must test. The bet is that cheaper checks mean more tenders get checked.
+Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPTION). The one stakeholder response in the segment so far (survey response S1, [`evidence.md` §1b](evidence.md#1b-survey-responses-screening-form); stakeholder evidence: 2 responses, collected by survey, 1 in our segment, gate Provisional, n = 2) read 3–5 tenders in a whole year, and survey response S2 read 1–2. So the weekly rhythm is itself something the next responses must test. The bet is that cheaper checks mean more tenders get checked.
 
 **Supporting metrics**, each tied to something the prototype already does:
 
@@ -53,7 +55,7 @@ Target: at least 1 per firm per week once the feed runs on real tenders (ASSUMPT
 ## Why AI is necessary (removal test)
 Take the language model out and the product is a keyword alert. Those already exist (TED, DTAD and other tender portals, mostly free). The model does three jobs nothing else can do at this cost:
 - **Reads unstructured tender packs** (PDF/Word, 50–200 pages) and extracts requirements with page citations and confidence scores.
-- **Works across 24 EU languages**, so a Leipzig firm can judge a Dutch or Spanish tender without reading it.
+- **Works across 24 EU languages**, so a Leipzig firm can judge a Dutch or Spanish tender without reading it. (Whether owners need this is H3, still to be tested, not proven.)
 - **Answers follow-up questions** grounded in the document.
 
 The **decision** (knock-out, score, verdict) is deliberately **plain, tested code** (`engine.js`). The AI reads and the rules decide. That keeps every verdict explainable, which matters when a firm decides whether to spend €3–10k of effort on a bid. (ASSUMPTION: bid cost range, to test in interviews.)
@@ -67,13 +69,13 @@ The **decision** (knock-out, score, verdict) is deliberately **plain, tested cod
 | Player | What they do | Who they serve | Our angle |
 |---|---|---|---|
 | **Altura** (NL), €8M Series A Jun 2025 | AI bid management: search, bid/no-bid insight, AI drafting and agents | Companies with bid teams; expanding to UK | We stop at the decision. No writing suite, mobile, for owners without a bid team |
-| **Tendium** (SE) | AI tender search plus "Qualify" bid/no-bid | Nordic firms | Closest competitor. We focus on cross-language reading and DACH/Benelux SMEs |
+| **Tendium** (SE) | AI tender search plus "Qualify" bid/no-bid | Nordic firms | Closest competitor. We focus on the qualification check for DACH/Benelux SMEs; cross-language reading is our bet, still to be tested (H3) |
 | **Stotles** (UK) | Public-sector sales intelligence | UK B2G sales teams | Sales-team tool, UK only |
 | **Mercell, DTAD, Patterno, Auftrag One** | Tender databases and alerts, some with AI matching | Broad | Discovery, not qualification |
 
 **Concession line for the pitch:** "Tender search is solved, and AI bid writing is funded (Altura raised €8M). What's missing is the 60-second answer for a 20-person firm: *can we even bid on this?*"
 
-Whether that gap is real is the main thing the interviews have to prove (see the gate in `evidence.md`).
+Whether that gap is real is the main thing the stakeholder evidence has to prove. So far it points that way: 2 responses, collected by survey, both meet H1 and H2, and the gate is signed Provisional, n = 2 (`evidence.md` §0).
 
 ## Business model (ASSUMPTION, not tested)
 Subscription per company: **€49/month** (1 user, 2 countries) or **€149/month** (team, all EU). Benchmark: one avoided wasted bid at about 20 h × €60 = €1,200 pays for 8 months of the basic plan. Every figure here is an assumption and must be labelled so in the deck.
@@ -86,7 +88,7 @@ Subscription per company: **€49/month** (1 user, 2 countries) or **€149/mont
 ## 60-second pitch (script)
 > "The EU spends two trillion euros a year on public contracts, and in 2021, 42% of them got exactly one bid. Small firms aren't bidding. Not because they can't do the work, but because finding out whether they *qualify* means reading 150 pages, often in Dutch or Spanish, to find the one line that rules them out.
 > TenderScout reads every new tender for you overnight. In the morning you get three answers: Go, Maybe, No-go, each with the exact page that proves it. Unsure? It asks you, it doesn't guess. Add a certificate to your profile and watch tenders flip from No-go to Go.
-> Search tools exist and bid-writing tools are funded. We're the 60-second qualification check for the 20-person firm with no bid manager. We spoke to [N] owners: [insert evidence]."
+> Search tools exist and bid-writing tools are funded. We're the 60-second qualification check for the 20-person firm with no bid manager. Two owners answered our survey: the one with a firm our size spent one to two days deciding on their last tender, and their alerts did not say whether they qualify."
 
 ## 75-second demo (on a real phone, after `?demo=reset,fast`)
 Open `https://pioche8.github.io/ESCP-2627DT-C1/?demo=reset,fast` (`?demo=fast` alone keeps your state). `fast` shortens the two simulated AI waits (profile draft, tender reading) to about 300 ms so the path fits in 75 seconds; the "Simulated AI" labels and everything else are unchanged.

@@ -2,7 +2,7 @@
 
 **Rule zero (ESCP AI policy):** every note in `evidence.md` comes from a real conversation with a real person. AI may help you *structure* notes you wrote, but never invent, "fill in" or paraphrase into quotes. Keep raw notes (paper, phone notes or voice memo, with consent) until the course ends.
 
-**Since 9 Nov 2026** the course accepts either an interview or a survey as stakeholder evidence (Luca's rule change, `evidence.md` top note). A survey response is logged as a survey row (S1, S2, …) in `evidence.md` §1 with its answers in §1b; an interview gets a numbered interview row and notes in §2. Never relabel one as the other. So far: 2 stakeholder responses (survey), 1 in our segment, 0 interviews.
+**Since 9 Nov 2026** the course accepts either an interview or a survey as stakeholder evidence (Luca's rule change, `evidence.md` top note). A survey response is logged as a survey row (S1, S2, …) in `evidence.md` §1 with its answers in §1b; an interview gets a numbered interview row and notes in §2. Never relabel one as the other. Since 10 Nov 2026 the course regards a survey as an interview. So far: stakeholder evidence of 2 responses, collected by survey, 1 in our 5–50 segment.
 
 ## 1. Who to interview (at least 1 per team member, aim for 6+)
 | # | Role | Why | Count |
