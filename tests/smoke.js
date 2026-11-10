@@ -778,6 +778,33 @@ async function briefDemoPath(browser, step) {
   check(problems.length === 0, 'no console errors on the demo path' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
 }
 
+// The count-up never shows a number below its start (10 Nov 2026, pass 9). A frame's timestamp can be older than the moment
+// the count began (a busy page, or an off-screen frame such as the site's phone); the easing then ran backwards and the
+// Feed read "read -4 pages", and "read -4310 pages" in the designer's reference page. Here the first frames are handed a
+// timestamp 2.4 s old, as a throttled frame does, and every value the counter shows is recorded.
+async function countUpFloor(browser, step) {
+  console.log('\n== count-up · ' + BROWSER + (DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '') + ' · ' + BASE);
+  step('stale frame timestamps');
+  const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
+  await ctx.addInitScript(() => {
+    try { localStorage.setItem('tenderscout.v2', JSON.stringify({ signedIn: true, email: 'demo@example.com', onboarded: true, theme: 'dark' })); } catch (e) { /* in memory */ }
+    const raf = window.requestAnimationFrame.bind(window); let n = 0;
+    window.requestAnimationFrame = (cb) => raf((ts) => cb(n++ < 20 ? performance.now() - 2400 : ts));
+    window.__counts = [];
+    const poll = () => { const el = document.querySelector('.pages-line b'); if (el) window.__counts.push(el.textContent); if (window.__counts.length < 3000) setTimeout(poll, 1); };
+    poll();
+  });
+  const page = await ctx.newPage();
+  const problems = [];
+  watch(page, problems);
+  await page.goto(BASE + '?demo=fast#/feed');
+  await page.waitForSelector('.feed-list');
+  await page.waitForFunction(() => document.querySelector('.pages-line b').textContent === '777', null, { timeout: 8000 }).catch(() => {});
+  const seen = (await page.evaluate(() => window.__counts)).map(Number);
+  check(seen.length > 0 && Math.min(...seen) >= 0 && seen[seen.length - 1] === 777, 'the 777 count-up never shows a number below its start, even when a frame\'s timestamp is older than the count (lowest ' + Math.min(...seen) + ', last ' + seen[seen.length - 1] + ')');
+  check(problems.length === 0, 'no console errors around the count-up' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
+}
+
 // Test-session log (6 Nov 2026, pass 2, S4): export-only; cleared by ?demo=reset and Reset demo; each tender counted once;
 // no seconds under ?demo=fast; the toast reports what happened (copied, or the log shown as text); no count elsewhere.
 async function testSessionLog(browser, step) {
@@ -890,7 +917,7 @@ function serveRoot() {
   // still runs. The device is part of the name so a CI log line says where it happened.
   const dev = DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '';
   const sections = schemes.map((s) => [s + dev, (b, step) => run(s, b, step)])
-    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog], ['demo sign-in' + dev, demoSignIn], ['demo path' + dev, briefDemoPath]]);
+    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog], ['demo sign-in' + dev, demoSignIn], ['demo path' + dev, briefDemoPath], ['count-up' + dev, countUpFloor]]);
   for (const [name, fn] of sections) if (!(await section(name, fn, { playwright, engine: BROWSER }))) failures++;
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }

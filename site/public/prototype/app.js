@@ -893,7 +893,9 @@
     var t0 = performance.now();
     (function step(now) {
       if (el.countRun !== run) return;
-      var k = Math.min(1, (now - t0) / (ms || COUNT_MS));
+      // A frame's timestamp can be older than t0 (a busy or off-screen frame, such as the site's phone), so k is kept at 0
+      // or above: below 0 the easing runs backwards and the number went negative ("read -4310 pages", pass 9).
+      var k = Math.max(0, Math.min(1, (now - t0) / (ms || COUNT_MS)));
       el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
       if (k < 1) requestAnimationFrame(step);
     })(t0);
