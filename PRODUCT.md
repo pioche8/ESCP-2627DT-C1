@@ -43,7 +43,7 @@ This user is a hypothesis, supported so far by one stakeholder response in the s
 | starts the day | once a day after the overnight read, a simulated lock-screen notification with today's Go / Maybe / No-go counts; tapping it opens the Feed | morning notification (over the Feed; replay on Settings) | the rules count; the notification itself is simulated |
 | wants to know what is real | what is simulated, what is real code, which data is real and which is fictional, that the build was AI-assisted; light or dark; reset | Settings tab (`#/settings`, also `#/about`) | — |
 
-The same product appears on two more surfaces: the marketing website in `site/` (not deployed; its phone demo, map and "How it decides" page run the app's own rules on the app's own data) and the launch film in `marketing/`.
+The same product appears on two more surfaces: the marketing website in `site/` (online on GitHub Pages at `/ESCP-2627DT-C1/website/` since 10 Nov, ADR-0005; its phone demo, map and "How it decides" page run the app's own rules on the app's own data) and the launch film in `marketing/`.
 
 ## 4. How a verdict reads
 
