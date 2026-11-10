@@ -71,7 +71,7 @@ The score adds sector fit (40), size fit (20), requirements (30) and time to the
 
 **Real and fictional data:** the decision rules, the 45 CPV divisions, the EU procurement figures (European Court of Auditors, Special Report 28/2023), the EU countries and languages, and the two survey responses are real; every company, buyer and tender in the demo, and the website's weekly sector counts, are fictional ([`ARCHITECTURE.md` §9](ARCHITECTURE.md#9-what-is-real-and-what-is-fictional)). The demo date is fixed at Thu 5 Nov 2026 so verdicts and days left never drift.
 
-**Later, not built:** real tender ingestion (TED API), live AI, accounts and login, push notifications (a morning deep link to a tender), payments, a consortium-partner finder, calendar export, sharing a verdict, opening the source PDF at the cited page ([`CLAUDE.md`](CLAUDE.md) §10, [`docs/NAVIGATION.md`](docs/NAVIGATION.md) → Later). Teammate tasks T2–T7 in [`docs/START_HERE.md`](docs/START_HERE.md) §6 are the next candidates.
+**Later, not built:** real tender ingestion (TED API), live AI, real accounts and login (the prototype has a demo sign-in only: a reserved address, no password, nothing sent), push notifications (a morning deep link to a tender), payments, a consortium-partner finder, calendar export, sharing a verdict, opening the source PDF at the cited page ([`CLAUDE.md`](CLAUDE.md) §10, [`docs/NAVIGATION.md`](docs/NAVIGATION.md) → Later). Teammate tasks T2–T7 in [`docs/START_HERE.md`](docs/START_HERE.md) §6 are the next candidates.
 
 **Not the product, on purpose:** writing the bid, tender search on its own (portals and databases already do it), firms with bid teams. TenderScout stops at the decision ([`BRIEF.md`](BRIEF.md) → Competition).
 

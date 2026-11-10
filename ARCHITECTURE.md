@@ -60,6 +60,7 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 
 | Route | `parse()` → | Rendered by (`app.js`) | Calls |
 |---|---|---|---|
+| `#/signin` | `signin` | `signin()` | none: Sign in / Sign up set `signedIn` and `email` (the reserved `demo@example.com`) in `tenderscout.v2`; nothing is sent (pass 8, PR 5) |
 | `#/welcome/1`, `/2`, `/3` | `onb`, step | `welcome()`, `readingScreen()`, `checkProfile()` | step 2 runs `startDraft()` → `AI.draftProfile` and is replaced in history (`location.replace`) |
 | `#/feed` | `feed` | `feed()`, `card()` | `Engine.rank` |
 | `#/t/:id` | `detail` | `detail()`; `loadingDetail()` on the first open per session | `AI.readTender`, `Engine.evaluate`, `Engine.headline`; Ask this tender → `AI.ask` |
@@ -72,19 +73,20 @@ The split is the product's honesty claim: the AI reads, the rules decide ([`PROD
 | `#/settings`, `#/about` | `settings` | `settings()` | Reset writes a fresh state |
 | anything else | `notfound` | `notFound()` | |
 
+- **Sign-in guard (pass 8, PR 5):** while `signedIn` is false, every route is replaced by `#/signin` first and opened after Sign in; a signed-in visit to `#/signin` goes to the Feed (or Welcome before onboarding).
 - **Onboarding guard:** until `onboarded` is true, every route except Welcome, Company and Settings (or `#/about`) is replaced by `#/welcome/1`.
 - **Sheets are history entries.** In-app Back, closing a sheet and Skip go *back* through a small stack (`backTo()`) instead of stacking new entries; Escape and the scrim close a sheet to its parent tender; while a sheet is open the screen and the tab bar are `inert`.
 - **Re-renders are cheap and local:** a lever on Company re-scores all six tenders in the engine and updates the screen in place (the switches, the counts, the hints and the re-score card, which shows the score from `Engine.diff`), so they animate. When a hint gains a line or the card above changes height, the control just tapped is kept where it was; the card is brought back into view only when that control stays in view, and on a short phone the control and its hint are lifted clear of the tab bar. Other same-screen re-renders do not replay entrances. A toast belongs to the screen that raised it: `render()` removes it when the screen changes, and a sheet removes the one behind it. The card → tender morph uses the View Transitions API when the browser has it and a plain hash change otherwise.
 
 ## 3. State
 
-One `localStorage` key, **`tenderscout.v2`**: `{ onboarded, profile, website, overrides, saved, skipped, filter, theme, palette, notifiedOn, log }` (`notifiedOn` and `log` were added without a key bump, items 120 and 129). `overrides[tenderId][reqId]` is the owner's answer on a line (`pass` | `fail`), `saved[id]` the bid stage, `skipped[id] = { reasons, at }`. `theme` is `dark` (default), `light` or `system`; `palette` is written for shape stability and no longer read. Every read and write is wrapped in try/catch with an in-memory fallback for private mode; the inline script in `index.html` reads the same key before the first paint so the scheme never flashes. If the shape ever changes, the key is bumped (v1 → v2 happened on 2 Nov), not migrated. Session-only state (which tenders were "read", open answers, the last re-score) lives in variables and is gone on reload.
+One `localStorage` key, **`tenderscout.v2`**: `{ signedIn, email, onboarded, profile, website, overrides, saved, skipped, filter, theme, palette, notifiedOn, log }` (`notifiedOn`, `log`, `signedIn` and `email` were added without a key bump, items 120, 129 and pass 8's PR 5). Signing out sets `signedIn` to false and keeps everything else. `overrides[tenderId][reqId]` is the owner's answer on a line (`pass` | `fail`), `saved[id]` the bid stage, `skipped[id] = { reasons, at }`. `theme` is `dark` (default), `light` or `system`; `palette` is written for shape stability and no longer read. Every read and write is wrapped in try/catch with an in-memory fallback for private mode; the inline script in `index.html` reads the same key before the first paint so the scheme never flashes. If the shape ever changes, the key is bumped (v1 → v2 happened on 2 Nov), not migrated. Session-only state (which tenders were "read", open answers, the last re-score) lives in variables and is gone on reload.
 
 ## 4. URL parameters (demo and test only)
 
 | Parameter | Effect |
 |---|---|
-| `?demo=reset` | writes a fresh `tenderscout.v2`, removes `reset` from the address, lands on `#/welcome/1` |
+| `?demo=reset` | writes a fresh `tenderscout.v2`, signed in with the demo address, removes `reset` from the address, lands on `#/welcome/1` |
 | `?demo=fast` (or `reset,fast`) | caps the two simulated AI waits at about 300 ms; nothing else changes |
 | `?theme=system\|light\|dark` | sets Appearance, persisted |
 | `?today=YYYY-MM-DD` | moves the demo date (shows the Closed state); tests only |

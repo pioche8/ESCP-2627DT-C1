@@ -2,7 +2,7 @@
  * tests/ui-frames.js — the docs/ui frames that the smoke path cannot give cleanly (6 Nov 2026).
  * Dev-only: needs Playwright + Chromium. The app itself has no dependencies.
  *
- *   node tests/ui-frames.js            → rewrites the twelve frames below in docs/ui/ (390×844 at 2×)
+ *   node tests/ui-frames.js            → rewrites the fourteen frames below in docs/ui/ (390×844 at 2×)
  *   node tests/ui-frames.js <folder>   → writes them to <folder> instead
  *
  * The smoke test's own screenshots (node tests/smoke.js <folder>) cover every other frame in UI_DESIGN.md §6; these need
@@ -21,7 +21,7 @@ const OUT = path.resolve(process.argv[2] || path.join(ROOT, 'docs', 'ui'));
 const TODAY = require(path.join(ROOT, 'data.js')).DEMO_TODAY;
 const BIDS = { saved: { 'ell-schools': 'Bidding' }, skipped: { 'vli-libraries': { reasons: ['Missing a certificate'], at: TODAY } } };
 const FLIP = { overrides: { 'hoh-security': { r3: 'pass' } } };
-// name, scheme, route, state on top of { onboarded, notifiedOn }, options
+// name, scheme, route, state on top of { signedIn, email, onboarded, notifiedOn }, options
 const FRAMES = [
   ['bids-stages', 'dark', '#/bids', BIDS],
   ['light-bids', 'light', '#/bids', BIDS],
@@ -33,6 +33,8 @@ const FRAMES = [
   ['about', 'dark', '#/settings', {}],
   ['light-settings', 'light', '#/settings', {}],
   ['settings-about', 'dark', '#/settings', {}, { section: 'About this prototype' }], // pass 8: the four statements, real and fictional
+  ['signin', 'dark', '#/t/ell-schools', { signedIn: false, email: '' }], // pass 8 PR 5: a deep link, signed out → the sign-in screen
+  ['light-signin', 'light', '#/t/ell-schools', { signedIn: false, email: '' }],
   ['light-company-rescore', 'light', '#/company', FLIP, { tap: '[data-cert="ISO 27001"]' }],
   ['tender-competition', 'dark', '#/t/hoh-security', {}, { section: 'Competition' }]
 ];
@@ -47,7 +49,7 @@ const FRAMES = [
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    const state = Object.assign({ onboarded: true, notifiedOn: TODAY }, patch);
+    const state = Object.assign({ signedIn: true, email: 'demo@example.com', onboarded: true, notifiedOn: TODAY }, patch);
     await page.addInitScript((s) => {
       try { if (!sessionStorage.getItem('ui-frames')) { localStorage.setItem('tenderscout.v2', JSON.stringify(s)); sessionStorage.setItem('ui-frames', '1'); } } catch (e) { /* private mode: the app falls back to memory */ }
     }, state);

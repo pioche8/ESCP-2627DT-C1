@@ -35,6 +35,8 @@ The tabs live in a full-width bottom tab bar (icon + label; the active tab is br
 ```mermaid
 flowchart TD
   MN(["Morning notification<br/>simulated lock screen, once a day, no route"]) -- "tap the card (filter All)" --> F
+  SI["#/signin<br/>Demo sign-in (signed out: every route lands here first)"] -- "Sign in: the route asked for" --> F
+  SI -- "Sign up (no profile yet)" --> W1
   W1["#/welcome/1<br/>Website input"] --> W2["#/welcome/2<br/>AI reads the site (simulated)"] --> W3["#/welcome/3<br/>Check your profile"]
   W3 -- "Looks right" --> F
   W3 -- "Edit" --> C
@@ -67,6 +69,7 @@ flowchart TD
 ## Screen list
 | # | Route | Screen | Primary action | Notes |
 |---|---|---|---|---|
+| S0 | `#/signin` | Demo sign-in (pass 8, PR 5) | Sign in · Sign up | Shown first on every route while signed out, deep links included; the route asked for opens after Sign in. The email is the reserved `demo@example.com`, filled in and read only; no password, no account, nothing sent. Sign up on a phone without a profile starts at Welcome. `?demo=reset` and Reset demo sign in by themselves. Sign out is on Settings → Account and keeps the profile and saved tenders |
 | S1 | `#/welcome/1` | Welcome + website | Draft my profile | Photo in its own block, headline, the line "All 45 EU sectors · 6 new tenders tonight" (derived from the data), the website field and the button. Only typed input in the core flow is here |
 | S2 | `#/welcome/2` | Reading (transient) | none | Step list and progress bar, "Simulated AI"; replaced in history, not a back target |
 | S3 | `#/welcome/3` | Check your profile | Looks right | The drafted profile card with its sources; "Edit" goes to S6 |
@@ -90,6 +93,7 @@ flowchart TD
 
 **Branches on any screen** (each flow below can hit these):
 - **Error fallback.** Any uncaught error or unhandled rejection shows "Something went wrong" with one Restart button and no tab bar; Restart reloads on the Feed with `tenderscout.v2` intact. Proof: smoke `plain screen with Restart as the only action, no tab bar`, `the error screen stays while the hash changes` and `Restart returns to the Feed with tenderscout.v2 intact (still onboarded, the saved tender still saved)`.
+- **Signed out (demo sign-in, pass 8).** Every route, deep links and unknown routes included, shows `#/signin` first; after Sign in the route that was asked for opens. Proof: smoke `signed out, a deep link (#/t/ell-schools) shows the sign-in screen with the demo email filled in`, `Sign in opens the route that was asked for (the tender) and stores the demo sign-in` and `signed out, every route shows the sign-in screen first (#/bids)`.
 - **Deep link before onboarding.** Any route except Welcome, Company and Settings (or `#/about`) redirects to `#/welcome/1`, unknown routes included. Not locked by a test.
 - **Unknown route.** After onboarding, a route `parse()` does not know shows Not found with "Open Feed". Proof: the smoke path loads `#/nope` and waits for "Page not found"; no named check.
 - **Offline.** With no network (or the test-only `?offline=1`) the Feed and the tender show "Offline. Showing last night’s results." and keep working on the stored results. Proof: the smoke path loads `?offline=1#/feed` and waits for the banner; no named check.
@@ -136,7 +140,7 @@ Profile tab → the profile card (staff, turnover, references, sectors, certific
 - Sheets are their own history entries: system Back, Escape, a tap on the scrim, Cancel, or answering all close the sheet to its parent. Closing goes back in history rather than adding a new entry, so Back never reopens a closed sheet.
 - ‹ on a detail goes back to the Feed or Bids if you came from there; otherwise (deep link) it opens the Feed. Proof: smoke `detail ‹ returns to the Feed` (after coming from the Feed) and `deep link #/t/kal-fibre works (Maybe)` (the deep link opens); ‹ after a deep link is not locked by a test.
 - ‹ on Win/loss insights goes back to Bids, also after a deep link.
-- Unknown route → "Not found" with a link to the Feed. Before onboarding, any deep link except Welcome, Company and Settings (or `#/about`) redirects to Welcome. Proof for the old link: smoke `the old #/about deep link opens the Settings tab`.
+- Signed out, every route shows the demo sign-in (`#/signin`) first and the route asked for opens after Sign in; the sign-in screen replaces itself in history, so Back does not return to it. Unknown route → "Not found" with a link to the Feed. Before onboarding, any deep link except Welcome, Company and Settings (or `#/about`) redirects to Welcome. Proof for the old link: smoke `the old #/about deep link opens the Settings tab`.
 - After a screen change, focus moves to the screen title (for screen readers); after a sheet or the morning notification closes, focus returns to what opened it.
 
 ## States (DESIGN.md §6)

@@ -110,7 +110,9 @@ if (fs) {
     const state = new Function('D', 'clone', 'TODAY', 'return ' + m[1] + ';')(D, clone, TODAY); // eslint-disable-line no-new-func
     // notifiedOn (5 Nov, additive, CLAUDE.md §11 item 120): a fresh state counts as notified today, so ?demo=reset does not pop the morning notification
     // log (6 Nov, additive, CLAUDE.md §11 pass 2, S4): the test-session log starts empty, so ?demo=reset and Reset demo clear it
-    assert.deepStrictEqual(Object.keys(state).sort(), ['filter', 'log', 'notifiedOn', 'onboarded', 'overrides', 'palette', 'profile', 'saved', 'skipped', 'theme', 'website'].sort(), 'tenderscout.v2 shape');
+    assert.deepStrictEqual(Object.keys(state).sort(), ['email', 'filter', 'log', 'notifiedOn', 'onboarded', 'overrides', 'palette', 'profile', 'saved', 'signedIn', 'skipped', 'theme', 'website'].sort(), 'tenderscout.v2 shape');
+    // signedIn and email (10 Nov, additive, CLAUDE.md §11 pass 8 PR 5): a fresh state is signed out; ?demo=reset and Reset demo sign in themselves
+    assert.strictEqual(state.signedIn, false, 'a fresh state (a new phone) is signed out');
     assert.deepStrictEqual(state.log, [], 'the test-session log starts empty');
     assert.strictEqual(state.notifiedOn, TODAY, 'a fresh state counts as notified on the demo day');
     assert.strictEqual(state.onboarded, false);
@@ -127,9 +129,11 @@ if (fs) {
     const block = app.slice(i, i + 600);
     assert.ok(/S = fresh\(\);/.test(block), 'S = fresh()');
     assert.ok(/save\(\);/.test(block), 'the fresh state is written (a reload does not reset again)');
+    assert.ok(/S = fresh\(\); S\.signedIn = true; S\.email = DEMO_EMAIL;/.test(block), '?demo=reset signs in with the demo address, so the rehearsed path has no sign-in step');
+    assert.ok(/var DEMO_EMAIL = 'demo@example\.com';/.test(app), 'the demo address is the reserved demo@example.com');
     assert.ok(/indexOf\('fast'\) !== -1\) params\.set\('demo', 'fast'\); else params\.delete\('demo'\)/.test(block), 'demo=fast survives, demo=reset is dropped');
     assert.ok(/history\.replaceState\([\s\S]*?'#\/welcome\/1'\);/.test(block), 'the address becomes #/welcome/1');
-    assert.ok(/case 'reset':[\s\S]*?S = fresh\(\);[\s\S]*?replaceTo\('#\/welcome\/1'\)/.test(app), 'About → Reset demo does the same');
+    assert.ok(/case 'reset':[\s\S]*?S = fresh\(\); S\.signedIn = true;[\s\S]*?replaceTo\('#\/welcome\/1'\)/.test(app), 'About → Reset demo does the same, signed in');
   }, true);
 }
 
