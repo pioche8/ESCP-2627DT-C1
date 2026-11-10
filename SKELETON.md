@@ -47,7 +47,7 @@ No tab bar. Shown first on every route while signed out; Sign in opens the route
             [            Draft my profile               ]   primary, full width
 [caption]   Prototype · all companies and tenders are fictional
 ```
-No tab bar. The only typing in the core flow.
+No tab bar. The only typing in the core flow. In the line, 45 counts the CPV divisions (numbered 03 to 98, with gaps).
 
 ### Reading · `#/welcome/2` (transient, replaced in history)
 ```

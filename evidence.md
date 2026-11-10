@@ -121,6 +121,8 @@ The two survey responses back the core of TenderScout. Deciding whether to bid t
 ## 6. AI use disclosure
 Who drafted each artefact in this file and in [`docs/design/`](docs/design/), and who approved it, from the record (git history, [`CLAUDE.md`](CLAUDE.md) §11 and [README → AI use](README.md#ai-use-escp-policy-disclosure)). Where the record does not show who did something, it says **team to confirm**. Every merge into `main` went through a pull request merged from Luca's GitHub account (`pioche8`); for the autonomous passes Claude Code merged them on Luca's instruction, so a merge alone does not show that a teammate reviewed the text.
 
+**One account for six people** (statement by Luca, 10 Nov 2026): Everyone in the team had access to Luca's GitHub and Claude accounts and worked through them, so the history shows one account for the work of all six members. Account names in the git history and in this section show whose account was used, not which team member did the work.
+
 | Artefact | Drafted by | Approved by |
 |---|---|---|
 | §0 hypotheses H1–H4 and the kill gate | Claude (Anthropic), 2 Nov 2026 session (the hypotheses and gate are in the first commit, `99235a7`; README → AI use: "brief draft, interview kit and templates") | Luca restored the full file on 3 Nov (`1db90f9`); the rest of the team: team to confirm |

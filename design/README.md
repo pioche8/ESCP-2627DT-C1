@@ -16,7 +16,7 @@ The designer's handoffs and reference pages, kept as they were delivered, plus `
 | [`figma/`](figma/) | The code → Figma pipeline (5 Nov), dev-only: `capture.js` (Playwright) renders the 30 app states at iPhone size, dark and light; `make-batches.js` turns them into ready-to-run `use_figma` scripts from the `*.figma.js` templates (screens, light page, photos, prototype links, design-system section, cleanup); `dry-run.js` checks them offline; `figma.config.json` holds the file's ids. Output goes to the ignored `out/`. Rules, the file map and the known gaps: [`../docs/FIGMA.md`](../docs/FIGMA.md) |
 | [`films/`](films/) | The three motion pieces (launch film, loop cover, notch film) as `.dc.html` pages with their `.jsx` sources. The launch film rendered to MP4 is in [`../marketing/`](../marketing/) |
 | [`website/`](website/) | The marketing website handoff (v3): [`HANDOFF_WEBSITE.md`](website/HANDOFF_WEBSITE.md), the reference pages for the site, the UI controls, content and atmosphere, and the map |
-| [`assets/`](assets/) | The design pack's photos; [`assets/sectors/`](assets/sectors/) holds the 45 EU sector (CPV division) previews. The website's build copies the previews and the harbour photo into `site/public/assets/` |
+| [`assets/`](assets/) | The design pack's photos; [`assets/sectors/`](assets/sectors/) holds the 45 EU sector (CPV division) previews, numbered 03 to 98, with gaps. The website's build copies the previews and the harbour photo into `site/public/assets/` |
 
 **Viewing the reference pages:** serve the folder (for example `python3 -m http.server`) and open a `.dc.html` file. They load React, Babel and Google Fonts from CDNs, so they need internet; the app itself does not.
 

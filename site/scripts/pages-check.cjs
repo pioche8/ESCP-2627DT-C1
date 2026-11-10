@@ -41,6 +41,9 @@ const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fai
     ok(page.url() === SITE, 'opens at ' + SITE.replace(APP, REPO_PATH + '/'));
     const missing = await page.evaluate((ids) => ids.filter((id) => !document.getElementById(id)), SECTIONS);
     ok(missing.length === 0, 'all ' + SECTIONS.length + ' sections are on the page' + (missing.length ? ': missing ' + missing.join(', ') : ''));
+    // Pass 9b: Built for says how the 45 CPV divisions are numbered, so "45" does not read as an undercount next to code 98.
+    const who = await page.locator('#who .body').first().innerText();
+    ok(/They fall into 45 divisions, numbered 03 to 98 with gaps\./.test(who), 'Built for: "' + who + '"');
     // Scroll through every section so the lazy parts load (map within 600 px, phone frame, photos), then back to the top.
     for (const id of SECTIONS) { await page.evaluate((id) => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById(id).scrollIntoView({ block: 'start' }); }, id); await page.waitForTimeout(450); }
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(600);
