@@ -1,7 +1,8 @@
 #!/bin/bash
 # Encode rendered frames (see render-frames.js): the 1920x1080 film (H.264, yuv420p, bt709, faststart) and the
 # 1080x1920 reel cut: film scaled to 1080x608 at y=680 over the bg colour, the headline overlay (reel-overlay.png, a transparent
-# 1080x1920 PNG built in HTML with the vendored fonts, text inside the Reel safe zone) and a silent AAC track.
+# 1080x1920 PNG built in HTML with the vendored fonts, text inside the Reel safe zone: marketing/reel-overlay.html, rendered by
+# node marketing/render-overlay.js <work-dir>/reel-overlay.png) and a silent AAC track.
 #   bash marketing/encode.sh <work-dir>     (work-dir holds frames/%05d.png and reel-overlay.png)
 set -e
 cd "${1:-.}"
