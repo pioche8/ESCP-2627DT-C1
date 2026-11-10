@@ -656,6 +656,59 @@ async function errorFallback(browser, step) {
   check(unexpected.length === 0, 'no other console errors around the fallback' + (unexpected.length ? ':\n       ' + unexpected.join('\n       ') : ''));
 }
 
+// Demo sign-in (10 Nov 2026, pass 8, PR 5): signed out, a deep link shows #/signin first and opens after Sign in; Sign out
+// returns to it and keeps what is on the phone; Sign up on a new phone starts at Welcome; ?demo=reset signs in by itself.
+async function demoSignIn(browser, step) {
+  console.log('\n== demo sign-in · ' + BROWSER + ' · ' + BASE);
+  const ctx = await browser.newContext(contextOptions({ colorScheme: 'dark' }));
+  const page = await ctx.newPage();
+  const problems = [];
+  watch(page, problems);
+  page.on('dialog', (d) => d.accept());
+  const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('tenderscout.v2')); } catch (e) { return null; } });
+  step('deep link, signed out');
+  await page.goto(BASE + '#/t/ell-schools');
+  await page.waitForSelector('.signin');
+  const email = page.locator('#signin-email');
+  const btns = await page.locator('.signin [data-act="signin"], .signin [data-act="signup"]').evaluateAll((bs) => bs.map((b) => { const r = b.getBoundingClientRect(); return [b.innerText.trim(), Math.round(r.height)]; }));
+  check(page.url().endsWith('#/signin') && (await email.inputValue()) === 'demo@example.com' && (await email.getAttribute('readonly')) !== null, 'signed out, a deep link (#/t/ell-schools) shows the sign-in screen with the demo email filled in');
+  check(btns.map((b) => b[0]).join(' · ') === 'Sign in · Sign up' && btns.every((b) => b[1] >= 44) && (await page.locator('.signin').innerText()).includes('Demo sign-in: no password'), 'sign-in: Sign in and Sign up at 44 px or more, and the demo line');
+  check(!(await page.locator('.tabbar').count()) && (await page.locator('.signin input[type="password"]').count()) === 0, 'sign-in: no tab bar and no password field');
+  const sc = await scanDom(page);
+  check(sc.length === 0, 'sign-in passes the declutter scan' + (sc.length ? ': ' + sc.map((x) => x.pattern + ' · ' + x.el).join(', ') : ''));
+  step('sign in → the tender');
+  await page.click('[data-act="signin"]');
+  await page.waitForSelector('.vhead.v-go', { timeout: 10000 });
+  const st = await stored();
+  check(page.url().endsWith('#/t/ell-schools') && st.signedIn === true && st.email === 'demo@example.com', 'Sign in opens the route that was asked for (the tender) and stores the demo sign-in');
+  step('sign out');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('tenderscout.v2')); s.saved = { 'ell-schools': 'Bidding' }; localStorage.setItem('tenderscout.v2', JSON.stringify(s)); });
+  await page.goto('about:blank'); await page.goto(BASE + '#/settings');
+  await page.waitForSelector('[data-act="signout"]');
+  check((await page.locator('.screen').innerText()).includes('Signed in as demo@example.com'), 'Settings says who is signed in');
+  await page.click('[data-act="signout"]');
+  await page.waitForSelector('.signin');
+  const out = await stored();
+  check(page.url().endsWith('#/signin') && out.signedIn === false && out.onboarded === true && out.saved['ell-schools'] === 'Bidding', 'Sign out returns to the sign-in screen and keeps the profile and saved tenders on the phone');
+  await page.goto('about:blank'); await page.goto(BASE + '#/bids');
+  await page.waitForSelector('.signin');
+  check(page.url().endsWith('#/signin'), 'signed out, every route shows the sign-in screen first (#/bids)');
+  step('sign up on a new phone');
+  await page.evaluate(() => localStorage.clear());
+  await page.goto('about:blank'); await page.goto(BASE + '#/feed');
+  await page.waitForSelector('.signin');
+  await page.click('[data-act="signup"]');
+  await page.waitForSelector('.welcome:not(.signin)', { timeout: 5000 });
+  check(page.url().endsWith('#/welcome/1') && (await stored()).signedIn === true, 'Sign up on a new phone signs in and starts at Welcome');
+  step('?demo=reset signs in');
+  await page.evaluate(() => localStorage.clear());
+  await page.goto('about:blank'); await page.goto(BASE + '?demo=reset,fast');
+  await page.waitForSelector('.welcome:not(.signin)');
+  const rs = await stored();
+  check(page.url().endsWith('#/welcome/1') && rs.signedIn === true && rs.email === 'demo@example.com', '?demo=reset skips sign-in: it signs in by itself and opens Welcome');
+  check(problems.length === 0, 'no console errors around sign-in' + (problems.length ? ':\n       ' + problems.join('\n       ') : ''));
+}
+
 // Test-session log (6 Nov 2026, pass 2, S4): export-only; cleared by ?demo=reset and Reset demo; each tender counted once;
 // no seconds under ?demo=fast; the toast reports what happened (copied, or the log shown as text); no count elsewhere.
 async function testSessionLog(browser, step) {
@@ -734,7 +787,9 @@ async function testSessionLog(browser, step) {
   const p2 = await ctx2.newPage();
   const problems2 = [];
   watch(p2, problems2);
-  await p2.goto(BASE + '#/settings'); await p2.waitForSelector('[data-act="copy-log"]');
+  await p2.goto(BASE + '#/settings');
+  await p2.waitForSelector('[data-act="signin"]'); await p2.click('[data-act="signin"]'); // signed out on a fresh phone since pass 8 (PR 5); the sign-in lives in memory here
+  await p2.waitForSelector('[data-act="copy-log"]');
   await p2.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.resolve() } }); });
   await p2.click('[data-act="copy-log"]'); await p2.waitForTimeout(400);
   check((await p2.locator('#toast-root').innerText()).includes('Copied · 0 decisions on this phone') && problems2.length === 0, 'test log: with storage blocked it still exports, no errors' + (problems2.length ? ':\n       ' + problems2.join('\n       ') : ''));
@@ -766,7 +821,7 @@ function serveRoot() {
   // still runs. The device is part of the name so a CI log line says where it happened.
   const dev = DEVICE ? ' · ' + process.env.SMOKE_DEVICE : '';
   const sections = schemes.map((s) => [s + dev, (b, step) => run(s, b, step)])
-    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog]]);
+    .concat([['reduced motion' + dev, reducedMotion], ['error fallback' + dev, errorFallback], ['test-session log' + dev, testSessionLog], ['demo sign-in' + dev, demoSignIn]]);
   for (const [name, fn] of sections) if (!(await section(name, fn, { playwright, engine: BROWSER }))) failures++;
   if (process.env.MONKEY && !failures) { // off-script: the seeded monkey walk, behind MONKEY=1 so CI stays fast
     try { const found = await require('./monkey').run(); check(found.length === 0, 'monkey: no findings' + (found.length ? ' (' + found.length + ', see above)' : '')); }

@@ -35,8 +35,12 @@
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   // notifiedOn = the day the morning notification last showed. A fresh state counts as notified today, so it first shows
   // on the next day the app is opened (in the prototype "today" is fixed, so use ?demo=morning or About to see it).
+  // The demo sign-in (pass 8, PR 5): one reserved address, no password, no account, nothing sent. Signed out, every route
+  // shows #/signin first; ?demo=reset and Reset demo sign in by themselves, so the rehearsed path keeps its 7 steps.
+  var DEMO_EMAIL = 'demo@example.com';
+  var wanted = null; // the route asked for while signed out, opened after sign-in (session only)
   function fresh() {
-    return { onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand', notifiedOn: TODAY, log: [] };
+    return { signedIn: false, email: '', onboarded: false, profile: clone(D.PROFILE), website: '', overrides: {}, saved: {}, skipped: {}, filter: 'all', theme: 'dark', palette: 'brand', notifiedOn: TODAY, log: [] };
   }
   function load() {
     try { var s = localStorage.getItem(KEY); if (s) { var o = fresh(), p = JSON.parse(s); Object.keys(p).forEach(function (k) { o[k] = p[k]; }); return o; } }
@@ -50,7 +54,7 @@
   if (THEMES.indexOf(themeParam) !== -1) { S.theme = themeParam; save(); }
   var demoFlags = (params.get('demo') || '').split(','); // ?demo=reset wipes the state · ?demo=fast shortens the simulated AI waits (ai.js) · ?demo=reset,fast does both · ?demo=morning shows the morning notification once
   if (demoFlags.indexOf('reset') !== -1) {
-    S = fresh(); if (THEMES.indexOf(themeParam) !== -1) S.theme = themeParam; save();
+    S = fresh(); S.signedIn = true; S.email = DEMO_EMAIL; if (THEMES.indexOf(themeParam) !== -1) S.theme = themeParam; save();
     if (demoFlags.indexOf('fast') !== -1) params.set('demo', 'fast'); else params.delete('demo');
     var qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + '#/welcome/1');
@@ -201,6 +205,24 @@
     return '<div class="empty"><h2>' + esc(title) + '</h2><p>' + esc(text) + '</p>' + (extra || '') + '</div>';
   }
   function offlineBanner() { return offline() ? '<p class="banner" role="note">Offline. Showing last night’s results.</p>' : ''; }
+
+  // ---------- 00 Sign in (demo) ----------
+  // One screen in front of every route while signed out. The email is a reserved demo address and cannot be edited, so
+  // nothing a visitor types is kept; either button signs in with it. Sign in opens the demo company's account (profile
+  // set up) and then the route that was asked for; Sign up starts at Welcome, where a new firm sets up its profile.
+  function signin() {
+    return '<div class="screen welcome signin">' +
+      navRow('<span class="spacer"></span>' + themeBtn()) +
+      '<div class="welcome-copy"><h1 class="screen-title" tabindex="-1">Sign in to TenderScout</h1>' +
+        '<p class="welcome-sub">Your verdicts, answers and saved tenders, on this phone.</p></div>' +
+      '<form class="welcome-form" id="signin-form" novalidate>' +
+        '<label class="label-text" for="signin-email">Email</label>' +
+        '<div class="field"><input id="signin-email" type="email" autocomplete="off" readonly value="' + DEMO_EMAIL + '"></div>' +
+        '<button type="button" class="btn btn-primary btn-block" data-act="signin">Sign in</button>' +
+        '<button type="button" class="btn btn-secondary btn-block" data-act="signup">Sign up</button>' +
+        '<p class="caption">Demo sign-in: no password, no account is created, and nothing leaves this phone.</p>' +
+      '</form></div>';
+  }
 
   // ---------- 01 Welcome ----------
   function welcome() {
@@ -887,6 +909,9 @@
     return '<div class="screen' + (S.onboarded ? ' has-tabs' : '') + '">' +
       (S.onboarded ? navRow() : '<div class="nav back-nav">' + backBtn() + '</div>') +
       '<div class="about-intro"><h1 class="screen-title" tabindex="-1">Settings</h1></div>' +
+      '<div class="sec-h"><h2>Account</h2></div><div class="group notify-row">' +
+        '<p>Signed in as ' + esc(S.email || DEMO_EMAIL) + ', a demo sign-in. Your profile, answers and saved tenders stay on this phone when you sign out.</p>' +
+        '<button class="btn btn-secondary btn-block" data-act="signout">Sign out</button></div>' +
       '<div class="sec-h"><h2>Appearance</h2></div><div class="group theme-row">' +
         '<p class="label-text" id="lbl-theme">Light or dark</p><div class="tabs" role="radiogroup" aria-labelledby="lbl-theme">' + seg('system', 'System') + seg('light', 'Light') + seg('dark', 'Dark') + '</div></div>' +
       '<div class="sec-h"><h2>Morning notification</h2></div><div class="group notify-row">' +
@@ -978,6 +1003,7 @@
       if (h.length === 2) return { name: 'detail', id: h[1] };
       return { name: 'notfound' };
     }
+    if (h.length === 1 && h[0] === 'signin') return { name: 'signin' };
     if (h.length === 1 && (h[0] === 'about' || h[0] === 'settings')) return { name: 'settings' }; // #/about stays a working deep link
     if (h.length === 1 && ['feed', 'bids', 'company', 'profile', 'insights'].indexOf(h[0]) !== -1) return { name: h[0] };
     return { name: 'notfound' };
@@ -1017,7 +1043,10 @@
   function render(force) {
     if (crashed) return; // the error screen stays until Restart
     var r = parse();
-    if (!S.onboarded && ['onb', 'company', 'settings'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
+    // Signed out: every route shows the sign-in screen first and is opened after it (pass 8, PR 5).
+    if (!S.signedIn && r.name !== 'signin') { if (location.hash && location.hash !== '#/' && location.hash !== '#') wanted = location.hash; replaceTo('#/signin'); return; }
+    if (S.signedIn && r.name === 'signin') { replaceTo(S.onboarded ? '#/feed' : '#/welcome/1'); return; }
+    if (!S.onboarded && ['signin', 'onb', 'company', 'settings'].indexOf(r.name) === -1) { replaceTo('#/welcome/1'); return; }
     var key = screenKey(r);
     var isNew = key !== curKey;
     // A toast belongs to the screen that raised it (pass 5): leaving that screen removes it at once, so an Undo can never
@@ -1027,6 +1056,7 @@
       if (curKey && isNew) scrollPos[curKey] = window.scrollY;
       var html;
       switch (r.name) {
+        case 'signin': html = signin(); break;
         case 'onb': html = r.step === 2 ? readingScreen() : r.step === 3 ? checkProfile() : welcome(); break;
         case 'feed': html = feed(); break;
         case 'detail': html = detail(r.id); break;
@@ -1217,6 +1247,17 @@
       case 'restart': restart(); break;
       case 'draft': draft(); break;
       case 'finish': S.onboarded = true; save(); go('#/feed'); break;
+      case 'signin': case 'signup':
+        // Either button signs in with the demo address. Sign in = the demo company's account, profile set up; Sign up = a new
+        // firm, so a phone that has not set up a profile goes through Welcome first.
+        S.signedIn = true; S.email = DEMO_EMAIL; if (d.act === 'signin') S.onboarded = true; save();
+        var to = wanted; wanted = null; stack = [location.hash];
+        replaceTo(S.onboarded ? (to || '#/feed') : '#/welcome/1');
+        break;
+      case 'signout':
+        // Signing out keeps the profile, answers and saved tenders on this phone (they never left it); Reset demo clears them.
+        S.signedIn = false; save(); hideToast(true); stack = [location.hash]; wanted = null; replaceTo('#/signin');
+        break;
       case 'save':
         S.saved[d.id] = 'Deciding'; delete S.skipped[d.id]; logEvent('save', d.id); render(true);
         toast('Saved to Bids', { label: 'View', fn: function () { go('#/bids'); } });
@@ -1233,7 +1274,7 @@
       case 'theme-toggle': S.theme = effectiveScheme() === 'dark' ? 'light' : 'dark'; save(); applyTheme(); haptic('select'); render(true); break;
       case 'reset':
         if (!window.confirm('Reset the demo? This clears your profile, answers, saved and skipped tenders.')) break;
-        S = fresh(); readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {}; logged = {}; logText = null;
+        S = fresh(); S.signedIn = true; S.email = DEMO_EMAIL; readCache = {}; answers = {}; openAsk = null; skipDraft = {}; lastChange = null; pulse = {}; logged = {}; logText = null;
         save(); applyTheme(); stack = [location.hash]; replaceTo('#/welcome/1');
         break;
     }

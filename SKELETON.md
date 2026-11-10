@@ -22,6 +22,19 @@ The skeleton plane of Garrett's *Elements of User Experience*: where things sit 
 
 Legend: `[zone]` names a block; `(…)` is a condition; `*` marks the active tab; `| A | B |` is a bar of buttons, primary last.
 
+### Sign in · `#/signin` (demo sign-in, pass 8)
+```
+[header]    TenderScout .......................... ◐
+[title]     Sign in to TenderScout
+[sub]       Your verdicts, answers and saved tenders, on this phone.
+[form]      Email
+            [ demo@example.com                          ]   filled in, read only
+            [                 Sign in                   ]   primary, full width
+            [                 Sign up                   ]   secondary, full width
+[caption]   Demo sign-in: no password, no account is created, and nothing leaves this phone.
+```
+No tab bar. Shown first on every route while signed out; Sign in opens the route asked for, Sign up on a new phone opens Welcome.
+
 ### Welcome · `#/welcome/1`
 ```
 [header]    TenderScout .......................... ◐  ⓘ
@@ -242,6 +255,9 @@ Read only: Profile shows the firm, Company changes it. The card is the one on Ch
 ```
 [header]    TenderScout                                      (before onboarding: ‹)
 [title]     Settings
+[section]   Account
+[text]      Signed in as demo@example.com, a demo sign-in. Your profile, answers and saved tenders stay on this phone when you sign out.
+[action]    Sign out                                         secondary, full width → #/signin
 [section]   Appearance
             Light or dark: System | Light | Dark             text tabs
 [section]   Morning notification

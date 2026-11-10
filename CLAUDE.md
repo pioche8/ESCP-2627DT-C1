@@ -101,6 +101,7 @@ If a design change needs new engine output (e.g. a "what would flip this" hint),
 ## 5. Routes and screens (keep the information architecture; apply DESIGN.md visuals)
 | Route | Screen | Must keep |
 |---|---|---|
+| `#/signin` | Demo sign-in (pass 8, PR 5) | signed out, every route shows it first; Sign in / Sign up with `demo@example.com` (read only, no password, nothing sent); the route asked for opens after Sign in; `?demo=reset` signs in by itself |
 | `#/welcome/1` | Welcome + website input | "Draft my profile" → simulated AI |
 | `#/welcome/2` | Reading (transient) | replaced in history (`location.replace`) |
 | `#/welcome/3` | Check AI-drafted profile | Edit / Looks right |
@@ -121,7 +122,7 @@ If a design change needs new engine output (e.g. a "what would flip this" hint),
 
 ## 6. State
 - One `localStorage` key, `tenderscout.v1`: `{ onboarded, profile, overrides, saved, skipped, filter }`. **Now `tenderscout.v2`** (since 2 Nov): `skipped[id] = { reasons: [], at }` and `theme` were added (`theme` defaults to `dark` since the vibe pass; `?theme=` sets it). A `palette` field is still written (`'brand'`) for shape stability but no longer read (4 Nov). All access goes through try/catch with an in-memory fallback (private mode).
-- `?demo=reset` wipes state and returns to welcome.
+- `?demo=reset` wipes state and returns to welcome, signed in (pass 8, PR 5: `signedIn` and `email` were added to `tenderscout.v2`, additive like `notifiedOn`, so the key was not bumped; a fresh state, a new phone, is signed out).
 - If the state shape changes, bump the key to `tenderscout.v2` rather than migrating.
 
 ## 7. Non-negotiables (course rules and honesty)
@@ -562,3 +563,25 @@ PR 4, app copy and the app's axe findings (open, labelled `after-feedback` and `
     - `site/scripts/a11y-motion.cjs` brings the whole phone into view before it taps the app's tab bar: focusing a control inside the frame can scroll the page, and one run timed out with the tab bar below the fold.
     - `site/public/prototype/` is refreshed with this app, as `sync-shared --check` requires. That puts the new About wording on the site's phone too (item 189a).
 199. **One frame added, none re-taken.** None of the existing `docs/ui` frames shows the About statements: `about.png` and `light-settings.png` end at the Demo section. So `tests/ui-frames.js` gained `settings-about` (dark, scrolled to "About this prototype"), and `UI_DESIGN.md` shows it. The axe fixes change no pixel.
+
+PR 5, the demo sign-in (open, labelled `after-feedback` and `re-rehearse`; **app bytes change**; its branch holds PR 4's commit, so merge PR 4 first, then this, then re-rehearse; Luca's request of 10 Nov for https://pioche8.github.io/ESCP-2627DT-C1/#/t/ell-schools):
+200. **One sign-in screen, `#/signin`, in front of every route while signed out; nothing about it is real authentication.**
+    - **The screen:** the reserved address `demo@example.com` (RFC 2606) is filled in and read only, so nothing a visitor types is kept. It has Sign in and Sign up, no password field, and the line "Demo sign-in: no password, no account is created, and nothing leaves this phone."
+    - **Sign in** signs into the demo company's account: it marks the profile as set up and opens the route that was asked for. Luca's example, a fresh phone opening `#/t/ell-schools`, lands on that tender.
+    - **Sign up** signs in as a new firm: on a phone without a profile it starts at Welcome, where the profile is made, and the requested route is dropped. On a phone that has one it behaves like Sign in.
+    - **Guards:** signed out, the guard runs before the onboarding guard, which now lets `#/signin` through (without that the two guards sent each other round in a loop, caught by the first smoke run). A signed-in visit to `#/signin` goes to the Feed, or to Welcome before onboarding. The route asked for is remembered in a session variable, not in storage.
+    - **State:** `tenderscout.v2` gains `signedIn` and `email`, additive like `notifiedOn` and `log`, so the key is not bumped. A fresh state (a new phone) is signed out, so a stored state from before this PR shows the sign-in screen once.
+    - **What is not used:** no auth library, no third-party sign-in, no network call, no key, no CDN, no new style (the screen reuses Welcome's classes; the declutter scan passes on it).
+201. **Sign out is in Settings, and it keeps the phone's data.**
+    - **Where:** a new first section, "Account": "Signed in as demo@example.com, a demo sign-in. Your profile, answers and saved tenders stay on this phone when you sign out." Then one secondary button, Sign out, following the morning notification's pattern (text, then its one action).
+    - **Why Settings, not Profile:** Profile shows the firm and has one action, "Edit on Company" (item 125). Settings already holds what concerns the phone and the session.
+    - **Why the data stays:** saved bids, answers and the company profile survive sign-out. They never left the phone and belong to the demo account, so signing in again finds them. Clearing them on sign-out would make Sign out a second, unconfirmed Reset demo. Reset demo keeps doing that, behind its confirmation.
+202. **The rehearsed demo is unchanged.**
+    - `?demo=reset` (and so `?demo=reset,fast`, the home-screen icon) and Reset demo write the fresh state already signed in, so the 7 steps and the numbers do not move. The golden test pins this: `S = fresh(); S.signedIn = true; S.email = DEMO_EMAIL;` in the reset branch and in Reset demo, the address `demo@example.com`, and a fresh state that is signed out.
+    - The site's phone seeds the same sign-in, so it opens signed in on the Feed. Its copy in `site/public/prototype/` is refreshed. The film is a drawing of the app and shows it signed in.
+    - The backup recording in `docs/demo/` was not re-made (Luca: the next pass does that, after this merges).
+203. **Proof.**
+    - **Smoke:** a new section, `demo sign-in`, in every profile: a signed-out deep link shows the sign-in screen with the demo email; the buttons are at least 44 px, with the demo line; no tab bar and no password field; the declutter scan; Sign in opens the tender; Settings says who is signed in; Sign out returns to sign-in and keeps the profile and saved tenders; every route shows sign-in first; Sign up on a new phone starts at Welcome; `?demo=reset` skips sign-in; no console errors.
+    - **Test-log section:** its "storage blocked" step signs in first, because a phone that cannot store anything starts signed out. The sign-in then lives in memory, like the rest.
+    - **Docs:** `docs/NAVIGATION.md` (S0, the flow diagram, the branch, Back), `SKELETON.md` (the wireframe and Settings → Account), US16, `CONTENT_REQUIREMENTS.md`, `ARCHITECTURE.md` (route, guard, state), `PRODUCT.md` ("real accounts" stay later), §5 and §6 of this file. The docs check finds every new smoke name word for word.
+    - **Frames:** `docs/ui/signin.png` and `light-signin.png` are new. `about.png` and `light-settings.png` are re-made, because Settings now opens with Account. The other ten `ui-frames` frames came out pixel-identical.

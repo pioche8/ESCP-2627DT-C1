@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-// The app's storage key and the state the phone opens in: onboarded, on the Feed, dark, everything else the app's own
+// The app's storage key and the state the phone opens in: signed in with the demo address (the app's demo sign-in, pass 8
+// PR 5), onboarded, on the Feed, dark, everything else the app's own
 // defaults (app.js load() merges a stored state onto fresh()). Written before the frame loads, on every page load, so
 // each visit starts from the same clean state, like ?demo=reset.
 const KEY = 'tenderscout.v2';
-const SEED = { onboarded: true, theme: 'dark' };
+const SEED = { signedIn: true, email: 'demo@example.com', onboarded: true, theme: 'dark' };
 // The copy of the app that scripts/sync-shared.mjs keeps in public/prototype/ (byte for byte, checked in CI).
 const SRC = '/prototype/index.html?demo=fast#/feed';
 

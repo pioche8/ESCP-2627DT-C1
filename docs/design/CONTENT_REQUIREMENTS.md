@@ -131,6 +131,7 @@ All static copy in `app.js`, except where noted.
 
 | State | Words on screen | Route |
 |---|---|---|
+| Sign in (demo, pass 8) | "Sign in to TenderScout" · "Your verdicts, answers and saved tenders, on this phone." · "Email" with `demo@example.com` (read only) · "Sign in" · "Sign up" · "Demo sign-in: no password, no account is created, and nothing leaves this phone."; on Settings → Account: "Signed in as demo@example.com, a demo sign-in…" · "Sign out" | `#/signin`, `#/settings` |
 | Welcome | "Find public tenders you can actually win" · "New EU tenders, read overnight in any language. Each answer cites its page." · "All 45 EU sectors · 6 new tenders tonight" (both numbers computed from `data.js`) · "Company website" · "Draft my profile" | `#/welcome/1` |
 | Reading | "Reading your site, references and certificates…" · steps from `ai.js` ("Reading <site>", "Finding public contracts you delivered", "Checking certificates", "Drafting your profile") · "Found so far" · "About 20 seconds" | `#/welcome/2` |
 | Check your profile | "Check your profile" · "Drafted from <site>. Fix anything that’s off." · "Sources: <site>, 18 pages, N award notices (fictional)" · "Edit" / "Looks right"; on Company before onboarding, "Save and see my feed" | `#/welcome/3`, `#/company` |
